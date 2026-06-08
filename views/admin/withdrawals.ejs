@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Заявки на вывод | Админ-панель Линити</title>
+    <link rel="stylesheet" href="/css/admin.css">
+    <link rel="stylesheet" href="/css/header.css">
+    <link rel="stylesheet" href="/css/profile.css">
+    <link rel="stylesheet" href="/css/admin-notification.css">
+</head>
+<body>
+    <main>
+        <%- include('../partials/header-actions') %>
+        <section class="admin-container">
+            <div class="admin-main">
+                <div class="admin-header">
+                    <h1>Заявки на вывод</h1>
+                </div>
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-filter="all">Все</button>
+                    <button class="filter-tab" data-filter="pending">На рассмотрении</button>
+                    <button class="filter-tab" data-filter="approved">Выполнены</button>
+                    <button class="filter-tab" data-filter="rejected">Отклонены</button>
+                </div>
+                <table class="withdraw-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Пользователь</th>
+                            <th>Сумма</th>
+                            <th>Способ</th>
+                            <th>Реквизиты</th>
+                            <th>Банк</th>
+                            <th>Статус</th>
+                            <th>Дата</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="withdrawTableBody">
+                        <tr><td colspan="9" class="empty-state">Загрузка...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <%- include('admin-sidebar', { currentPath: '/admin/withdrawals' }) %>
+        </section>
+    </main>
+    
+    <%- include('../partials/admin-notification-modal') %>
+    <script src="/js/admin-notification.js"></script>
+    <script>
+        const csrfToken = '<%= csrfToken %>';
+        const withdrawalStatusLabels = <%- JSON.stringify(STATUS_LABELS_BY_CONTEXT.withdrawal) %>;
+        let allWithdrawals = [];
+
+        async function loadWithdrawals() {
+            try {
+                const res = await fetch('/api/admin/withdrawals');
+                const data = await res.json();
+                allWithdrawals = data.withdrawals || [];
+                render('all');
+            } catch (err) {
+                document.getElementById('withdrawTableBody').innerHTML = '<tr><td colspan="9" class="empty-state">Ошибка загрузки</td></tr>';
+            }
+        }
+
+        function methodLabel(m) {
+            return m === 'card' ? 'Карта' : (m === 'sbp' ? 'СБП' : 'ЮMoney');
+        }
+
+        function render(filter) {
+            const tbody = document.getElementById('withdrawTableBody');
+            const rows = filter === 'all' ? allWithdrawals : allWithdrawals.filter(w => w.status === filter);
+            if (rows.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="empty-state">Нет заявок</td></tr>';
+                return;
+            }
+            tbody.innerHTML = rows.map(w => {
+                const statusClass = w.status;
+                const statusText = withdrawalStatusLabels[w.status] || 'Не указан';
+                const payoutError = w.payout_error ? `<div style="color:#c62828;font-size:12px;margin-top:4px;max-width:220px;">${JSON.parse(w.payout_error).description || w.payout_error}</div>` : '';
+                const actions = w.status === 'pending' ? `
+                    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                        <button class="btn-sm btn-approve" onclick="approve(${w.id})">Подтвердить</button>
+                        <input type="text" class="reject-input" id="reject-reason-${w.id}" placeholder="Причина отклонения">
+                        <button class="btn-sm btn-reject" onclick="reject(${w.id})">Отклонить</button>
+                    </div>
+                ` : (w.rejection_reason ? `<span style="color:#c62828;font-size:12px;">${w.rejection_reason}</span>` : '—');
+                return `
+                    <tr data-status="${w.status}">
+                        <td>#${w.id}</td>
+                        <td>${w.first_name || ''} ${w.last_name || ''}<br><small style="color:#888;">${w.email}</small></td>
+                        <td><strong>${Number(w.amount).toLocaleString('ru-RU')} ₽</strong></td>
+                        <td>${methodLabel(w.payment_method)}</td>
+                        <td>${w.details}</td>
+                        <td>${w.bank_id ? `<small>${w.bank_id}</small>` : '—'}</td>
+                        <td><span class="withdraw-status ${statusClass}">${statusText}</span>${payoutError}</td>
+                        <td>${new Date(w.created_at).toLocaleDateString('ru-RU')}<br><small>${new Date(w.created_at).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}</small></td>
+                        <td>${actions}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function approve(id) {
+            if (!confirm('Подтвердить вывод средств?')) return;
+            try {
+                const res = await fetch(`/api/admin/withdrawals/${id}/approve`, {
+                    method: 'POST',
+                    headers: { 'X-CSRF-Token': csrfToken }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showAdminNotification('Одобрено', 'Заявка на вывод одобрена', 'success', 2000);
+                    setTimeout(() => loadWithdrawals(), 2500);
+                } else {
+                    showAdminNotification('Ошибка', data.error || 'Ошибка при одобрении', 'error', 0);
+                }
+            } catch (err) {
+                showAdminNotification('Ошибка сети', 'Попробуйте снова', 'error', 0);
+            }
+        }
+
+        async function reject(id) {
+            const reason = document.getElementById(`reject-reason-${id}`)?.value.trim();
+            if (!reason) {
+                showAdminNotification('Ошибка', 'Укажите причину отклонения', 'warning', 3000);
+                return;
+            }
+            if (!confirm('Отклонить заявку? Средства будут возвращены пользователю.')) return;
+            try {
+                const res = await fetch(`/api/admin/withdrawals/${id}/reject`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
+                    },
+                    body: JSON.stringify({ reason })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showAdminNotification('Отклонено', 'Заявка отклонена', 'success', 2000);
+                    setTimeout(() => loadWithdrawals(), 2500);
+                } else {
+                    showAdminNotification('Ошибка', data.error || 'Ошибка при отклонении', 'error', 0);
+                }
+            } catch (err) {
+                showAdminNotification('Ошибка сети', 'Попробуйте снова', 'error', 0);
+            }
+        }
+
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                render(tab.dataset.filter);
+            });
+        });
+
+        loadWithdrawals();
+    </script>
+</body>
+</html>

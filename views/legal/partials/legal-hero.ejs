@@ -1,0 +1,11 @@
+<aside class="legal-sidebar">
+  <p class="legal-type"><%= legalType %></p>
+  <h1><%= title %></h1>
+  <p class="lead"><%= lead %></p>
+  <div class="legal-doc-links">
+    <a href="/legal/offer" class="<%= activeDoc === 'offer' ? 'is-active' : '' %>">Оферта</a>
+    <a href="/legal/privacy" class="<%= activeDoc === 'privacy' ? 'is-active' : '' %>">Конфиденциальность</a>
+    <a href="/legal/personalDataConsent" class="<%= activeDoc === 'personal' ? 'is-active' : '' %>">Согласие на ПД</a>
+    <a href="/legal/marketingConsent" class="<%= activeDoc === 'marketing' ? 'is-active' : '' %>">Рассылки</a>
+  </div>
+</aside>

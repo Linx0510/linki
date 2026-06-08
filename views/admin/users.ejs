@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Пользователи | Admin</title>
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/header.css">
+  <link rel="stylesheet" href="/css/profile.css">
+  <link rel="stylesheet" href="/css/admin-notification.css">
+</head>
+<body>
+  <main>
+    <%- include('../partials/header-actions') %>
+    <section class="admin-container">
+      <div class="admin-main">
+        <div class="admin-header"><h1>Пользователи</h1></div>
+        <section class="content-card">
+          <form class="filters" method="get" action="/admin/users">
+            <input type="text" name="search" placeholder="Поиск" value="<%= search || '' %>">
+            <select name="role">
+              <option value="all">Все роли</option>
+              <option value="admin" <%= role==='admin'?'selected':'' %>>Админ</option>
+              <option value="customer" <%= role==='customer'?'selected':'' %>>Заказчик</option>
+              <option value="executor" <%= role==='executor'?'selected':'' %>>Исполнитель</option>
+            </select>
+            <button type="submit" class="primary-btn">Фильтровать</button>
+          </form>
+          <table class="activity-table">
+            <thead><tr><th>ID</th><th>Пользователь</th><th>Роль</th><th>Статус</th><th>Работы</th><th>Действия</th></tr></thead>
+            <tbody>
+            <% users.forEach(user => { %>
+              <tr>
+                <td><%= user.id %></td>
+                <td><strong><%= user.first_name %> <%= user.last_name %></strong><small><%= user.email %></small></td>
+                <td><%= user.role_name %></td>
+                <td><span class="status-badge status-<%= user.status %>"><%= statusLabel(user.status, 'user') %></span></td>
+                <td><%= user.works_count %></td>
+                <td>
+                  <% if (user.status === 'blocked') { %>
+                    <form method="post" action="/admin/users/<%= user.id %>/unblock" class="inline-form"><input type="hidden" name="csrf_token" value="<%= csrfToken %>"><button class="small-btn">Разблок.</button></form>
+                  <% } else { %>
+                    <form method="post" action="/admin/users/<%= user.id %>/block" class="inline-form"><input type="hidden" name="csrf_token" value="<%= csrfToken %>"><input type="hidden" name="reason" value="Нарушение правил"><button class="small-btn danger-btn">Блок</button></form>
+                  <% } %>
+                </td>
+              </tr>
+            <% }) %>
+            </tbody>
+          </table>
+        </section>
+      </div>
+      <%- include('admin-sidebar', { currentPath: '/admin/users' }) %>
+    </section>
+  </main>
+  
+  <%- include('../partials/admin-notification-modal') %>
+  <script src="/js/admin-notification.js"></script>
+</body>
+</html>

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Предложить сделку | Линити</title>
+    <link rel="stylesheet" href="/css/services.css">
+    <link rel="stylesheet" href="/css/confirm-modal.css">
+    <link rel="stylesheet" href="/css/header.css">
+    <link rel="stylesheet" href="/css/create-work.css">
+    <link rel="stylesheet" href="/css/deals.css">
+</head>
+<body>
+    <main>
+        <%- include('partials/header-actions') %>
+        <div class="created-page propose-created-page">
+            <div class="create-work-container propose-work-container">
+                <div class="create-work-header">
+                    <a class="back-btn" href="javascript:history.back()">
+                        <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M16.8454 8.62438L1.34021 8.62406M1.34021 8.62406L8.20943 0.652978M1.34021 8.62406L8.21046 16.0587" stroke="#CF4386" stroke-width="1.5"/>
+                        </svg>
+                        Назад
+                    </a>
+                </div>
+
+                <form id="proposeForm" class="propose-form" novalidate>
+                    <input type="hidden" name="csrf_token" value="<%= csrfToken %>">
+                    <input type="hidden" id="targetType" value="<%= targetType || '' %>">
+                    <input type="hidden" id="targetId" value="<%= targetId || '' %>">
+                    <input type="hidden" id="recipientId" value="<%= (typeof recipient !== 'undefined' && recipient) ? recipient.id : '' %>">
+
+                    <div class="create-order-layout propose-deal-layout">
+                        <div class="propose-deal-top-row<%= (!target && !(typeof recipient !== 'undefined' && recipient)) ? ' propose-deal-top-row--compact' : '' %>">
+                            <aside class="create-order-info settings-section propose-deal-info">
+                                <h1 class="create-order-title">Предложить сделку</h1>
+                                <p class="create-order-subtitle">Укажите точную цену, сроки и этапы выполнения в едином формате форм Линити.</p>
+                                <div class="propose-info-list" aria-label="Что важно указать">
+                                    <span>1. Цена и дедлайн</span>
+                                    <span>2. Этапы выполнения</span>
+                                    <span>3. Проверка условий</span>
+                                </div>
+                            </aside>
+
+
+
+                            <section class="propose-deal-fields settings-section">
+                                  <% if (target) { %>
+                            <div class="target-card settings-section">
+                                <% if (target.avatar) { %>
+                                    <img class="target-card-avatar" src="<%= target.avatar %>" alt="">
+                                <% } else { %>
+                                    <div class="target-card-avatar target-card-avatar--placeholder"><%= (target.first_name || '')[0] %></div>
+                                <% } %>
+                                <div class="target-card-body">
+                                    <div class="target-card-title"><%= target.title || 'Без названия' %></div>
+                                    <div class="target-card-meta">
+                                        <%= targetType === 'service' ? 'Услуга' : 'Заказ' %> — <%= target.first_name || '' %> <%= target.last_name || '' %>
+                                    </div>
+                                    <% if (target.description) { %>
+                                        <div class="target-card-description"><%= target.description %></div>
+                                    <% } %>
+                                </div>
+                                <a class="target-card-link" href="/<%= targetType === 'service' ? 'services' : 'orders' %>/<%= targetId %>">Открыть →</a>
+                            </div>
+                            <% } else if (typeof recipient !== 'undefined' && recipient) { %>
+                            <div class="target-card settings-section">
+                                <% if (recipient.avatar) { %>
+                                    <img class="target-card-avatar" src="<%= recipient.avatar %>" alt="">
+                                <% } else { %>
+                                    <div class="target-card-avatar target-card-avatar--placeholder"><%= (recipient.first_name || '')[0] %></div>
+                                <% } %>
+                                <div class="target-card-body">
+                                    <div class="target-card-title"><%= recipient.first_name || '' %> <%= recipient.last_name || '' %></div>
+                                    <div class="target-card-meta">Пользователь платформы</div>
+                                </div>
+                                <a class="target-card-link" href="/profile/<%= recipient.id %>">Профиль →</a>
+                            </div>
+                            <% } %>
+                                <div class="propose-form-row">
+                                    <label>Цена, ₽ *
+                                        <input type="number" id="price" min="1" max="500000" step="1" required placeholder="15000">
+                                    </label>
+                                    <label>Дедлайн *
+                                        <input type="date" id="deadline" required>
+                                    </label>
+                                </div>
+
+                                <div class="propose-actions">
+                                    <a href="javascript:history.back()" class="secondary-btn">Отмена</a>
+                                    <button type="submit" class="primary-btn">Отправить предложение</button>
+                                </div>
+                            </section>
+                        </div>
+
+                        <section class="stages-section settings-section">
+                            <h3>Этапы сделки</h3>
+                            <div id="stagesList"></div>
+                            <button type="button" class="add-stage-btn" id="addStageBtn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12.75 7C12.75 6.58579 12.4142 6.25 12 6.25C11.5858 6.25 11.25 6.58579 11.25 7V11.25H7C6.58579 11.25 6.25 11.5858 6.25 12C6.25 12.4142 6.58579 12.75 7 12.75H11.25V17C11.25 17.4142 11.5858 17.75 12 17.75C12.4142 17.75 12.75 17.4142 12.75 17V12.75H17C17.4142 12.75 17.75 12.4142 17.75 12C17.75 11.5858 17.4142 11.25 17 11.25H12.75V7Z" fill="currentColor"/>
+                                </svg>
+                                Добавить этап
+                            </button>
+                        </section>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <%- include('partials/confirm-modal') %>
+    <script>
+        function showConfirm(message, onConfirm, options = {}) {
+            const modal = document.getElementById('confirmModal');
+            const titleEl = document.getElementById('confirmModalTitle');
+            const msgEl = document.getElementById('confirmModalMessage');
+            const okBtn = document.getElementById('confirmModalOk');
+            const cancelBtn = document.getElementById('confirmModalCancel');
+            titleEl.textContent = options.title || 'Подтвердите действие';
+            msgEl.textContent = message;
+            okBtn.textContent = options.confirmText || 'Подтвердить';
+            cancelBtn.style.display = options.hideCancel ? 'none' : 'inline-block';
+            modal.style.display = 'flex';
+            const cleanup = () => { modal.style.display = 'none'; okBtn.onclick = null; };
+            okBtn.onclick = () => { cleanup(); onConfirm(); };
+            cancelBtn.onclick = cleanup;
+        }
+        function showAlert(message) {
+            showConfirm(message, () => {}, { title: 'Внимание', confirmText: 'OK', hideCancel: true });
+        }
+
+        const csrfToken = '<%= csrfToken %>';
+        const stagesList = document.getElementById('stagesList');
+        const addStageBtn = document.getElementById('addStageBtn');
+
+        function renderStages() {
+            const rows = stagesList.querySelectorAll('.stage-row');
+            rows.forEach((row, index) => {
+                row.querySelector('.stage-index').textContent = index + 1;
+            });
+        }
+
+        function createStageRow() {
+            const row = document.createElement('div');
+            row.className = 'stage-row';
+            row.innerHTML = `
+                <div class="stage-title-wrap">
+                    <span class="stage-index"></span>
+                    <input type="text" class="stage-title" placeholder="Название этапа" required>
+                </div>
+                <input type="date" class="stage-deadline" placeholder="Срок">
+                <button type="button" class="remove-stage-btn" title="Удалить этап">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 6L18 18M6 18L18 6" stroke="#666" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            `;
+            row.querySelector('.remove-stage-btn').addEventListener('click', () => {
+                row.remove();
+                renderStages();
+            });
+            return row;
+        }
+
+        addStageBtn.addEventListener('click', () => {
+            const row = createStageRow();
+            stagesList.appendChild(row);
+            renderStages();
+        });
+
+
+        stagesList.appendChild(createStageRow());
+        renderStages();
+
+        document.getElementById('proposeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const price = parseFloat(document.getElementById('price').value);
+            const deadline = document.getElementById('deadline').value;
+            const targetType = document.getElementById('targetType').value;
+            const targetId = parseInt(document.getElementById('targetId').value, 10);
+            const recipientId = document.getElementById('recipientId').value;
+
+            if (!price || price <= 0) {
+                showAlert('Укажите корректную цену');
+                return;
+            }
+            if (!deadline) {
+                showAlert('Укажите дедлайн');
+                return;
+            }
+
+            const stages = [];
+            const rows = stagesList.querySelectorAll('.stage-row');
+            for (const row of rows) {
+                const title = row.querySelector('.stage-title').value.trim();
+                const stageDeadline = row.querySelector('.stage-deadline').value;
+                if (!title) {
+                    showAlert('Заполните названия всех этапов');
+                    return;
+                }
+                stages.push({ title, deadline: stageDeadline || null });
+            }
+
+            const payload = { price, deadline, stages };
+            if (targetType && targetId) {
+                payload.targetType = targetType;
+                payload.targetId = targetId;
+            } else if (recipientId) {
+                payload.recipientId = recipientId;
+            }
+
+            try {
+                const res = await fetch('/api/deals', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken,
+                    },
+                    body: JSON.stringify(payload),
+                });
+                const data = await res.json();
+                if (data.success) {
+                    window.location.href = '/chat?user=' + data.proposal.recipient_id;
+                } else {
+                    showAlert(data.error || 'Ошибка');
+                }
+            } catch (err) {
+                showAlert('Ошибка сети');
+            }
+        });
+    </script>
+</body>
+</html>

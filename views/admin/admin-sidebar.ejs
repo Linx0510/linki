@@ -1,0 +1,47 @@
+<aside  class="admin-sidebar">
+    <nav style="height: 500px;" class="profile-header">
+        <a href="/admin/dashboard" class="nav-item <%= currentPath === '/admin/dashboard' ? 'active' : '' %>">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M3 3h6v6H3V3zm8 0h6v6h-6V3zm0 8h6v6h-6v-6zM3 11h6v6H3v-6z"/>
+            </svg>
+            <span>Дашборд</span>
+        </a>
+        <a href="/admin/users" class="nav-item <%= currentPath === '/admin/users' ? 'active' : '' %>">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10 10c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/>
+            </svg>
+            <span>Пользователи</span>
+        </a>
+        <a href="/admin/works" class="nav-item <%= currentPath === '/admin/works' ? 'active' : '' %>">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M17 3H3c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 12H3V5h14v10zM5 7h10v2H5V7zm0 4h6v2H5v-2z"/>
+            </svg>
+            <span>Работы</span>
+        </a>
+        <a href="/admin/reviews" class="nav-item <%= currentPath === '/admin/reviews' ? 'active' : '' %>">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10 0C4.5 0 0 4.5 0 10s4.5 10 10 10 10-4.5 10-10S15.5 0 10 0zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8zm3.5-9c.8 0 1.5-.7 1.5-1.5S14.3 6 13.5 6 12 6.7 12 7.5s.7 1.5 1.5 1.5zm-7 0c.8 0 1.5-.7 1.5-1.5S7.3 6 6.5 6 5 6.7 5 7.5 5.7 9 6.5 9zm3.5 6.5c2.3 0 4.3-1.2 5.5-3H5c1.2 1.8 3.2 3 5.5 3z"/>
+            </svg>
+            <span>Отзывы</span>
+        </a>
+        <a href="/admin/complaints" class="nav-item <%= currentPath === '/admin/complaints' ? 'active' : '' %>">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10 0C4.5 0 0 4.5 0 10s4.5 10 10 10 10-4.5 10-10S15.5 0 10 0zm1 15H9v-2h2v2zm0-4H9V5h2v6z"/>
+            </svg>
+            <span>Жалобы</span>
+        </a>
+        <a href="/admin/feedback" class="nav-item <%= currentPath === '/admin/feedback' ? 'active' : '' %>">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M2 4c0-1.1.9-2 2-2h12c1.1 0 2 .9 2 2v8c0 1.1-.9 2-2 2H7l-5 4V4zm2 0v9.8L6.3 12H16V4H4zm2 2h8v2H6V6zm0 3h6v2H6V9z"/>
+            </svg>
+            <span>Сообщения</span>
+        </a>
+
+        <a href="/admin/withdrawals" class="nav-item <%= currentPath === '/admin/withdrawals' ? 'active' : '' %>">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10 1l2.5 6.5L19 8l-5 4.5L15.5 19 10 15.5 4.5 19 6 12.5 1 8l6.5-.5z"/>
+            </svg>
+            <span>Вывод средств</span>
+        </a>
+    </nav>
+</aside>

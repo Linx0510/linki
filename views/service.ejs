@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= service.title || 'Услуга' %> | Линити</title>
+    <link rel="stylesheet" href="/css/services.css">
+    <link rel="stylesheet" href="/css/confirm-modal.css">
+    <link rel="stylesheet" href="/css/header.css">
+    <link rel="stylesheet" href="/css/report-modal.css">
+</head>
+<body class="service-detail-page">
+    <main>
+        <%- include('partials/header-actions') %>
+        <div class="service-page">
+            <div class="service-container">
+                <div class="service-main">
+                    <% const coverImage = service.cover_image || service.cover || service.preview_image || service.image_url || '/img/ab934e72b62ae5df2cfc9b2102b0e228.jpg'; %>
+                    <div class="service-cover">
+                        <img src="<%= coverImage %>" alt="<%= service.title || 'Услуга' %>" onerror="this.onerror=null;this.src='/img/ab934e72b62ae5df2cfc9b2102b0e228.jpg';">
+                    </div>
+
+                    <div class="service-details">
+                        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+                            <h1 class="service-title"><%= service.title || 'Без названия' %></h1>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                                <button class="report-page-btn" type="button" data-report-type="service" data-report-id="<%= service.id %>" data-report-title="<%= service.title || 'Услуга' %>">Пожаловаться</button>
+                                <% if (isAdmin) { %>
+                                    <button class="report-page-btn danger-btn" type="button" data-admin-delete-path="/admin/services" data-admin-delete-id="<%= service.id %>">Удалить</button>
+                                <% } %>
+                            </div>
+                        </div>
+
+
+                        <% const serviceSubcategories = (typeof subcategories !== 'undefined' && subcategories.length) ? subcategories : ((categories || []).map((name) => ({ name }))); %>
+                        <% if (serviceSubcategories.length) { %>
+                            <div class="service-categories" aria-label="Подкатегории услуги">
+                                <% serviceSubcategories.forEach((subcategory) => { %>
+                                    <span class="service-category-tag">
+                                        <% if (subcategory.parent_name) { %>
+                                            <span class="service-category-parent"><%= subcategory.parent_name %></span>
+                                        <% } %>
+                                        <%= subcategory.name %>
+                                    </span>
+                                <% }) %>
+                            </div>
+                        <% } %>
+
+                        <div class="service-meta">
+                            <% const minPrice = Number(service.price_from ?? service.price ?? 0); %>
+                            <% const maxPrice = Number(service.price_to ?? service.price ?? 0); %>
+                            <div class="service-meta-item">
+                                <span class="service-meta-label">Стоимость</span>
+                                <span class="service-meta-value">
+                                    <% if (maxPrice && maxPrice !== minPrice) { %>
+                                        от <%= minPrice.toLocaleString('ru-RU') %> до <%= maxPrice.toLocaleString('ru-RU') %> ₽
+                                    <% } else { %>
+                                        от <%= minPrice.toLocaleString('ru-RU') %> ₽
+                                    <% } %>
+                                </span>
+                            </div>
+                            <% if (service.execution_days) { %>
+                                <div class="service-meta-item">
+                                    <span class="service-meta-label">Срок выполнения</span>
+                                    <span class="service-meta-value"><%= service.execution_days %> дн.</span>
+                                </div>
+                            <% } else if (service.start_date && service.deadline) { %>
+                                <div class="service-meta-item">
+                                    <span class="service-meta-label">Срок</span>
+                                    <span class="service-meta-value">
+                                        <%= new Date(service.start_date).toLocaleDateString('ru-RU') %> — <%= new Date(service.deadline).toLocaleDateString('ru-RU') %>
+                                    </span>
+                                </div>
+                            <% } %>
+                            <% if (service.avg_rating) { %>
+                                <div class="service-meta-item">
+                                    <span class="service-meta-label">Рейтинг</span>
+                                    <span class="service-meta-value">
+                                        <%= Number(service.avg_rating).toFixed(1) %> ★ (<%= service.total_reviews || 0 %> отзывов)
+                                    </span>
+                                </div>
+                            <% } %>
+                            <div class="service-meta-item">
+                                <span class="service-meta-label">Опубликовано</span>
+                                <span class="service-meta-value"><%= new Date(service.created_at).toLocaleDateString('ru-RU') %></span>
+                            </div>
+                        </div>
+
+                        <% if (service.description) { %>
+                            <div class="service-description">
+                                <h3>Описание</h3>
+                                <p><%= service.description %></p>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+
+                <div class="service-sidebar">
+                    <div class="service-provider-card">
+                        <img src="<%= service.provider_avatar || '/img/Group.svg' %>" alt="" class="service-provider-avatar">
+                        <div class="service-provider-info">
+                            <h2><%= service.provider_first_name || '' %> <%= service.provider_last_name || '' %></h2>
+                            <p>Исполнитель</p>
+                        </div>
+                        <a href="/profile/<%= service.provider_id %>" class="service-provider-link">Профиль исполнителя</a>
+                    </div>
+
+                    <div class="service-order-card">
+                        <div class="service-order-price">
+                            <% const orderMinPrice = Number(service.price_from ?? service.price ?? 0); %>
+                            <span class="service-order-price-value">от <%= orderMinPrice.toLocaleString('ru-RU') %> ₽</span>
+                        </div>
+                        <% if (locals.isOwner) { %>
+                            <div class="service-status-badge status-<%= service.status %>">
+                                <%= statusLabel(service.status, 'service') %>
+                            </div>
+                            <button class="service-archive-btn" id="archiveBtn" data-id="<%= service.id %>" data-status="<%= service.status %>">
+                                <%= service.status === 'active' ? 'В архив' : 'Активировать' %>
+                            </button>
+                        <% } else { %>
+                            <a href="/deals/propose?targetType=service&targetId=<%= service.id %>" class="service-order-btn">Предложить сделку</a>
+                        <% } %>
+                    </div>
+
+                    <div class="service-reviews-card">
+                        <h3 class="service-reviews-title">Отзывы <span>(<%= reviews.length %>)</span></h3>
+
+                        <% if (!hasReview) { %>
+                        <form class="service-review-form" id="serviceReviewForm" action="/api/services/<%= service.id %>/review" method="POST">
+                            <input type="hidden" name="csrf_token" value="<%= csrfToken %>">
+                            <input type="hidden" name="rating" id="serviceRatingValue" value="0" required>
+                            <div class="service-review-stars">
+                                <% for (let i = 1; i <= 5; i++) { %>
+                                    <button type="button" class="service-review-star" data-value="<%= i %>">★</button>
+                                <% } %>
+                            </div>
+                            <textarea name="comment" rows="3" maxlength="2000" placeholder="Ваш отзыв (необязательно)"></textarea>
+                            <p class="service-review-error" id="serviceReviewError" style="display:none;"></p>
+                            <button type="submit" class="service-review-submit">Оставить отзыв</button>
+                        </form>
+                        <% } else { %>
+                            <p class="service-review-existing">Вы уже оставили отзыв на эту услугу.</p>
+                        <% } %>
+
+                        <% if (reviews.length) { %>
+                            <div class="service-reviews-list">
+                                <% reviews.forEach(review => { %>
+                                    <div class="service-review-item">
+                                        <div class="service-review-header">
+                                            <img src="<%= review.avatar || '/img/Group.svg' %>" alt="" class="service-review-avatar">
+                                            <div>
+                                                <span class="service-review-name"><%= review.first_name %> <%= review.last_name %></span>
+                                                <div class="service-review-stars-display">
+                                                    <% for (let i = 1; i <= 5; i++) { %>
+                                                        <span class="service-review-star-display <%= i <= review.rating ? 'is-active' : '' %>">★</span>
+                                                    <% } %>
+                                                </div>
+                                            </div>
+                                            <span class="service-review-date"><%= new Date(review.created_at).toLocaleDateString('ru-RU') %></span>
+                                        </div>
+                                        <% if (review.comment) { %>
+                                            <p class="service-review-text"><%= review.comment %></p>
+                                        <% } %>
+                                    </div>
+                                <% }) %>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <%- include('partials/report-modal') %>
+    </main>
+    <%- include('partials/confirm-modal') %>
+    <script>
+        function showConfirm(message, onConfirm, options = {}) {
+            const modal = document.getElementById('confirmModal');
+            const titleEl = document.getElementById('confirmModalTitle');
+            const msgEl = document.getElementById('confirmModalMessage');
+            const okBtn = document.getElementById('confirmModalOk');
+            const cancelBtn = document.getElementById('confirmModalCancel');
+            titleEl.textContent = options.title || 'Подтвердите действие';
+            msgEl.textContent = message;
+            okBtn.textContent = options.confirmText || 'Подтвердить';
+            cancelBtn.style.display = options.hideCancel ? 'none' : 'inline-block';
+            modal.style.display = 'flex';
+            const cleanup = () => { modal.style.display = 'none'; okBtn.onclick = null; };
+            okBtn.onclick = () => { cleanup(); onConfirm(); };
+            cancelBtn.onclick = cleanup;
+        }
+        function closeConfirm() {
+            document.getElementById('confirmModal').style.display = 'none';
+        }
+        function showAlert(message) {
+            showConfirm(message, () => {}, { title: 'Внимание', confirmText: 'OK', hideCancel: true });
+        }
+
+        const starBtns = document.querySelectorAll('.service-review-star');
+        const ratingValue = document.getElementById('serviceRatingValue');
+        const reviewForm = document.getElementById('serviceReviewForm');
+        const reviewError = document.getElementById('serviceReviewError');
+
+        starBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const val = parseInt(btn.dataset.value, 10);
+                ratingValue.value = val;
+                starBtns.forEach(b => {
+                    b.classList.toggle('is-active', parseInt(b.dataset.value, 10) <= val);
+                });
+                if (reviewError) reviewError.style.display = 'none';
+            });
+        });
+
+        const archiveBtn = document.getElementById('archiveBtn');
+        if (archiveBtn) {
+            archiveBtn.addEventListener('click', async () => {
+                const id = archiveBtn.dataset.id;
+                const currentStatus = archiveBtn.dataset.status;
+                const newStatus = currentStatus === 'active' ? 'archived' : 'active';
+                try {
+                    const res = await fetch(`/api/services/${id}/status`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-Token': '<%= csrfToken %>'
+                        },
+                        body: JSON.stringify({ status: newStatus })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        showAlert(data.error || 'Ошибка');
+                    }
+                } catch (err) {
+                    showAlert('Ошибка сети');
+                }
+            });
+        }
+
+        const adminDeleteButtons = document.querySelectorAll('[data-admin-delete-path]');
+        adminDeleteButtons.forEach((button) => {
+            button.addEventListener('click', async () => {
+                const reason = prompt('Укажите причину удаления объекта');
+                if (!reason || !reason.trim()) {
+                    alert('Причина удаления обязательна');
+                    return;
+                }
+
+                if (!confirm('Вы действительно хотите удалить эту услугу?')) {
+                    return;
+                }
+
+                const path = `${button.dataset.adminDeletePath}/${button.dataset.adminDeleteId}/delete`;
+                try {
+                    const response = await fetch(path, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            reason: reason.trim(),
+                            csrf_token: '<%= csrfToken %>'
+                        })
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        window.location.href = '/admin';
+                    } else {
+                        alert(result.error || 'Ошибка при удалении услуги');
+                    }
+                } catch (error) {
+                    console.error(error);
+                    alert('Ошибка при отправке запроса');
+                }
+            });
+        });
+
+        reviewForm?.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            if (reviewError) {
+                reviewError.style.display = 'none';
+                reviewError.textContent = '';
+            }
+
+            const rating = parseInt(ratingValue.value, 10);
+            if (!rating || rating < 1 || rating > 5) {
+                if (reviewError) {
+                    reviewError.textContent = 'Выберите оценку от 1 до 5';
+                    reviewError.style.display = 'block';
+                }
+                return;
+            }
+
+            const formData = new FormData(reviewForm);
+            const body = {
+                rating,
+                comment: formData.get('comment') || '',
+                csrf_token: '<%= csrfToken %>'
+            };
+
+            try {
+                const response = await fetch('/api/services/<%= service.id %>/review', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': '<%= csrfToken %>'
+                    },
+                    body: JSON.stringify(body)
+                });
+
+                if (!response.ok) {
+                    const data = await response.json().catch(() => ({}));
+                    throw new Error(data.error || 'Не удалось оставить отзыв');
+                }
+
+                window.location.reload();
+            } catch (error) {
+                if (reviewError) {
+                    reviewError.textContent = error.message || 'Ошибка при отправке отзыва';
+                    reviewError.style.display = 'block';
+                }
+            }
+        });
+    </script>
+    <%- include('partials/report-modal-script') %>
+</body>
+</html>

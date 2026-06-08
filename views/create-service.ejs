@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Созать услугу | Линити</title>
+    <link rel="stylesheet" href="/css/create-work.css">
+    <link rel="stylesheet" href="/css/services.css">
+    <link rel="stylesheet" href="/css/header.css">
+</head>
+<body>
+  <main>
+    <%- include('partials/header-actions') %>
+    <div class="created-page">
+      <div class="create-work-container">
+        <div class="create-work-header">
+          <a class="back-btn" href="/profile">
+            <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M16.8454 8.62438L1.34021 8.62406M1.34021 8.62406L8.20943 0.652978M1.34021 8.62406L8.21046 16.0587" stroke="#CF4386" stroke-width="1.5"/>
+            </svg>
+            Назад
+          </a>
+        </div>
+
+        <div class="create-service-layout">
+          <aside class="create-service-info settings-section" style="width: 600px;">
+            <h2 class="create-service-title">Добавление услуги</h2>
+            <p class="create-service-subtitle">Заполните 4 шага, чтобы опубликовать новую услугу.</p>
+            <div class="step-progress" aria-label="Прогресс формы">
+              <button type="button" class="step-dot is-active" data-step-dot="1">1</button>
+              <button type="button" class="step-dot" data-step-dot="2">2</button>
+              <button type="button" class="step-dot" data-step-dot="3">3</button>
+              <button type="button" class="step-dot" data-step-dot="4">4</button>
+            </div>
+          </aside>
+
+          <form action="/services/create" method="POST" enctype="multipart/form-data" class="create-service-form settings-section" id="createServiceForm" novalidate>
+        <input type="hidden" name="csrf_token" value="<%= csrfToken %>">
+
+
+        <section class="service-step is-active" data-step="1">
+          <h2>1. Основное</h2>
+          <label>Название услуги *<input type="text" name="title" id="title" required maxlength="150"></label>
+           <div style="margin-top: 20px;" class="form-group">
+                            <label>Категории</label>
+                            <div class="categories-select" id="categoriesSelect">
+                                <div class="category-subcategory-row" style="margin-bottom: 25px;">
+                                    <select id="categorySelect" class="category-dropdown">
+                                        <option value="">Категория</option>
+                                    </select>
+                                    <select id="subcategorySelect" class="subcategory-dropdown" disabled>
+                                        <option value="">Подкатегория</option>
+                                    </select>
+                                    <button type="button" id="addSubcategoryBtn" class="add-subcategory-btn" disabled>
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12.75 7C12.75 6.58579 12.4142 6.25 12 6.25C11.5858 6.25 11.25 6.58579 11.25 7V11.25H7C6.58579 11.25 6.25 11.5858 6.25 12C6.25 12.4142 6.58579 12.75 7 12.75H11.25V17C11.25 17.4142 11.5858 17.75 12 17.75C12.4142 17.75 12.75 17.4142 12.75 17V12.75H17C17.4142 12.75 17.75 12.4142 17.75 12C17.75 11.5858 17.4142 11.25 17 11.25H12.75V7Z" fill="white"/>
+                                        </svg>
+
+                                    </button>
+                                </div>
+                                <div class="selected-subcategories" id="selectedSubcategories"></div>
+                                <small class="categories-hint">Можно выбрать до 8 подкатегорий</small>
+                                <div class="error-message" data-error-for="categories"></div>
+                            </div>
+              </div>
+       <label id="coverField">Обложка услуги
+            <div class="image-preview" id="coverPreview"></div>
+            <input type="file" id="coverInput" name="cover" accept="image/*" style="display: none;">
+          </label>
+
+        </section>
+
+        <section class="service-step" data-step="2" hidden>
+          <h2>2. Описание</h2>
+          <label>Подробное описание *<textarea name="full_description" id="fullDescription" rows="6" maxlength="2000" required></textarea></label>
+          <label>Требования для покупателей *<textarea name="buyer_requirements" id="buyerRequirements" rows="5" maxlength="2000" required placeholder="Чтобы выполнить вашу задачу, мне потребуется от вас ТЗ. Подробно опишите, что вы хотите видеть в результате."></textarea></label>
+        </section>
+
+        <section class="service-step" data-step="3" hidden>
+          <h2>3. Цена</h2>
+          <label>Цена от (₽) *<input type="number" name="price_from" id="priceFrom" min="0" max="500000" step="1" required></label>
+          <label>Цена до (₽) *<input type="number" name="price_to" id="priceTo" min="0" max="500000" step="1" required></label>
+          <label>Срок выполнения (дней) *<input type="number" name="delivery_days" id="deliveryDays" min="1" max="365" step="1" required></label>
+        </section>
+
+        <section class="service-step" data-step="4" hidden>
+          <h2>4. Портфолио</h2>
+          <p class="step-helper">Выберите сборники из вашего портфолио.</p>
+          <div id="collectionsList" class="collections-list">
+            <p class="collections-empty">Загрузка сборников…</p>
+          </div>
+        </section>
+
+        <div class="create-service-actions">
+          <button type="button" class="secondary-btn" id="prevStepBtn" hidden>Назад</button>
+          <button type="button" class="primary-btn" id="nextStepBtn">Далее</button>
+          <button type="submit" class="primary-btn" id="submitBtn" hidden>Сохранить услугу</button>
+        </div>
+        </form>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const categories = <%- JSON.stringify(categories || []) %>;
+    const subcategories = <%- JSON.stringify(subcategories || []) %>;
+    const form = document.getElementById('createServiceForm');
+    const steps = Array.from(document.querySelectorAll('.service-step'));
+    const stepDots = Array.from(document.querySelectorAll('[data-step-dot]'));
+    const nextBtn = document.getElementById('nextStepBtn');
+    const prevBtn = document.getElementById('prevStepBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const categorySelect = document.getElementById('categorySelect');
+    const subcategorySelect = document.getElementById('subcategorySelect');
+    const addSubcategoryBtn = document.getElementById('addSubcategoryBtn');
+    const selectedSubcategoriesContainer = document.getElementById('selectedSubcategories');
+    const categoriesSelectContainer = document.getElementById('categoriesSelect');
+    const categoriesErrorNode = form.querySelector('[data-error-for="categories"]');
+    const coverField = document.getElementById('coverField');
+    const coverInput = document.getElementById('coverInput');
+    const coverPreview = document.getElementById('coverPreview');
+    const priceFrom = document.getElementById('priceFrom');
+    const priceTo = document.getElementById('priceTo');
+    const collectionsList = document.getElementById('collectionsList');
+    const maxSubcategories = 8;
+    const selectedSubcategories = new Map();
+    let selectedCoverFile = null;
+    let currentStep = 1;
+
+    const initCoverUploader = () => {
+      if (!coverInput || !coverPreview) return;
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'inputimg-wrapper';
+
+      const button = document.createElement('div');
+      button.className = 'image-upload-btn';
+
+      wrapper.appendChild(button);
+      wrapper.appendChild(coverInput);
+      coverPreview.appendChild(wrapper);
+
+      button.addEventListener('click', (event) => {
+        event.stopPropagation();
+        coverInput.click();
+      });
+
+      const renderCoverPreview = () => {
+        Array.from(coverPreview.children).forEach((child) => {
+          if (!child.classList.contains('inputimg-wrapper')) {
+            child.remove();
+          }
+        });
+
+        const countBadge = button.querySelector('.file-count');
+        if (countBadge) {
+          countBadge.remove();
+        }
+
+        if (!selectedCoverFile) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const imageItem = document.createElement('div');
+          imageItem.className = 'image-preview-item';
+
+          const img = document.createElement('img');
+          img.src = event.target?.result;
+          img.alt = selectedCoverFile.name || 'Обложка услуги';
+
+          const removeButton = document.createElement('button');
+          removeButton.type = 'button';
+          removeButton.className = 'image-remove-btn';
+          removeButton.setAttribute('aria-label', 'Удалить обложку');
+          removeButton.innerHTML = '&times;';
+          removeButton.addEventListener('click', () => {
+            selectedCoverFile = null;
+            coverInput.value = '';
+            renderCoverPreview();
+          });
+
+          imageItem.appendChild(img);
+          imageItem.appendChild(removeButton);
+          coverPreview.appendChild(imageItem);
+        };
+        reader.readAsDataURL(selectedCoverFile);
+
+        const badge = document.createElement('span');
+        badge.className = 'file-count';
+        badge.textContent = '1';
+        button.appendChild(badge);
+      };
+
+      coverInput.addEventListener('change', (event) => {
+        const [file] = Array.from(event.target.files || []);
+        selectedCoverFile = file || null;
+        renderCoverPreview();
+      });
+    };
+
+    const setCategoriesError = (message = '') => {
+      if (!categoriesErrorNode) return;
+      categoriesErrorNode.textContent = message;
+      if (message) {
+        categoriesSelectContainer?.classList.add('error');
+      } else {
+        categoriesSelectContainer?.classList.remove('error');
+      }
+    };
+
+    const validateCategories = () => {
+      if (!selectedSubcategories.size) {
+        setCategoriesError('Выберите минимум одну подкатегорию');
+        return false;
+      }
+      setCategoriesError('');
+      return true;
+    };
+
+    const validateSubcategoryLimit = () => {
+      if (selectedSubcategories.size >= maxSubcategories) {
+        setCategoriesError(`Можно выбрать не более ${maxSubcategories} подкатегорий`);
+        return false;
+      }
+      return true;
+    };
+
+    const fillCategorySelect = () => {
+      categories.forEach((category) => {
+        const option = document.createElement('option');
+        option.value = category.id;
+        option.textContent = category.name;
+        categorySelect.appendChild(option);
+      });
+    };
+
+    const renderSubcategories = () => {
+      const parentId = Number(categorySelect.value);
+      const options = subcategories
+        .filter((item) => Number(item.parent_id) === parentId)
+        .filter((item) => !selectedSubcategories.has(Number(item.id)));
+      subcategorySelect.innerHTML = '<option value="">Выберите подкатегорию</option>';
+      options.forEach((item) => {
+        const option = document.createElement('option');
+        option.value = item.id;
+        option.textContent = item.name;
+        subcategorySelect.appendChild(option);
+      });
+      subcategorySelect.disabled = !options.length;
+      addSubcategoryBtn.disabled = !options.length;
+    };
+
+    const renderSelectedSubcategories = () => {
+      selectedSubcategoriesContainer.innerHTML = '';
+
+      selectedSubcategories.forEach((subcategory) => {
+        const tag = document.createElement('div');
+        tag.className = 'selected-subcategory-tag';
+        tag.innerHTML = `
+          <span>${subcategory.name}</span>
+          <button type="button" data-subcategory-id="${subcategory.id}">&times;</button>
+        `;
+        selectedSubcategoriesContainer.appendChild(tag);
+      });
+
+      if (selectedSubcategories.size < maxSubcategories && categoriesErrorNode.textContent.includes('не более')) {
+        setCategoriesError('');
+      }
+    };
+
+    const validateStep = (step) => {
+      const section = steps[step - 1];
+      if (!section) return false;
+      const fields = Array.from(section.querySelectorAll('input, textarea, select'))
+        .filter((field) => field.willValidate || field.hasAttribute('required'));
+      const invalidFields = fields.filter((field) => {
+        if (window.LineStokFormValidation) {
+          return !window.LineStokFormValidation.validateField(field);
+        }
+        return !field.checkValidity();
+      });
+      if (invalidFields.length) {
+        const firstInvalidField = invalidFields[0];
+        firstInvalidField.focus?.({ preventScroll: true });
+        firstInvalidField.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
+        return false;
+      }
+
+      if (step === 1 && !validateCategories()) {
+        return false;
+      }
+
+      if (step === 3) {
+        if (Number(priceTo.value) < Number(priceFrom.value)) {
+          priceTo.setCustomValidity('Цена до должна быть больше или равна цене от');
+          if (window.LineStokFormValidation) {
+            window.LineStokFormValidation.validateField(priceTo);
+          } else {
+            priceTo.reportValidity();
+          }
+          priceTo.setCustomValidity('');
+          return false;
+        }
+      }
+
+      return true;
+    };
+
+    const updateStepUI = () => {
+      steps.forEach((stepNode, index) => {
+        const isActive = index + 1 === currentStep;
+        stepNode.hidden = !isActive;
+        stepNode.classList.toggle('is-active', isActive);
+        stepNode.setAttribute('aria-hidden', String(!isActive));
+      });
+      stepDots.forEach((dot, index) => {
+        const stepNumber = index + 1;
+        dot.classList.toggle('is-active', stepNumber <= currentStep);
+        dot.classList.toggle('is-current', stepNumber === currentStep);
+        dot.disabled = stepNumber > currentStep;
+      });
+      prevBtn.hidden = currentStep === 1;
+      nextBtn.hidden = currentStep === steps.length;
+      submitBtn.hidden = currentStep !== steps.length;
+    };
+
+    categorySelect.addEventListener('change', renderSubcategories);
+    addSubcategoryBtn.addEventListener('click', () => {
+      if (!validateSubcategoryLimit()) return;
+
+      const parentId = Number(categorySelect.value);
+      const subcategoryId = Number(subcategorySelect.value);
+      if (!parentId || !subcategoryId) return;
+
+      const subcategory = subcategories.find(
+        (item) => Number(item.parent_id) === parentId && Number(item.id) === subcategoryId
+      );
+      if (!subcategory) return;
+
+      selectedSubcategories.set(subcategoryId, {
+        id: subcategoryId,
+        name: subcategory.name,
+      });
+
+      renderSubcategories();
+      renderSelectedSubcategories();
+      validateCategories();
+    });
+
+    selectedSubcategoriesContainer.addEventListener('click', (event) => {
+      const removeBtn = event.target.closest('button[data-subcategory-id]');
+      if (!removeBtn) return;
+
+      const subcategoryId = Number(removeBtn.dataset.subcategoryId);
+      selectedSubcategories.delete(subcategoryId);
+      renderSubcategories();
+      renderSelectedSubcategories();
+      validateCategories();
+    });
+    nextBtn.addEventListener('click', () => {
+      if (!validateStep(currentStep)) return;
+      currentStep += 1;
+      updateStepUI();
+    });
+    prevBtn.addEventListener('click', () => {
+      currentStep -= 1;
+      updateStepUI();
+    });
+
+    stepDots.forEach((dot) => {
+      dot.addEventListener('click', () => {
+        const targetStep = Number(dot.dataset.stepDot);
+        if (!targetStep || targetStep === currentStep || targetStep > currentStep) return;
+        currentStep = targetStep;
+        updateStepUI();
+      });
+    });
+
+    form.addEventListener('submit', (event) => {
+      if (!validateStep(currentStep)) {
+        event.preventDefault();
+        return;
+      }
+
+      form.querySelectorAll('input[name="categories"]').forEach((input) => input.remove());
+      selectedSubcategories.forEach((subcategory) => {
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'categories';
+        hiddenInput.value = String(subcategory.id);
+        form.appendChild(hiddenInput);
+      });
+    });
+
+    const loadCollections = async () => {
+      try {
+        const response = await fetch('/api/collections');
+        const data = await response.json();
+        const list = Array.isArray(data.collections) ? data.collections : [];
+        if (!list.length) {
+          collectionsList.innerHTML = '<p class="collections-empty">У вас пока нет сборников.</p>';
+          return;
+        }
+
+        const escapeHtml = (value) => String(value ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+
+        collectionsList.innerHTML = list.map((collection) => {
+          const workIds = Array.isArray(collection.workIds) ? collection.workIds : [];
+          const workPreviews = Array.isArray(collection.workPreviews) ? collection.workPreviews : [];
+          const previewItems = workPreviews.length
+            ? workPreviews
+            : workIds.map((workId) => ({ id: workId, title: `Работа #${workId}`, image: '/img/work_img.svg' }));
+          const preview = previewItems.map((work) => {
+            const title = escapeHtml(work.title || `Работа #${work.id}`);
+            const image = escapeHtml(work.image || '/img/work_img.svg');
+            return `<div class="collection-preview-item"><img src="${image}" alt="${title}"><p>${title}</p></div>`;
+          }).join('');
+          const collectionTitle = escapeHtml(collection.title);
+
+          return `<label class="collection-item portfolio-collection-card">
+            <input class="collection-item-checkbox" type="checkbox" name="portfolio_collections" value="${collection.id}">
+            <span class="collection-item-check" aria-hidden="true"></span>
+            <h3>${collectionTitle}</h3>
+            <p>${workIds.length} работ</p>
+            <div class="collection-preview-grid">${preview}</div>
+          </label>`;
+        }).join('');
+      } catch (_error) {
+        collectionsList.innerHTML = '<p class="collections-empty">Не удалось загрузить сборники.</p>';
+      }
+    };
+
+    fillCategorySelect();
+    renderSubcategories();
+    initCoverUploader();
+    loadCollections();
+    updateStepUI();
+  </script>
+</body>
+</html>

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= work.title %> | Линити</title>
+    <link rel="stylesheet" href="/css/work.css">
+    <link rel="stylesheet" href="/css/header.css">
+    <link rel="stylesheet" href="/css/report-modal.css">
+</head>
+<body>
+    <main>
+        <%- include('partials/header-actions') %>
+
+        <div class="work-page-container">
+            <article class="work-page-card">
+
+
+                <section class="work-page-gallery" data-gallery>
+                    <button class="gallery-arrow gallery-arrow-left" type="button" data-gallery-prev aria-label="Предыдущее изображение">&#10094;</button>
+                    <div class="work-page-track" data-gallery-track>
+                        <% const workImages = (work.images && work.images.length ? work.images : ['/img/work_img.svg']); %>
+                        <% workImages.forEach((imageUrl, idx) => { %>
+                            <div class="work-page-image">
+                                <img src="<%= imageUrl %>" alt="<%= work.title %> — изображение <%= idx + 1 %>" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/img/work_img.svg';">
+                            </div>
+                        <% }) %>
+                    </div>
+                    <button class="gallery-arrow gallery-arrow-right" type="button" data-gallery-next aria-label="Следующее изображение">&#10095;</button>
+                </section>
+
+                <section class="work-page-content">
+
+                    <div class="opis">
+                            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+                                <h1><%= work.title %></h1>
+                            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                                <button class="report-page-btn" type="button" data-report-type="work" data-report-id="<%= work.id %>" data-report-title="<%= work.title %>">Пожаловаться</button>
+                                <% if (isAdmin) { %>
+                                    <button class="report-page-btn danger-btn" type="button" data-admin-delete-path="/admin/works" data-admin-delete-id="<%= work.id %>">Удалить</button>
+                                <% } %>
+                            </div>
+
+                        <a href="/profile/<%= work.user_id %>" class="author-block">
+                            <img src="<%= work.avatar || '/img/Group.svg' %>" alt="<%= work.first_name %> <%= work.last_name %>" loading="lazy" decoding="async">
+                            <div>
+                                <p class="author-label">Автор проекта</p>
+                                <p class="author-name"><%= work.first_name %> <%= work.last_name %></p>
+                            </div>
+                        </a>
+
+                        <h2>Описание</h2>
+                        <p><%= work.description || 'Описание отсутствует.' %></p>
+
+
+                    </div>
+                    <div class="work-actions">
+                        <button
+                            class="work-like-btn <%= work.is_liked ? 'is-liked' : '' %>"
+                            type="button"
+                            data-work-like-btn
+                            data-work-id="<%= work.id %>"
+                            data-liked="<%= work.is_liked ? 'true' : 'false' %>"
+                            aria-pressed="<%= work.is_liked ? 'true' : 'false' %>"
+                            aria-label="Поставить лайк проекту"
+                        >
+                            <svg width="22" height="22" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <path d="M16 28C15.5985 27.9995 15.2065 27.8782 14.875 27.6519C9.96309 24.3175 7.83621 22.0312 6.66309 20.6019C4.16309 17.555 2.96621 14.4269 2.99996 11.0394C3.03934 7.1575 6.15371 4 9.94246 4C12.6975 4 14.6056 5.55188 15.7168 6.84438C15.752 6.88491 15.7955 6.91741 15.8444 6.93968C15.8932 6.96195 15.9463 6.97348 16 6.97348C16.0536 6.97348 16.1067 6.96195 16.1555 6.93968C16.2044 6.91741 16.2479 6.88491 16.2831 6.84438C17.3943 5.55063 19.3025 4 22.0575 4C25.8462 4 28.9606 7.1575 29 11.04C29.0337 14.4281 27.8356 17.5563 25.3368 20.6025C24.1637 22.0319 22.0368 24.3181 17.125 27.6525C16.7933 27.8786 16.4013 27.9997 16 28Z" fill="none" stroke="currentColor" stroke-width="3px"/>
+                            </svg>
+                            <span class="work-like-count"><%= work.likes || 0 %></span>
+                        </button>
+                    </div>
+                    <div class="work-tags">
+                        <% if (work.categories && work.categories.length) { %>
+                            <% work.categories.forEach((categoryName) => { %>
+                                <span class="tag"><%= categoryName %></span>
+                            <% }) %>
+                        <% } else { %>
+                            <span class="tag">Без категории</span>
+                        <% } %>
+                    </div>
+                    <p class="work-date"><%= new Date(work.created_at).toLocaleDateString('ru-RU') %></p>
+
+                </section>
+            </article>
+        </div>
+        <%- include('partials/report-modal') %>
+    </main>
+
+    <script>
+        const adminDeleteButtons = document.querySelectorAll('[data-admin-delete-path]');
+        adminDeleteButtons.forEach((button) => {
+            button.addEventListener('click', async () => {
+                const reason = prompt('Укажите причину удаления объекта');
+                if (!reason || !reason.trim()) {
+                    alert('Причина удаления обязательна');
+                    return;
+                }
+
+                if (!confirm('Вы действительно хотите удалить этот проект?')) {
+                    return;
+                }
+
+                const path = `${button.dataset.adminDeletePath}/${button.dataset.adminDeleteId}/delete`;
+                try {
+                    const response = await fetch(path, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            reason: reason.trim(),
+                            csrf_token: '<%= csrfToken %>'
+                        })
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        window.location.href = '/admin';
+                    } else {
+                        alert(result.error || 'Ошибка при удалении проекта');
+                    }
+                } catch (error) {
+                    console.error(error);
+                    alert('Ошибка при отправке запроса');
+                }
+            });
+        });
+
+        document.querySelectorAll('[data-gallery]').forEach((gallery) => {
+            const track = gallery.querySelector('[data-gallery-track]');
+            const prev = gallery.querySelector('[data-gallery-prev]');
+            const next = gallery.querySelector('[data-gallery-next]');
+
+            if (!track || !prev || !next) return;
+
+            const slides = Array.from(track.children);
+            if (!slides.length) return;
+
+            let index = 0;
+            const isSingleSlide = slides.length <= 1;
+            const dotsContainer = document.createElement('div');
+            dotsContainer.className = 'gallery-dots';
+
+            const dots = slides.map((_slide, dotIndex) => {
+                const dot = document.createElement('button');
+                dot.type = 'button';
+                dot.className = 'dot';
+                dot.setAttribute('aria-label', `Перейти к изображению ${dotIndex + 1}`);
+                dot.addEventListener('click', () => {
+                    index = dotIndex;
+                    render();
+                });
+                dotsContainer.appendChild(dot);
+                return dot;
+            });
+
+            if (!isSingleSlide) {
+                gallery.appendChild(dotsContainer);
+            }
+
+            const render = () => {
+                track.style.transform = `translate3d(-${index * 100}%, 0, 0)`;
+                prev.disabled = isSingleSlide;
+                next.disabled = isSingleSlide;
+
+                dots.forEach((dot, dotIndex) => {
+                    dot.classList.toggle('active', dotIndex === index);
+                });
+            };
+
+            prev.addEventListener('click', () => {
+                index = (index - 1 + slides.length) % slides.length;
+                render();
+            });
+
+            next.addEventListener('click', () => {
+                index = (index + 1) % slides.length;
+                render();
+            });
+
+            gallery.addEventListener('keydown', (event) => {
+                if (event.key === 'ArrowLeft') {
+                    event.preventDefault();
+                    index = (index - 1 + slides.length) % slides.length;
+                    render();
+                }
+
+                if (event.key === 'ArrowRight') {
+                    event.preventDefault();
+                    index = (index + 1) % slides.length;
+                    render();
+                }
+            });
+
+            render();
+        });
+
+        document.querySelectorAll('[data-work-like-btn]').forEach((button) => {
+            button.addEventListener('click', async () => {
+                const workId = button.dataset.workId;
+                if (!workId || button.disabled) return;
+
+                button.disabled = true;
+
+                try {
+                    const response = await fetch(`/api/works/${workId}/like`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.status === 401) {
+                        window.location.href = '/auth';
+                        return;
+                    }
+
+                    if (!response.ok) {
+                        throw new Error('Like request failed');
+                    }
+
+                    const payload = await response.json();
+                    const counter = button.querySelector('.work-like-count');
+                    if (counter) {
+                        counter.textContent = payload.likes;
+                    }
+
+                    button.classList.toggle('is-liked', Boolean(payload.liked));
+                    button.dataset.liked = payload.liked ? 'true' : 'false';
+                    button.setAttribute('aria-pressed', payload.liked ? 'true' : 'false');
+                } catch (error) {
+                    console.error('Не удалось поставить лайк:', error);
+                } finally {
+                    button.disabled = false;
+                }
+            });
+        });
+    </script>
+    <%- include('partials/report-modal-script') %>
+</body>
+</html>

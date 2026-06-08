@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= isEditMode ? 'Редактирование работы' : 'Создание работы' %> | Линити</title>
+    <link rel="stylesheet" href="/css/create-work.css">
+    <link rel="stylesheet" href="/css/header.css">
+</head>
+<body>
+    <main>
+        <%- include('partials/header-actions') %>
+        <div class="created-page">
+            <div class="create-work-container">
+                <div class="create-work-header">
+                    <h1><%= isEditMode ? 'Редактирование работы' : 'Добавление работы' %></h1>
+                    <a class="back-btn" href="/profile">
+                        <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M16.8454 8.62438L1.34021 8.62406M1.34021 8.62406L8.20943 0.652978M1.34021 8.62406L8.21046 16.0587" stroke="#CF4386" stroke-width="1.5"/>
+                        </svg>
+                        Назад
+                    </a>
+                </div>
+
+                <form id="createWorkForm" method="POST" action="<%= isEditMode ? `/works/${editWork.id}/edit` : '/works/create' %>" enctype="multipart/form-data" class="create-work-form" novalidate>
+                    <input type="hidden" name="csrf_token" value="<%= csrfToken %>">
+                    <div class="settings-section">
+                        <div class="form-group">
+                            <label for="workImages">Изображения</label>
+                            <div class="image-preview" id="imagePreview"></div>
+                            <input type="file" id="workImages" name="workImages" multiple accept="image/*" style="display: none;">
+                            <div class="error-message" data-error-for="workImages"></div>
+                        </div>
+                        <div style="margin-top: 40px;" class="form-group">
+                            <label>Категории</label>
+                            <div class="categories-select" id="categoriesSelect">
+                                <div class="category-subcategory-row">
+                                    <select id="categorySelect" class="category-dropdown">
+                                        <option value="">Категория</option>
+                                    </select>
+                                    <select id="subcategorySelect" class="subcategory-dropdown" disabled>
+                                        <option value="">Подкатегория</option>
+                                    </select>
+                                    <button type="button" id="addSubcategoryBtn" class="add-subcategory-btn" disabled>
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12.75 7C12.75 6.58579 12.4142 6.25 12 6.25C11.5858 6.25 11.25 6.58579 11.25 7V11.25H7C6.58579 11.25 6.25 11.5858 6.25 12C6.25 12.4142 6.58579 12.75 7 12.75H11.25V17C11.25 17.4142 11.5858 17.75 12 17.75C12.4142 17.75 12.75 17.4142 12.75 17V12.75H17C17.4142 12.75 17.75 12.4142 17.75 12C17.75 11.5858 17.4142 11.25 17 11.25H12.75V7Z" fill="white"/>
+                                        </svg>
+
+                                    </button>
+                                </div>
+                                <div class="selected-subcategories" id="selectedSubcategories"></div>
+                                <small class="categories-hint">Можно выбрать до 8 подкатегорий</small>
+                                <div class="error-message" data-error-for="categories"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="settings-section">
+                        <div class="form-group-work">
+                            <label for="workTitle">Название работы</label>
+                            <input type="text" id="workTitle" name="title" maxlength="100" required placeholder="Введите название работы" value="<%= editWork?.title || '' %>">
+                            <div class="error-message" data-error-for="workTitle"></div>
+                        </div>
+
+                        <div style="margin-top: 20px;" class="form-group-work">
+                            <label for="workDescription">Описание</label>
+                            <textarea id="workDescription" name="description" rows="5" maxlength="2000" placeholder="Например, опишите как вы создавали работу и в какие сроки"><%= editWork?.description || '' %></textarea>
+                            <small class="char-counter">0 / 2000 символов</small>
+                            <div class="error-message" data-error-for="workDescription"></div>
+                        </div>
+                        <button type="submit" class="save-btn">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M7.34426 4.01703C10.4134 3.67401 13.5861 3.67401 16.6552 4.01703C18.3679 4.20845 19.7497 5.55786 19.9508 7.27735C20.3178 10.415 20.3178 13.5847 19.9508 16.7223C19.7497 18.4418 18.3679 19.7912 16.6552 19.9826C13.5861 20.3256 10.4134 20.3256 7.34426 19.9826C5.63153 19.7912 4.24978 18.4418 4.04867 16.7223C3.68169 13.5847 3.68169 10.415 4.04867 7.27735C4.24978 5.55786 5.63154 4.20845 7.34426 4.01703ZM11.9998 7.00717C12.414 7.00717 12.7498 7.34296 12.7498 7.75717V11.2498H16.2424C16.6566 11.2498 16.9924 11.5856 16.9924 11.9998C16.9924 12.414 16.6566 12.7498 16.2424 12.7498H12.7498V16.2425C12.7498 16.6567 12.414 16.9925 11.9998 16.9925C11.5855 16.9925 11.2498 16.6567 11.2498 16.2425V12.7498H7.75714C7.34293 12.7498 7.00714 12.414 7.00714 11.9998C7.00714 11.5856 7.34293 11.2498 7.75714 11.2498H11.2498V7.75717C11.2498 7.34296 11.5855 7.00717 11.9998 7.00717Z" fill="white"/>
+                            </svg>
+                            <p><%= isEditMode ? 'Сохранить' : 'Отправить на модерацию' %></p>
+
+                        </button>
+
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+
+    const isEditMode = <%= isEditMode ? "true" : "false" %>;
+    const editWork = <%- JSON.stringify(editWork || null) %>;
+    const parentCategories = <%- JSON.stringify(categories || []) %>;
+    const childCategories = <%- JSON.stringify(subcategories || []) %>;
+    const subcategoriesByParent = childCategories.reduce((acc, subcategory) => {
+        const parentId = Number(subcategory.parent_id);
+        if (!acc[parentId]) {
+            acc[parentId] = [];
+        }
+        acc[parentId].push(subcategory);
+        return acc;
+    }, {});
+
+    const categorySelect = document.getElementById('categorySelect');
+    const subcategorySelect = document.getElementById('subcategorySelect');
+    const addSubcategoryBtn = document.getElementById('addSubcategoryBtn');
+    const selectedSubcategoriesContainer = document.getElementById('selectedSubcategories');
+    const createWorkForm = document.getElementById('createWorkForm');
+    const workImagesInput = document.getElementById('workImages');
+    const workTitleInput = document.getElementById('workTitle');
+    const workDescriptionInput = document.getElementById('workDescription');
+    const maxSubcategories = 8;
+    const maxImages = 10;
+    const selectedSubcategories = new Map();
+    let selectedImageFiles = [];
+    let existingImageUrls = Array.isArray(editWork?.images) ? editWork.images.filter(Boolean) : [];
+    const maxImageSizeMB = 10;
+    const maxTitleLength = Number(workTitleInput?.getAttribute('maxlength')) || 100;
+    const maxDescriptionLength = Number(workDescriptionInput?.getAttribute('maxlength')) || 2000;
+    const errorMap = {
+        workImages: createWorkForm.querySelector('[data-error-for="workImages"]'),
+        categories: createWorkForm.querySelector('[data-error-for="categories"]'),
+        workTitle: createWorkForm.querySelector('[data-error-for="workTitle"]'),
+        workDescription: createWorkForm.querySelector('[data-error-for="workDescription"]'),
+    };
+
+    const setFieldError = (fieldName, message, container) => {
+        const errorNode = errorMap[fieldName];
+        if (!errorNode) return;
+        errorNode.textContent = message;
+        if (container) {
+            container.classList.add('error');
+        }
+    };
+
+    const clearFieldError = (fieldName, container) => {
+        const errorNode = errorMap[fieldName];
+        if (!errorNode) return;
+        errorNode.textContent = '';
+        if (container) {
+            container.classList.remove('error');
+        }
+    };
+
+    const clearAllErrors = () => {
+        clearFieldError('workImages', workImagesInput.closest('.form-group'));
+        clearFieldError('categories', document.getElementById('categoriesSelect'));
+        clearFieldError('workTitle', workTitleInput.closest('.form-group-work'));
+        clearFieldError('workDescription', workDescriptionInput.closest('.form-group-work'));
+    };
+
+    const validateTitle = () => {
+        const title = workTitleInput.value.trim();
+        if (!title) {
+            setFieldError('workTitle', 'Введите название работы', workTitleInput.closest('.form-group-work'));
+            return false;
+        }
+
+        if (title.length > maxTitleLength) {
+            setFieldError('workTitle', `Название работы должно быть не длиннее ${maxTitleLength} символов`, workTitleInput.closest('.form-group-work'));
+            return false;
+        }
+
+        clearFieldError('workTitle', workTitleInput.closest('.form-group-work'));
+        return true;
+    };
+
+    const validateDescription = () => {
+        const description = workDescriptionInput.value.trim();
+        if (description.length > maxDescriptionLength) {
+            setFieldError('workDescription', `Описание не должно превышать ${maxDescriptionLength} символов`, workDescriptionInput.closest('.form-group-work'));
+            return false;
+        }
+
+        clearFieldError('workDescription', workDescriptionInput.closest('.form-group-work'));
+        return true;
+    };
+
+    const validateImages = () => {
+        const imageFiles = selectedImageFiles;
+        const totalImages = imageFiles.length + existingImageUrls.length;
+        if (!totalImages) {
+            setFieldError('workImages', 'Добавьте хотя бы одно изображение', workImagesInput.closest('.form-group'));
+            return false;
+        }
+
+        if (totalImages > maxImages) {
+            setFieldError('workImages', `Можно загрузить не более ${maxImages} изображений`, workImagesInput.closest('.form-group'));
+            return false;
+        }
+
+        const hasInvalidImageType = imageFiles.some((file) => !file.type.startsWith('image/'));
+        if (hasInvalidImageType) {
+            setFieldError('workImages', 'Можно загружать только изображения', workImagesInput.closest('.form-group'));
+            return false;
+        }
+
+        const hasOversizedImage = imageFiles.some((file) => file.size > maxImageSizeMB * 1024 * 1024);
+        if (hasOversizedImage) {
+            setFieldError('workImages', `Размер каждого изображения не должен превышать ${maxImageSizeMB} МБ`, workImagesInput.closest('.form-group'));
+            return false;
+        }
+
+        clearFieldError('workImages', workImagesInput.closest('.form-group'));
+        return true;
+    };
+
+    const validateCategories = () => {
+        if (!selectedSubcategories.size) {
+            setFieldError('categories', 'Выберите минимум одну подкатегорию', document.getElementById('categoriesSelect'));
+            return false;
+        }
+
+        clearFieldError('categories', document.getElementById('categoriesSelect'));
+        return true;
+    };
+
+    const validateSubcategoryLimit = () => {
+        if (selectedSubcategories.size >= maxSubcategories) {
+            setFieldError('categories', `Можно выбрать не более ${maxSubcategories} подкатегорий`, document.getElementById('categoriesSelect'));
+            return false;
+        }
+
+        return true;
+    };
+
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileInput = document.getElementById('workImages');
+        const previewContainer = document.getElementById('imagePreview');
+
+        if (!fileInput || !previewContainer) {
+            console.error('Элементы не найдены');
+            return;
+        }
+
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'inputimg-wrapper';
+
+        const button = document.createElement('div');
+        button.className = 'image-upload-btn';
+
+
+        wrapper.appendChild(button);
+        wrapper.appendChild(fileInput);
+
+
+        previewContainer.appendChild(wrapper);
+
+
+        button.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (selectedImageFiles.length >= maxImages) {
+                setFieldError('workImages', `Можно загрузить не более ${maxImages} изображений`, workImagesInput.closest('.form-group'));
+                return;
+            }
+            fileInput.click();
+        });
+
+        const syncInputFiles = () => {
+            const dataTransfer = new DataTransfer();
+            selectedImageFiles.forEach((file) => dataTransfer.items.add(file));
+            fileInput.files = dataTransfer.files;
+        };
+
+        const renderImagePreview = () => {
+            const children = Array.from(previewContainer.children);
+            children.forEach(child => {
+                if (!child.classList || !child.classList.contains('inputimg-wrapper')) {
+                    previewContainer.removeChild(child);
+                }
+            });
+
+            existingImageUrls.forEach((url, index) => {
+                const imageItem = document.createElement('div');
+                imageItem.className = 'image-preview-item';
+                imageItem.style.order = index + 1;
+                const img = document.createElement('img');
+                img.src = url;
+                img.alt = `Изображение ${index + 1}`;
+                const removeButton = document.createElement('button');
+                removeButton.type = 'button';
+                removeButton.className = 'image-remove-btn';
+                removeButton.setAttribute('aria-label', `Удалить изображение ${index + 1}`);
+                removeButton.innerHTML = '&times;';
+                removeButton.addEventListener('click', () => {
+                    existingImageUrls = existingImageUrls.filter((_, imageIndex) => imageIndex !== index);
+                    renderImagePreview();
+                    validateImages();
+                });
+                imageItem.appendChild(img);
+                imageItem.appendChild(removeButton);
+                previewContainer.appendChild(imageItem);
+            });
+
+            selectedImageFiles.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const imageItem = document.createElement('div');
+                    imageItem.className = 'image-preview-item';
+                    imageItem.style.order = index + 1;
+
+                    const img = document.createElement('img');
+                    img.src = event.target.result;
+                    img.alt = file.name || `Изображение ${index + 1}`;
+
+                    const removeButton = document.createElement('button');
+                    removeButton.type = 'button';
+                    removeButton.className = 'image-remove-btn';
+                    removeButton.setAttribute('aria-label', `Удалить изображение ${index + 1}`);
+                    removeButton.innerHTML = '&times;';
+                    removeButton.addEventListener('click', () => {
+                        selectedImageFiles = selectedImageFiles.filter((_, fileIndex) => fileIndex !== index);
+                        syncInputFiles();
+                        renderImagePreview();
+                        validateImages();
+                    });
+
+                    imageItem.appendChild(img);
+                    imageItem.appendChild(removeButton);
+                    previewContainer.appendChild(imageItem);
+                };
+                reader.readAsDataURL(file);
+            });
+
+            let countBadge = button.querySelector('.file-count');
+            if (countBadge) {
+                countBadge.remove();
+            }
+
+            if (selectedImageFiles.length + existingImageUrls.length > 0) {
+                countBadge = document.createElement('span');
+                countBadge.className = 'file-count';
+                countBadge.textContent = selectedImageFiles.length + existingImageUrls.length;
+                button.appendChild(countBadge);
+            }
+        };
+
+
+        fileInput.addEventListener('change', function(e) {
+            const files = Array.from(e.target.files || []);
+            clearFieldError('workImages', workImagesInput.closest('.form-group'));
+
+            const availableSlots = maxImages - selectedImageFiles.length;
+            if (availableSlots <= 0) {
+                setFieldError('workImages', `Можно загрузить не более ${maxImages} изображений`, workImagesInput.closest('.form-group'));
+                fileInput.value = '';
+                validateImages();
+                return;
+            }
+
+            const filesToAdd = files.slice(0, availableSlots);
+            selectedImageFiles = selectedImageFiles.concat(filesToAdd);
+            syncInputFiles();
+            renderImagePreview();
+            fileInput.value = '';
+
+            if (files.length > availableSlots) {
+                setFieldError('workImages', `Можно загрузить не более ${maxImages} изображений`, workImagesInput.closest('.form-group'));
+            }
+
+            validateImages();
+        });
+
+        if (isEditMode && Array.isArray(editWork?.category_ids)) {
+            childCategories.forEach((subcategory) => {
+                const subcategoryId = Number(subcategory.id);
+                if (editWork.category_ids.includes(subcategoryId)) {
+                    selectedSubcategories.set(subcategoryId, { id: subcategoryId, name: subcategory.name });
+                }
+            });
+            renderSelectedSubcategories();
+        }
+
+        renderImagePreview();
+    });
+
+
+    const fillCategorySelect = () => {
+        parentCategories.forEach((category) => {
+            const option = document.createElement('option');
+            option.value = category.id;
+            option.textContent = category.name;
+            categorySelect.appendChild(option);
+        });
+    };
+
+    const fillSubcategorySelect = (parentId) => {
+        subcategorySelect.innerHTML = '<option value="">Выберите подкатегорию</option>';
+        const items = subcategoriesByParent[parentId] || [];
+        const availableItems = items.filter((item) => !selectedSubcategories.has(Number(item.id)));
+
+        if (availableItems.length === 0) {
+            subcategorySelect.disabled = true;
+            addSubcategoryBtn.disabled = true;
+            return;
+        }
+
+        availableItems.forEach((subcategory) => {
+            const option = document.createElement('option');
+            option.value = subcategory.id;
+            option.textContent = subcategory.name;
+            subcategorySelect.appendChild(option);
+        });
+
+        subcategorySelect.disabled = false;
+        addSubcategoryBtn.disabled = false;
+    };
+
+    const renderSelectedSubcategories = () => {
+        selectedSubcategoriesContainer.innerHTML = '';
+
+        selectedSubcategories.forEach((subcategory) => {
+            const tag = document.createElement('div');
+            tag.className = 'selected-subcategory-tag';
+            tag.innerHTML = `
+                <span>${subcategory.name}</span>
+                <button type="button" data-subcategory-id="${subcategory.id}">&times;</button>
+            `;
+            selectedSubcategoriesContainer.appendChild(tag);
+        });
+
+        addSubcategoryBtn.disabled = subcategorySelect.disabled;
+    };
+
+    fillCategorySelect();
+
+    categorySelect.addEventListener('change', () => {
+        const categoryId = Number(categorySelect.value);
+        if (!categoryId) {
+            subcategorySelect.innerHTML = '<option value="">Выберите подкатегорию</option>';
+            subcategorySelect.disabled = true;
+            addSubcategoryBtn.disabled = true;
+            validateCategories();
+            return;
+        }
+
+        fillSubcategorySelect(categoryId);
+        validateCategories();
+    });
+
+    addSubcategoryBtn.addEventListener('click', () => {
+        if (!validateSubcategoryLimit()) return;
+
+        const categoryId = Number(categorySelect.value);
+        const subcategoryId = Number(subcategorySelect.value);
+        if (!categoryId || !subcategoryId) return;
+
+        const subcategory = (subcategoriesByParent[categoryId] || []).find((item) => Number(item.id) === subcategoryId);
+        if (!subcategory) return;
+
+        selectedSubcategories.set(subcategoryId, {
+            id: subcategoryId,
+            name: subcategory.name,
+        });
+
+        fillSubcategorySelect(categoryId);
+        renderSelectedSubcategories();
+        validateCategories();
+    });
+
+    selectedSubcategoriesContainer.addEventListener('click', (event) => {
+        const removeBtn = event.target.closest('button[data-subcategory-id]');
+        if (!removeBtn) return;
+
+        const subcategoryId = Number(removeBtn.dataset.subcategoryId);
+        selectedSubcategories.delete(subcategoryId);
+
+        if (categorySelect.value) {
+            fillSubcategorySelect(Number(categorySelect.value));
+        }
+        renderSelectedSubcategories();
+        if (selectedSubcategories.size < maxSubcategories && errorMap.categories.textContent.includes('не более')) {
+            clearFieldError('categories', document.getElementById('categoriesSelect'));
+        }
+        validateCategories();
+    });
+
+    workTitleInput.addEventListener('blur', validateTitle);
+    workTitleInput.addEventListener('input', () => {
+        if (errorMap.workTitle.textContent) {
+            validateTitle();
+        }
+    });
+
+    workDescriptionInput.addEventListener('input', validateDescription);
+    workDescriptionInput.addEventListener('blur', validateDescription);
+
+
+    createWorkForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        clearAllErrors();
+        const isTitleValid = validateTitle();
+        const isImagesValid = validateImages();
+        const isCategoriesValid = validateCategories();
+        const isDescriptionValid = validateDescription();
+        if (!isTitleValid || !isImagesValid || !isCategoriesValid || !isDescriptionValid) {
+            if (!isTitleValid) {
+                workTitleInput.focus();
+            } else if (!isDescriptionValid) {
+                workDescriptionInput.focus();
+            }
+            return;
+        }
+
+        createWorkForm.querySelectorAll('input[name="categories"]').forEach((input) => input.remove());
+        selectedSubcategories.forEach((subcategory) => {
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'categories';
+            hiddenInput.value = String(subcategory.id);
+            createWorkForm.appendChild(hiddenInput);
+        });
+
+        const formData = new FormData(createWorkForm);
+        formData.delete('workImages');
+        selectedImageFiles.forEach((file) => {
+            formData.append('workImages', file, file.name);
+        });
+        existingImageUrls.forEach((imageUrl) => {
+            formData.append('existingImages', imageUrl);
+        });
+        const submitUrl = isEditMode ? `/works/${editWork.id}/edit` : '/works/create';
+        const response = await fetch(submitUrl, {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (response.ok) {
+            window.location.href = isEditMode ? '/profile?work_updated=1' : '/profile?work_created=1';
+            return;
+        }
+
+        let errorMessage = isEditMode ? 'Не удалось сохранить работу' : 'Не удалось создать работу';
+        try {
+            const error = await response.json();
+            if (error && error.error) {
+                errorMessage = error.error;
+            }
+        } catch (_) {}
+
+        setFieldError('workTitle', errorMessage, workTitleInput.closest('.form-group-work'));
+    });
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const bioTextarea = document.getElementById('workDescription');
+    const counterSpan = document.querySelector('.char-counter');
+    if (!bioTextarea || !counterSpan) return;
+
+    function updateCounter() {
+        const currentLength = bioTextarea.value.length;
+        const maxLength = 2000;
+
+
+        counterSpan.textContent = currentLength + ' / ' + maxLength + ' символов';
+
+
+        counterSpan.classList.remove('warning', 'danger');
+        if (currentLength > maxLength * 0.9) {
+            counterSpan.classList.add('warning');
+        }
+        if (currentLength >= maxLength) {
+            counterSpan.classList.add('danger');
+        }
+
+
+        if (currentLength > maxLength) {
+            bioTextarea.value = bioTextarea.value.substring(0, maxLength);
+            counterSpan.textContent = maxLength + ' / ' + maxLength + ' символов';
+        }
+    }
+
+
+    updateCounter();
+
+
+    bioTextarea.addEventListener('input', updateCounter);
+});
+</script>
+<script>
+
+const textarea = document.getElementById('workDescription');
+if (textarea) {
+    function autoResize() {
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+    }
+
+    textarea.addEventListener('input', autoResize);
+    autoResize();
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+:root {
+    --validation-error: #ff4d6d;
+    --validation-error-dark: #c9184a;
+    --validation-error-bg: rgba(255, 77, 109, 0.1);
+    --validation-error-ring: rgba(255, 77, 109, 0.28);
+}
+
+.error-message,
+.form-validation-error,
+.review-error,
+.service-review-error,
+.report-validation-error {
+    width: 100%;
+    color: var(--validation-error-dark);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.35;
+    margin-top: 6px;
+    padding: 8px 12px;
+    border: 1px solid rgba(255, 77, 109, 0.22);
+    border-radius: 12px;
+    background: var(--validation-error-bg);
+    box-shadow: 0 8px 22px rgba(201, 24, 74, 0.08);
+}
+
+.form-validation-error:empty,
+.error-message:empty,
+.review-error:empty,
+.service-review-error:empty,
+.report-validation-error:empty {
+    display: none;
+}
+
+.form-group.error label,
+.form-group-work.error label,
+.report-form-group.error label,
+.review-comment-block.error label,
+.review-stars-block.error label,
+.stage-row.error label,
+label.error .label-text {
+    color: var(--validation-error-dark);
+}
+
+.form-group.error input:not([type='checkbox']):not([type='radio']),
+.form-group.error textarea,
+.form-group.error select,
+.form-group-work.error input:not([type='checkbox']):not([type='radio']),
+.form-group-work.error textarea,
+.form-group-work.error select,
+.report-form-group.error input:not([type='checkbox']):not([type='radio']),
+.report-form-group.error textarea,
+.report-form-group.error select,
+.review-comment-block.error textarea,
+.stage-row.error input:not([type='checkbox']):not([type='radio']),
+.stage-row.error textarea,
+.stage-row.error select,
+[aria-invalid='true']:not([type='checkbox']):not([type='radio']) {
+    border-color: var(--validation-error) !important;
+    box-shadow: 0 0 0 3px var(--validation-error-ring);
+}
+
+.form-group.error input:not([type='checkbox']):not([type='radio']):focus,
+.form-group.error textarea:focus,
+.form-group.error select:focus,
+.form-group-work.error input:not([type='checkbox']):not([type='radio']):focus,
+.form-group-work.error textarea:focus,
+.form-group-work.error select:focus,
+.report-form-group.error input:not([type='checkbox']):not([type='radio']):focus,
+.report-form-group.error textarea:focus,
+.report-form-group.error select:focus,
+.review-comment-block.error textarea:focus,
+.stage-row.error input:not([type='checkbox']):not([type='radio']):focus,
+.stage-row.error textarea:focus,
+.stage-row.error select:focus,
+[aria-invalid='true']:not([type='checkbox']):not([type='radio']):focus {
+    outline: none;
+    border-color: var(--validation-error-dark) !important;
+    box-shadow: 0 0 0 4px var(--validation-error-ring);
+}
+
+.custom-checkbox.error .checkmark,
+label.error .checkmark,
+input[type='checkbox'][aria-invalid='true'] + .checkmark,
+input[type='radio'][aria-invalid='true'] + .checkmark {
+    border-color: var(--validation-error) !important;
+    box-shadow: 0 0 0 3px var(--validation-error-ring);
+}
+
+.form-group.error,
+.form-group-work.error,
+.report-form-group.error,
+.review-comment-block.error,
+.review-stars-block.error,
+.stage-row.error,
+label.error {
+    animation: validation-shake 0.2s ease-in-out;
+}
+
+@keyframes validation-shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    30% {
+        transform: translateX(-3px);
+    }
+    60% {
+        transform: translateX(3px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .form-group.error,
+    .form-group-work.error,
+    .report-form-group.error,
+    .review-comment-block.error,
+    .review-stars-block.error,
+    .stage-row.error,
+    label.error {
+        animation: none;
+    }
+}

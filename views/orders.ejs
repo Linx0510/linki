@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои задачи | Линити</title>
+    <link rel="stylesheet" href="/css/orders.css">
+    <link rel="stylesheet" href="/css/confirm-modal.css">
+    <link rel="stylesheet" href="/css/header.css">
+    <link rel="stylesheet" href="/css/report-modal.css">
+</head>
+<body>
+    <main>
+        <%- include('partials/header-actions') %>
+
+        <% if (typeof orderCreated !== 'undefined' && orderCreated) { %>
+            <div class="profile-toast" id="profileToast" role="status" aria-live="polite">
+                Задача успешно создана
+            </div>
+        <% } %>
+
+        <div class="Blok_market">
+
+        </div>
+        <div class="orders-layout">
+            <section class="orders-container">
+                <div class="orders-heading">
+                    <h1>Мои задачи</h1>
+                    <a class="create-order-link" href="/orders/create">+ Добавить задачу</a>
+                </div>
+
+                <div class="orders-tabs">
+                    <button class="tab-btn active" data-tab="active">Активные</button>
+                    <button class="tab-btn" data-tab="in_progress">В работе</button>
+                    <button class="tab-btn" data-tab="completed">Выполненные</button>
+                    <button class="tab-btn" data-tab="cancelled">Отменённые</button>
+                </div>
+
+                <div class="orders-list" id="ordersList">
+                    <div class="loading">Загрузка...</div>
+                </div>
+            </section>
+
+            <aside class="filter-container" id="ordersFilterWidget">
+                <div class="filter-header">
+                    <h2>Фильтр</h2>
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M11.5651 7.29199H3.33337C2.9882 7.29199 2.70837 7.01217 2.70837 6.66699C2.70837 6.32181 2.9882 6.04199 3.33337 6.04199H11.5651C11.8225 5.31375 12.517 4.79199 13.3334 4.79199C14.1498 4.79199 14.8443 5.31375 15.1017 6.04199H16.6667C17.0119 6.04199 17.2917 6.32181 17.2917 6.66699C17.2917 7.01217 17.0119 7.29199 16.6667 7.29199H15.1017C14.8443 8.02024 14.1498 8.54199 13.3334 8.54199C12.517 8.54199 11.8225 8.02024 11.5651 7.29199Z" fill="#535D5A"/>
+                        <path d="M16.6667 13.9587C17.0119 13.9587 17.2917 13.6788 17.2917 13.3337C17.2917 12.9885 17.0119 12.7087 16.6667 12.7087H8.43502C8.17762 11.9804 7.48309 11.4587 6.66671 11.4587C5.85032 11.4587 5.1558 11.9804 4.8984 12.7087H3.33337C2.9882 12.7087 2.70837 12.9885 2.70837 13.3337C2.70837 13.6788 2.9882 13.9587 3.33337 13.9587H4.8984C5.1558 14.6869 5.85032 15.2087 6.66671 15.2087C7.48309 15.2087 8.17762 14.6869 8.43502 13.9587H16.6667Z" fill="#535D5A"/>
+                    </svg>
+                </div>
+
+                <div class="filter-list" id="filterCategories"></div>
+
+                <div class="filter-extra">
+                    <div class="filter-group">
+                        <label for="searchInput">Поиск по названию</label>
+                        <input id="searchInput" type="text" placeholder="Введите название задачи">
+                    </div>
+                    <div class="filter-price-row">
+                        <div class="filter-group">
+                            <label for="priceFromInput">Цена от</label>
+                            <input id="priceFromInput" type="number" min="0" step="1" placeholder="0">
+                        </div>
+                        <div class="filter-group">
+                            <label for="priceToInput">Цена до</label>
+                            <input id="priceToInput" type="number" min="0" step="1" placeholder="100000">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="filter-footer">
+                    <div class="selected-items-list" id="selectedItemsList"></div>
+                    <div class="selected-header">
+                        <span class="selected-counter">Выбрано: <span id="selectedCount">0</span></span>
+                        <button class="reset-btn-bottom" id="resetAllBtn" type="button">Сбросить всё</button>
+                    </div>
+                </div>
+            </aside>
+        </div>
+        <%- include('partials/report-modal') %>
+    </main>
+
+    <script>
+        const profileToast = document.getElementById('profileToast');
+        if (profileToast) {
+            window.setTimeout(() => {
+                profileToast.classList.add('profile-toast--hidden');
+            }, 2600);
+            window.setTimeout(() => {
+                profileToast.remove();
+            }, 3200);
+            if (window.history.replaceState) {
+                const currentUrl = new URL(window.location.href);
+                currentUrl.searchParams.delete('order_created');
+                window.history.replaceState({}, document.title, currentUrl.pathname + currentUrl.search + currentUrl.hash);
+            }
+        }
+    </script>
+    <%- include('partials/confirm-modal') %>
+    <script>
+        function showConfirm(message, onConfirm, options = {}) {
+            const modal = document.getElementById('confirmModal');
+            const titleEl = document.getElementById('confirmModalTitle');
+            const msgEl = document.getElementById('confirmModalMessage');
+            const okBtn = document.getElementById('confirmModalOk');
+            const cancelBtn = document.getElementById('confirmModalCancel');
+            titleEl.textContent = options.title || 'Подтвердите действие';
+            msgEl.textContent = message;
+            okBtn.textContent = options.confirmText || 'Подтвердить';
+            cancelBtn.style.display = options.hideCancel ? 'none' : 'inline-block';
+            modal.style.display = 'flex';
+            const cleanup = () => { modal.style.display = 'none'; okBtn.onclick = null; };
+            okBtn.onclick = () => { cleanup(); onConfirm(); };
+            cancelBtn.onclick = cleanup;
+        }
+        function closeConfirm() {
+            document.getElementById('confirmModal').style.display = 'none';
+        }
+        function showAlert(message) {
+            showConfirm(message, () => {}, { title: 'Внимание', confirmText: 'OK', hideCancel: true });
+        }
+
+        const currentUserId = <%= currentUser ? currentUser.id : 'null' %>;
+        const csrfToken = '<%= csrfToken %>';
+
+        let allOrders = [];
+        let currentTab = 'active';
+
+        const statusLabels = <%- JSON.stringify(STATUS_LABELS_BY_CONTEXT.order) %>;
+
+        const ordersListEl = document.getElementById('ordersList');
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const searchInput = document.getElementById('searchInput');
+        const priceFromInput = document.getElementById('priceFromInput');
+        const priceToInput = document.getElementById('priceToInput');
+        const selectedCount = document.getElementById('selectedCount');
+        const selectedItemsList = document.getElementById('selectedItemsList');
+        const resetAllBtn = document.getElementById('resetAllBtn');
+
+        async function loadOrders() {
+            ordersListEl.innerHTML = '<div class="loading">Загрузка...</div>';
+            try {
+                const res = await fetch('/api/orders');
+                if (!res.ok) throw new Error('Ошибка загрузки');
+                const data = await res.json();
+                allOrders = Array.isArray(data) ? data : [];
+                renderOrders();
+            } catch (err) {
+                ordersListEl.innerHTML = '<div class="empty-orders">Не удалось загрузить задачи</div>';
+            }
+        }
+
+
+        const parentCategories = <%- JSON.stringify(typeof categories !== 'undefined' ? categories : []) %>;
+        const childCategories = <%- JSON.stringify(typeof subcategories !== 'undefined' ? subcategories : []) %>;
+        console.log('parentCategories:', parentCategories.length, parentCategories);
+        console.log('childCategories:', childCategories.length, childCategories);
+
+        const categoriesData = parentCategories.map((category) => ({
+            id: String(category.id),
+            name: category.name,
+            selected: false,
+            indeterminate: false,
+            open: false,
+            subcategories: childCategories
+                .filter((sub) => sub.parent_id === category.id)
+                .map((sub) => ({
+                    id: String(sub.id),
+                    name: sub.name,
+                    selected: false
+                }))
+        }));
+
+        let filterData = JSON.parse(JSON.stringify(categoriesData));
+
+        function recalcAllParents() {
+            for (let cat of filterData) {
+                if (cat.subcategories && cat.subcategories.length > 0) {
+                    const allSelected = cat.subcategories.every(sub => sub.selected === true);
+                    const someSelected = cat.subcategories.some(sub => sub.selected === true);
+                    cat.selected = allSelected;
+                    cat.indeterminate = someSelected && !allSelected;
+                } else {
+                    cat.indeterminate = false;
+                }
+            }
+        }
+
+        function getSelectedItems() {
+            const selected = [];
+            for (let cat of filterData) {
+                if (cat.subcategories && cat.subcategories.length > 0) {
+                    for (let sub of cat.subcategories) {
+                        if (sub.selected) {
+                            selected.push({
+                                id: sub.id,
+                                name: sub.name,
+                                categoryId: cat.id,
+                                categoryName: cat.name,
+                                type: 'sub'
+                            });
+                        }
+                    }
+                } else {
+                    if (cat.selected) {
+                        selected.push({
+                            id: cat.id,
+                            name: cat.name,
+                            categoryId: null,
+                            categoryName: null,
+                            type: 'category'
+                        });
+                    }
+                }
+            }
+            return selected;
+        }
+
+        function renderFilter() {
+            const container = document.getElementById('filterCategories');
+            if (!container) return;
+            container.innerHTML = '';
+
+            for (let cat of filterData) {
+                const catDiv = document.createElement('div');
+                catDiv.className = 'category-item';
+                if (cat.open) catDiv.classList.add('open');
+
+                const mainRow = document.createElement('div');
+                mainRow.className = 'category-main';
+                if (cat.selected) mainRow.classList.add('selected');
+
+                const leftDiv = document.createElement('div');
+                leftDiv.className = 'category-left';
+
+                const checkSpan = document.createElement('span');
+                checkSpan.className = 'custom-check';
+                if (cat.indeterminate) checkSpan.classList.add('indeterminate');
+                else if (cat.selected) checkSpan.classList.add('checked');
+
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'category-name';
+                nameSpan.innerText = cat.name;
+
+                leftDiv.appendChild(checkSpan);
+                leftDiv.appendChild(nameSpan);
+
+                const chevronSpan = document.createElement('span');
+                chevronSpan.className = 'chevron';
+                chevronSpan.innerHTML = '⌵';
+
+                const hasSubcategories = cat.subcategories && cat.subcategories.length > 0;
+
+                if (hasSubcategories) {
+                    mainRow.appendChild(leftDiv);
+                    mainRow.appendChild(chevronSpan);
+
+                    const toggleOpen = (e) => {
+                        if (e.target === checkSpan || e.target === nameSpan || checkSpan.contains(e.target) || nameSpan.contains(e.target)) {
+                            return;
+                        }
+                        const shouldOpen = !cat.open;
+                        for (let otherCat of filterData) {
+                            if (otherCat !== cat) otherCat.open = false;
+                        }
+                        cat.open = shouldOpen;
+                        renderFilter();
+                    };
+                    mainRow.addEventListener('click', toggleOpen);
+
+                    const selectAllHandler = (e) => {
+                        e.stopPropagation();
+                        const newState = !cat.selected;
+                        for (let sub of cat.subcategories) {
+                            sub.selected = newState;
+                        }
+                        recalcAllParents();
+                        renderFilter();
+                        updateSelectedDisplay();
+                    };
+                    checkSpan.addEventListener('click', selectAllHandler);
+                    nameSpan.addEventListener('click', selectAllHandler);
+                } else {
+                    mainRow.appendChild(leftDiv);
+                    mainRow.addEventListener('click', () => {
+                        cat.selected = !cat.selected;
+                        recalcAllParents();
+                        renderFilter();
+                        updateSelectedDisplay();
+                    });
+                }
+
+                catDiv.appendChild(mainRow);
+
+                if (hasSubcategories) {
+                    const subList = document.createElement('div');
+                    subList.className = 'subcategory-list';
+
+                    for (let sub of cat.subcategories) {
+                        const subItem = document.createElement('div');
+                        subItem.className = 'sub-item';
+                        if (sub.selected) subItem.classList.add('selected');
+
+                        const subCheck = document.createElement('span');
+                        subCheck.className = 'sub-check';
+                        if (sub.selected) subCheck.classList.add('checked');
+
+                        const subLabel = document.createElement('span');
+                        subLabel.className = 'sub-label';
+                        subLabel.innerText = sub.name;
+
+                        subItem.appendChild(subCheck);
+                        subItem.appendChild(subLabel);
+
+                        subItem.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            sub.selected = !sub.selected;
+                            recalcAllParents();
+                            renderFilter();
+                            updateSelectedDisplay();
+                        });
+
+                        subList.appendChild(subItem);
+                    }
+                    catDiv.appendChild(subList);
+                }
+
+                container.appendChild(catDiv);
+            }
+        }
+
+        function updateSelectedDisplay() {
+            const tags = [];
+            const selectedItems = getSelectedItems();
+
+            selectedItems.forEach(item => {
+                tags.push({ type: 'category', id: item.id, label: item.name, categoryId: item.categoryId });
+            });
+
+            const search = searchInput.value.trim();
+            const priceFrom = priceFromInput.value;
+            const priceTo = priceToInput.value;
+
+            if (search) tags.push({ type: 'search', label: `Поиск: ${search}` });
+            if (priceFrom) tags.push({ type: 'priceFrom', label: `От ${priceFrom} ₽` });
+            if (priceTo) tags.push({ type: 'priceTo', label: `До ${priceTo} ₽` });
+
+            selectedCount.textContent = tags.length;
+
+            if (tags.length === 0) {
+                selectedItemsList.innerHTML = '<div class="empty-selected">Ничего не выбрано</div>';
+                renderOrders();
+                return;
+            }
+
+            selectedItemsList.innerHTML = tags.map(t => {
+                const dataAttrs = t.type === 'category'
+                    ? `data-id="${t.id}" data-type="category" data-category-id="${t.categoryId || ''}"`
+                    : `data-type="${t.type}"`;
+                return `<span class="selected-tag">${escapeHtml(t.label)}<span class="remove-tag" ${dataAttrs}>✕</span></span>`;
+            }).join('');
+
+            document.querySelectorAll('.remove-tag').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const type = btn.dataset.type;
+                    if (type === 'category') {
+                        const id = btn.dataset.id;
+                        const categoryId = btn.dataset.categoryId;
+                        if (categoryId) {
+                            for (let cat of filterData) {
+                                if (cat.id === categoryId && cat.subcategories) {
+                                    const sub = cat.subcategories.find(s => s.id === id);
+                                    if (sub) sub.selected = false;
+                                }
+                            }
+                        } else {
+                            const cat = filterData.find(c => c.id === id);
+                            if (cat) cat.selected = false;
+                        }
+                        recalcAllParents();
+                        renderFilter();
+                    } else if (type === 'search') {
+                        searchInput.value = '';
+                    } else if (type === 'priceFrom') {
+                        priceFromInput.value = '';
+                    } else if (type === 'priceTo') {
+                        priceToInput.value = '';
+                    }
+                    updateSelectedDisplay();
+                });
+            });
+
+            renderOrders();
+        }
+
+        function resetAllFilters() {
+            for (let cat of filterData) {
+                cat.selected = false;
+                cat.indeterminate = false;
+                cat.open = false;
+                if (cat.subcategories) {
+                    for (let sub of cat.subcategories) {
+                        sub.selected = false;
+                    }
+                }
+            }
+            recalcAllParents();
+            renderFilter();
+            searchInput.value = '';
+            priceFromInput.value = '';
+            priceToInput.value = '';
+            updateSelectedDisplay();
+        }
+
+        function getFilteredOrders() {
+            let orders = allOrders.filter(o => o.status === currentTab);
+
+            const search = searchInput.value.trim().toLowerCase();
+            const priceFrom = parseFloat(priceFromInput.value) || 0;
+            const priceTo = parseFloat(priceToInput.value) || Infinity;
+            const selectedItems = getSelectedItems();
+            const selectedIds = new Set(selectedItems.map(item => String(item.id)));
+
+            if (search) {
+                orders = orders.filter(o => (o.title || '').toLowerCase().includes(search));
+            }
+            if (priceFrom > 0 || priceTo < Infinity) {
+                orders = orders.filter(o => {
+                    const price = parseFloat(o.price) || 0;
+                    return price >= priceFrom && price <= priceTo;
+                });
+            }
+            if (selectedIds.size > 0) {
+                orders = orders.filter(o => {
+                    const orderCatIds = (o.category_ids || []).map(String);
+                    return orderCatIds.some(id => selectedIds.has(id));
+                });
+            }
+
+            return orders;
+        }
+
+        function renderOrders() {
+            const orders = getFilteredOrders();
+
+            if (orders.length === 0) {
+                ordersListEl.innerHTML = '<div class="empty-orders">Нет задач</div>';
+                return;
+            }
+
+            ordersListEl.innerHTML = orders.map(order => {
+                const isCustomer = order.customer_id === currentUserId;
+                const isExecutor = order.executor_id === currentUserId;
+                const roleLabel = isCustomer ? 'Заказчик' : (isExecutor ? 'Исполнитель' : '');
+                const otherPerson = isCustomer
+                    ? (order.executor_first_name ? `${order.executor_first_name} ${order.executor_last_name || ''}` : 'Не назначен')
+                    : `${order.customer_first_name || ''} ${order.customer_last_name || ''}`;
+
+                let actions = '';
+                if (order.status === 'active') {
+                    if (!isCustomer && !order.executor_id) {
+                        actions = `<button class="primary-btn" onclick="acceptOrder(${order.id})">Принять</button>`;
+                    }
+                    if (isCustomer) {
+                        actions = `<button class="cancel-order-btn" onclick="cancelOrder(${order.id})">Отменить</button>`;
+                    }
+                } else if (order.status === 'in_progress') {
+                    if (isCustomer) {
+                        actions = `
+                            <button class="primary-btn" onclick="completeOrder(${order.id})">Завершить</button>
+                            <button class="cancel-order-btn" onclick="cancelOrder(${order.id})">Отменить</button>
+                        `;
+                    } else if (isExecutor) {
+                        actions = `<button class="cancel-order-btn" onclick="cancelOrder(${order.id})">Отменить</button>`;
+                    }
+                }
+
+                return `
+                    <div class="order-card" onclick="if (!event.target.closest('button, a')) window.location.href='/orders/${order.id}'" style="cursor: pointer;">
+                        <div class="order-header">
+                            <h3>${escapeHtml(order.title || 'Без названия')}</h3>
+                            <span class="order-status status-${order.status}">${statusLabels[order.status] || 'Не указан'}</span>
+                        </div>
+                        <p class="order-description">${escapeHtml(order.description || 'Без описания')}</p>
+                        <div class="order-footer">
+                            <span class="order-price">${Number(order.price || 0).toLocaleString('ru-RU')} ₽</span>
+                            <span class="order-date">${formatDate(order.created_at)}</span>
+                            ${roleLabel ? `<span class="order-role">${roleLabel}</span>` : ''}
+                            <span class="order-person">${isCustomer ? 'Исполнитель' : 'Заказчик'}: ${escapeHtml(otherPerson.trim() || 'Неизвестно')}</span>
+                            <button class="report-card-btn" type="button" data-report-type="order" data-report-id="${order.id}" data-report-title="${escapeHtml(order.title || 'Задача')}">Пожаловаться</button>
+                            ${actions ? `<div class="order-actions">${actions}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('ru-RU');
+        }
+
+        async function apiPost(url) {
+            try {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'X-CSRF-Token': csrfToken }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    loadOrders();
+                } else {
+                    showAlert(data.error || 'Ошибка');
+                }
+            } catch (err) {
+                showAlert('Ошибка сети');
+            }
+        }
+
+        function acceptOrder(id) { apiPost(`/api/orders/${id}/accept`); }
+        function completeOrder(id) { apiPost(`/api/orders/${id}/complete`); }
+        function cancelOrder(id) {
+            showConfirm('Отменить задачу?', () => apiPost(`/api/orders/${id}/cancel`));
+        }
+
+        tabButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tabButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentTab = btn.dataset.tab;
+                renderOrders();
+            });
+        });
+
+        [searchInput, priceFromInput, priceToInput].forEach(input => {
+            input.addEventListener('input', () => { updateSelectedDisplay(); });
+        });
+
+        resetAllBtn.addEventListener('click', resetAllFilters);
+
+
+        for (let cat of filterData) {
+            cat.selected = false;
+            cat.indeterminate = false;
+            cat.open = false;
+            if (cat.subcategories) {
+                for (let sub of cat.subcategories) {
+                    sub.selected = false;
+                }
+            }
+        }
+        recalcAllParents();
+        renderFilter();
+
+        loadOrders();
+    </script>
+    <%- include('partials/report-modal-script') %>
+</body>
+</html>

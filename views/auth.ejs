@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Линити - Вход и Регистрация</title>
+    <link rel="stylesheet" href="/css/aut_reg.css">
+    <link rel="stylesheet" href="/css/form-validation.css">
+</head>
+<body data-initial-mode="<%= mode %>">
+    <main class="app-shell">
+        <div class="box-content">
+            <div class="login-container">
+                <div class="container">
+                    <div id="loginPage" class="cards">
+                        <h2>Вход</h2>
+                        <% if (error && mode !== 'register') { %>
+                            <div class="error-message" style="display:block;"><%= error %></div>
+                        <% } %>
+                        <% if (success && mode === 'login') { %>
+                            <div style="color:#2e7d32;font-size:14px;"><%= success %></div>
+                        <% } %>
+
+                        <form id="loginForm" action="/login" method="post" novalidate>
+                            <input type="hidden" name="csrf_token" value="<%= csrfToken %>">
+                            <div class="form-group">
+                                <label for="login_email">Email</label>
+                                <input type="email" id="login_email" name="email" placeholder="example@mail.com" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="login_password">Пароль</label>
+                                <input type="password" id="login_password" name="password" placeholder="********" required>
+                            </div>
+                            <button type="submit" class="form_button">Войти</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="register-container" id="registerContainer">
+                <div class="container">
+                    <div id="registerMainPage" class="cards">
+                        <h2>Регистрация</h2>
+                        <% if (error && mode === 'register') { %>
+                            <div class="error-message" style="display:block;"><%= error %></div>
+                        <% } %>
+                        <% if (success && mode === 'register') { %>
+                            <div style="color:#2e7d32;font-size:14px;"><%= success %></div>
+                        <% } %>
+                        <form id="registerForm" action="/register" method="post" novalidate>
+                            <input type="hidden" name="csrf_token" value="<%= csrfToken %>">
+                            <div class="form-group">
+                                <label for="name">Имя</label>
+                                <input type="text" id="name" name="name" maxlength="100" placeholder="Введите ваше имя" required>
+                            </div>
+                            <input type="hidden" name="first_name" id="first_name">
+                            <input type="hidden" name="last_name" id="last_name">
+                            <div class="form-group">
+                                <label for="reg_email">Email</label>
+                                <input type="email" id="reg_email" name="email" maxlength="100" placeholder="example@mail.com" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="reg_password">Пароль</label>
+                                <input maxlength="64" type="password" id="reg_password" name="password" placeholder="********" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="confirm_password">Повторите пароль</label>
+                                <input maxlength="64" type="password" id="confirm_password" name="confirm_password" placeholder="********" required>
+                                <div id="passwordError" class="error-message" style="display: none;">
+                                    *Пароли не совпадают
+                                </div>
+                            </div>
+                            <label class="custom-checkbox">
+                                <input type="checkbox" name="updates" id="agreeTerms" required>
+                                <span class="checkmark"></span>
+                                <span class="label-text">Я согласен на <a class="link_check">обработку персональных данных</a> в соответсвии с <a class="link_check">политикой конфиденциальности</a> персональных данных платформы</span>
+                            </label>
+                            <button type="submit" class="form_button">Зарегистрироваться</button>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="contaner_page" id="sidePanel">
+                <a href="/" id="logoLink" class="logo-link">
+                    <svg class="logo-svg" width="116" height="66" viewBox="0 0 116 66" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M-0.000152588 65.653L60.7073 1.52588e-05H64.2061V65.653H53.9886V23.3433L17.5078 65.653H-0.000152588Z" fill="white"/>
+                        <rect x="76.6035" y="13.1301" width="10.9434" height="15.3191" fill="#FA51A2"/>
+                        <rect x="105.049" y="13.1301" width="10.9434" height="15.3191" fill="#A609F0"/>
+                        <rect x="76.6001" y="50.3345" width="10.9434" height="15.3191" fill="#7B46F8"/>
+                        <rect x="105.057" y="50.3345" width="10.9434" height="15.3191" fill="#BDF522"/>
+                    </svg>
+                </a>
+
+                <div class="cont_header" id="sideContent">
+                    <h1>Добро пожаловать <br>в Линити</h1>
+                    <p id="sideText">Нет аккаунта?</p>
+                    <button class="main_button" id="switchButton" type="button">Зарегистрироваться</button>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="/js/auth-page.js"></script>
+    <script src="/js/form-validation.js" defer></script>
+</body>
+</html>

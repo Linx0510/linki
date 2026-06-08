@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Уведомления | Линити</title>
+    <link rel="stylesheet" href="/css/header.css">
+    <link rel="stylesheet" href="/css/review.css">
+    <link rel="stylesheet" href="/css/notifications.css">
+    <script src="/js/notification-actions.js" defer></script>
+</head>
+<body>
+<main>
+    <%- include('partials/header-actions') %>
+
+    <div class="review-container notifications-wrapper">
+        <% const pu = typeof profileUser !== 'undefined' && profileUser !== null ? profileUser : {}; %>
+        <div class="profile-header">
+            <div class="profile-avatar">
+                <img src="<%= (pu && pu.avatar) || '/img/Group.svg' %>" alt="Аватар">
+            </div>
+            <div class="profile-info">
+                <h1><%= (pu && pu.first_name) || '' %> <%= (pu && pu.last_name) || '' %></h1>
+                <p class="profile-email"><%= (pu && pu.email) || '' %></p>
+                <div class="profile-actions">
+                    <a href="/profile" class="subscribe-btn" style="text-decoration:none;color:#fff;display:flex;align-items:center;justify-content:center;">
+                        В профиль
+                    </a>
+                </div>
+                <div class="profile-stats">
+                    <div class="stat">
+                        <span class="stat-value"><%= Number((pu && pu.avg_rating) || 0).toFixed(1) %></span>
+                        <span class="stat-label">Рейтинг</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value"><%= typeof followersCount !== 'undefined' ? followersCount : 0 %></span>
+                        <span class="stat-label">Подписчиков</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value"><%= typeof worksCount !== 'undefined' ? worksCount : 0 %></span>
+                        <span class="stat-label">Работ</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="review-card notifications-content-card">
+            <%
+                const safeCurrentUser = currentUser || {};
+                const unreadNotifications = Array.isArray(safeCurrentUser.unread_notifications) ? safeCurrentUser.unread_notifications : [];
+                const readNotifications = Array.isArray(safeCurrentUser.read_notifications) ? safeCurrentUser.read_notifications : [];
+                const allNotifications = [...unreadNotifications, ...readNotifications];
+
+                const classifyNotification = (message = '') => {
+                    const normalized = String(message).toLowerCase();
+                    if (normalized.includes('удален') || normalized.includes('жалоб') || normalized.includes('отклон')) {
+                        return 'warning-notific';
+                    }
+                    if (normalized.includes('опублик') || normalized.includes('одобрен') || normalized.includes('успешно')) {
+                        return 'published-notific';
+                    }
+                    return 'admin-notific';
+                };
+
+                const formatDateTime = (value) => {
+                    const notificationDate = new Date(value);
+                    if (Number.isNaN(notificationDate.getTime())) {
+                        return { date: '—', time: '—' };
+                    }
+                    return {
+                        date: notificationDate.toLocaleDateString('ru-RU'),
+                        time: notificationDate.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+                    };
+                };
+            %>
+
+            <div class="notifications-head">
+                <h1>Уведомления</h1>
+                <% if (allNotifications.length) { %>
+                    <form action="/notifications/delete-all" method="POST" class="delete-notifications-form">
+                        <input type="hidden" name="csrf_token" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+                        <button type="submit" class="delete-notifications-btn">Удалить все</button>
+                    </form>
+                <% } %>
+            </div>
+
+            <div class="notifications-tabs">
+                <button class="tab active" data-tab="all">Все</button>
+                <button class="tab" data-tab="unread">Новые (<%= unreadNotifications.length %>)</button>
+                <button class="tab" data-tab="read">Просмотрено (<%= readNotifications.length %>)</button>
+            </div>
+
+            <div class="notifications-list" id="tab-all">
+                <% if (allNotifications.length) { %>
+                    <% allNotifications.forEach((notification) => { %>
+                        <% const dateTime = formatDateTime(notification.created_at); %>
+                        <a href="<%= notification.link || '#' %>" class="notification-card js-notification-link <%= classifyNotification(notification.message) %> <%= !notification.is_read ? 'unread' : '' %>" data-notification-id="<%= notification.id %>" data-notification-read="<%= notification.is_read ? 'true' : 'false' %>" data-csrf-token="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+                            <div class="notification-content">
+                                <h3><%= notification.message %></h3>
+                                <div class="notification-meta">
+                                    <span class="notification-date"><%= dateTime.date %></span>
+                                    <span class="notification-time"><%= dateTime.time %></span>
+                                </div>
+                            </div>
+                            <% if (!notification.is_read) { %>
+                                <span class="unread-dot"></span>
+                            <% } %>
+                        </a>
+                    <% }) %>
+                <% } else { %>
+                    <p class="empty">Уведомлений пока нет.</p>
+                <% } %>
+            </div>
+
+            <div class="notifications-list hidden" id="tab-unread">
+                <% if (unreadNotifications.length) { %>
+                    <% unreadNotifications.forEach((notification) => { %>
+                        <% const dateTime = formatDateTime(notification.created_at); %>
+                        <a href="<%= notification.link || '#' %>" class="notification-card js-notification-link <%= classifyNotification(notification.message) %> unread" data-notification-id="<%= notification.id %>" data-notification-read="false" data-csrf-token="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+                            <div class="notification-content">
+                                <h3><%= notification.message %></h3>
+                                <div class="notification-meta">
+                                    <span class="notification-date"><%= dateTime.date %></span>
+                                    <span class="notification-time"><%= dateTime.time %></span>
+                                </div>
+                            </div>
+                            <span class="unread-dot"></span>
+                        </a>
+                    <% }) %>
+                <% } else { %>
+                    <p class="empty">Новых уведомлений пока нет.</p>
+                <% } %>
+            </div>
+
+            <div class="notifications-list hidden" id="tab-read">
+                <% if (readNotifications.length) { %>
+                    <% readNotifications.forEach((notification) => { %>
+                        <% const dateTime = formatDateTime(notification.created_at); %>
+                        <a href="<%= notification.link || '#' %>" class="notification-card js-notification-link <%= classifyNotification(notification.message) %>" data-notification-id="<%= notification.id %>" data-notification-read="true" data-csrf-token="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+                            <div class="notification-content">
+                                <h3><%= notification.message %></h3>
+                                <div class="notification-meta">
+                                    <span class="notification-date"><%= dateTime.date %></span>
+                                    <span class="notification-time"><%= dateTime.time %></span>
+                                </div>
+                            </div>
+                        </a>
+                    <% }) %>
+                <% } else { %>
+                    <p class="empty">Просмотренных уведомлений пока нет.</p>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const tabs = document.querySelectorAll('.notifications-tabs .tab');
+        const lists = document.querySelectorAll('.notifications-list');
+
+        tabs.forEach((tab) => {
+            tab.addEventListener('click', () => {
+                tabs.forEach((t) => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                const target = tab.dataset.tab;
+                lists.forEach((list) => {
+                    list.classList.toggle('hidden', list.id !== 'tab-' + target);
+                });
+            });
+        });
+    });
+</script>
+</body>
+</html>

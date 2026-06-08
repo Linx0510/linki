@@ -1,0 +1,183 @@
+.notifications-wrapper {
+    flex: 1;
+    min-height: 0;
+    height: auto;
+    max-height: none;
+    align-items: stretch;
+    overflow: hidden;
+}
+
+.notifications-content-card {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: none;
+    min-height: 0;
+}
+
+.notifications-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.notifications-head h1 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #292929;
+    margin: 0;
+}
+
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #6B069B;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: opacity 0.2s;
+}
+
+.back-btn:hover {
+    opacity: 0.8;
+}
+
+.notifications-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #EAEAEA;
+    padding-bottom: 12px;
+}
+
+.notifications-tabs .tab {
+    background: transparent;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.notifications-tabs .tab:hover {
+    background: #F5F5F5;
+    color: #292929;
+}
+
+.notifications-tabs .tab.active {
+    background: #6B069B;
+    color: #fff;
+}
+
+.notifications-list.hidden {
+    display: none;
+}
+
+.notification-card {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    background: #FAFAFA;
+    border-left: 4px solid #ccc;
+    transition: background 0.2s;
+    text-decoration: none;
+    color: inherit;
+}
+
+.notification-card:hover {
+    background: #F2F2F2;
+}
+
+.notification-card.unread {
+    background: #F3E8FF;
+    border-left-color: #6B069B;
+}
+
+.notification-card.warning-notific {
+    border-left-color: #E53E3E;
+}
+
+.notification-card.warning-notific.unread {
+    background: #FFF5F5;
+}
+
+.notification-card.published-notific {
+    border-left-color: #38A169;
+}
+
+.notification-card.published-notific.unread {
+    background: #F0FFF4;
+}
+
+.notification-card.admin-notific {
+    border-left-color: #6B069B;
+}
+
+.notification-content h3 {
+    font-size: 15px;
+    font-weight: 500;
+    color: #292929;
+    margin: 0 0 6px;
+    line-height: 1.4;
+}
+
+.notification-meta {
+    display: flex;
+    gap: 10px;
+    font-size: 13px;
+    color: #888;
+}
+
+.unread-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #6B069B;
+    flex-shrink: 0;
+    margin-top: 4px;
+}
+
+.empty {
+    text-align: center;
+    color: #999;
+    font-size: 15px;
+    padding: 40px 0;
+}
+
+.delete-notifications-form {
+    margin: 0;
+}
+
+.delete-notifications-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 9px 16px;
+    border: none;
+    border-radius: 10px;
+    background: #E53E3E;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.delete-notifications-btn:hover {
+    background: #C53030;
+    transform: translateY(-1px);
+}
+
+.delete-notifications-btn:active {
+    transform: translateY(0);
+}

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Баланс | Линити</title>
+    <link rel="stylesheet" href="/css/services.css">
+    <link rel="stylesheet" href="/css/confirm-modal.css">
+    <link rel="stylesheet" href="/css/header.css">
+    <style>
+        main { overflow-y: auto; }
+        .balance-page {
+            width: 100%;
+            height: 100%;
+            padding-top: 20px;
+            max-width: none;
+            overflow-y: auto;
+            overflow-x: hidden;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .balance-summary-block {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 32px;
+            min-height: 200px;
+            width: 100%;
+            background: url(/img/bg_grafit.svg);
+            background-position: center;
+            background-size: cover;
+            border-radius: 40px;
+            padding: 40px;
+            margin-bottom: 24px;
+        }
+        .balance-page h1 { font-size: 54px; margin: 0; font-family: "UNISANS"; color: #F3F7F6; }
+        .balance-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; min-width: min(540px, 100%); }
+        .balance-card { background: rgba(255,255,255,0.96); border-radius: 20px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        .balance-card .label { color: #666; font-size: 14px; margin-bottom: 6px; }
+        .balance-card .value { font-size: 28px; font-weight: 700; color: #222; }
+        .balance-card .value.is-held { color: #888; }
+        .topup-section { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 24px; }
+        .topup-section h2 { font-size: 24px; margin-bottom: 16px; font-family: "UNISANS"}
+        .topup-form { display: flex; gap: 12px; align-items: flex-end; }
+        .topup-form input[type="number"] { flex: 1; padding: 12px 14px; border: 1px solid #ddd; border-radius: 10px; font-size: 15px; }
+        .primary-btn {
+            background: #8907C5; color: #fff; border: none; border-radius: 10px;
+            padding: 12px 24px; font-size: 15px; cursor: pointer; font-weight: 500;
+        }
+        .primary-btn:hover { background: #6b0599; }
+        .primary-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .transactions-sections { display: flex; gap: 16px; width: 100%; height: 282px;}
+        @media (max-width: 640px) {
+        .transactions-sections { display: flex; flex-direction: column; overflow: auto;}
+        }
+        .transactions-section { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06);width: 100%;min-height: 100%; overflow-y: scroll; }
+        .transactions-section h2 { font-size: 18px; margin-bottom: 16px; }
+        .transaction-list { display: flex; flex-direction: column; gap: 10px; }
+        .transaction-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
+        .transaction-item:last-child { border-bottom: none; }
+        .transaction-info { display: flex; flex-direction: column; gap: 2px; }
+        .transaction-title { font-size: 14px; font-weight: 500; color: #222; }
+        .transaction-date { font-size: 12px; color: #888; }
+        .transaction-amount { font-size: 15px; font-weight: 600; }
+        .transaction-amount.income { color: #2e7d32; }
+        .transaction-amount.expense { color: #c62828; }
+        .transaction-status { font-size: 12px; padding: 2px 8px; border-radius: 6px; background: #f0f0f0; color: #555; }
+        .transaction-status.is-succeeded { background: #e8f5e9; color: #2e7d32; }
+        .transaction-status.is-canceled { background: #ffebee; color: #c62828; }
+        .empty-state { text-align: center; color: #888; padding: 24px 0; }
+        .alert-success { background: #e8f5e9; color: #2e7d32; padding: 12px 16px; border-radius: 10px; margin-bottom: 16px; }
+        @media (max-width: 900px) {
+            .balance-summary-block { flex-direction: column; align-items: flex-start; min-height: auto; }
+            .balance-cards { width: 100%; min-width: 0; }
+        }
+        @media (max-width: 600px) {
+            .balance-summary-block { padding: 32px 24px; border-radius: 28px; }
+            .balance-page h1 { font-size: 40px; }
+            .balance-cards { grid-template-columns: 1fr; }
+            .topup-form { flex-direction: column; align-items: stretch; }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <%- include('partials/header-actions') %>
+        <div class="balance-page">
+            <div class="balance-summary-block">
+                <h1>Баланс</h1>
+
+                <div class="balance-cards">
+                    <div class="balance-card">
+                        <div class="label">Доступно</div>
+                        <div class="value"><%= Number(balance || 0).toLocaleString('ru-RU') %> ₽</div>
+                    </div>
+                    <div class="balance-card">
+                        <div class="label">Заморожено</div>
+                        <div class="value is-held"><%= Number(heldBalance || 0).toLocaleString('ru-RU') %> ₽</div>
+                    </div>
+                </div>
+            </div>
+
+            <% if (status === 'success') { %>
+                <div class="alert-success">Баланс пополнен.</div>
+            <% } %>
+
+            <div class="topup-section">
+                <h2>Управление балансом</h2>
+                <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                    <form id="topupForm" class="topup-form" style="flex:1;min-width:260px;" novalidate>
+                        <input type="hidden" name="csrf_token" value="<%= csrfToken %>">
+                        <input type="number" id="topupAmount" min="100" max="500000" step="1" required placeholder="Сумма, например 1000">
+                        <button type="submit" class="primary-btn" id="topupBtn">Пополнить</button>
+                    </form>
+                    <a href="/withdraw" class="primary-btn" style="background:#fff;color:#8907C5;border:2px solid #8907C5;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;flex:1;min-width:200px;">Вывести средства</a>
+                </div>
+            </div>
+
+            <div class="transactions-sections">
+                <div class="transactions-section">
+                    <h2>История операций</h2>
+                    <div class="transaction-list" id="transactionList">
+                        <% if (transactions && transactions.length) { %>
+                            <% transactions.forEach(tx => { %>
+                                <div class="transaction-item">
+                                    <div class="transaction-info">
+                                        <span class="transaction-title"><%= tx.description || 'Операция' %></span>
+                                        <span class="transaction-date"><%= new Date(tx.created_at).toLocaleDateString('ru-RU') %> <%= new Date(tx.created_at).toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'}) %></span>
+                                    </div>
+                                    <div style="display:flex;align-items:center;gap:10px;">
+                                        <span class="transaction-amount <%= tx.type === 'release' || tx.type === 'topup' ? 'income' : 'expense' %>">
+                                            <%= tx.type === 'release' || tx.type === 'topup' ? '+' : '-' %><%= Number(tx.amount || 0).toLocaleString('ru-RU') %> ₽
+                                        </span>
+                                        <span class="transaction-status <%= tx.status === 'succeeded' ? 'is-succeeded' : (tx.status === 'canceled' ? 'is-canceled' : '') %>">
+                                            <%= statusLabel(tx.status, 'transaction') %>
+                                        </span>
+                                    </div>
+                                </div>
+                            <% }) %>
+                        <% } else { %>
+                            <div class="empty-state">Пока нет операций</div>
+                        <% } %>
+                    </div>
+                </div>
+
+                <div class="transactions-section">
+                    <h2>Платёжная информация</h2>
+                    <div style="display: grid; gap: 10px; font-size: 14px; color: #555;">
+                        <p><strong>Получатель:</strong> ИП Филиппов Алексей Сергеевич</p>
+                        <p><strong>ИНН:</strong> 560702051771 · <strong>ОГРНИП:</strong> 323565800038042</p>
+                        <p><strong>Юридический адрес:</strong> 460000, г. Оренбург, ул. Терешкова, д. 281/1 к.2, 460028</p>
+                        <p><strong>Контакты:</strong> <a href="tel:+79878721968">+7 987 872 19-68</a> · <a href="mailto:Linx05@yandex.ru">Linx05@yandex.ru</a></p>
+                        <p style="margin-top: 6px; color: #888;">Подробнее об условиях — в <a href="/legal/offer" style="color: #8907C5;">договоре оферты</a>.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <%- include('partials/confirm-modal') %>
+    <script>
+        function showConfirm(message, onConfirm, options = {}) {
+            const modal = document.getElementById('confirmModal');
+            const titleEl = document.getElementById('confirmModalTitle');
+            const msgEl = document.getElementById('confirmModalMessage');
+            const okBtn = document.getElementById('confirmModalOk');
+            const cancelBtn = document.getElementById('confirmModalCancel');
+            titleEl.textContent = options.title || 'Подтвердите действие';
+            msgEl.textContent = message;
+            okBtn.textContent = options.confirmText || 'Подтвердить';
+            cancelBtn.style.display = options.hideCancel ? 'none' : 'inline-block';
+            modal.style.display = 'flex';
+            const cleanup = () => { modal.style.display = 'none'; okBtn.onclick = null; };
+            okBtn.onclick = () => { cleanup(); onConfirm(); };
+            cancelBtn.onclick = cleanup;
+        }
+        function showAlert(message) {
+            showConfirm(message, () => {}, { title: 'Внимание', confirmText: 'OK', hideCancel: true });
+        }
+
+        const csrfToken = '<%= csrfToken %>';
+        const topupForm = document.getElementById('topupForm');
+        const topupBtn = document.getElementById('topupBtn');
+
+        topupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const amount = parseFloat(document.getElementById('topupAmount').value);
+            if (!amount || amount < 100) {
+                showAlert('Минимальная сумма пополнения — 100 ₽');
+                return;
+            }
+            topupBtn.disabled = true;
+            topupBtn.textContent = 'Зачисляем...';
+            try {
+                const res = await fetch('/api/payments/topup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken,
+                    },
+                    body: JSON.stringify({ amount }),
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showAlert(data.message || 'Баланс пополнен виртуальными средствами');
+                    window.location.href = '/balance?status=success';
+                } else {
+                    showAlert(data.error || 'Ошибка при пополнении баланса');
+                    topupBtn.disabled = false;
+                    topupBtn.textContent = 'Пополнить виртуально';
+                }
+            } catch (err) {
+                showAlert('Ошибка сети');
+                topupBtn.disabled = false;
+                topupBtn.textContent = 'Пополнить виртуально';
+            }
+        });
+    </script>
+</body>
+</html>

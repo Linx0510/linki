@@ -1,0 +1,49 @@
+<div id="reportModal" class="report-modal" aria-hidden="true">
+    <div class="report-modal-overlay" data-close-report-modal></div>
+    <div class="report-modal-content" role="dialog" aria-modal="true" aria-labelledby="reportModalTitle">
+        <button class="report-modal-close" type="button" data-close-report-modal aria-label="Закрыть">&times;</button>
+        <h2 id="reportModalTitle">Пожаловаться</h2>
+        <p class="report-modal-subtitle" id="reportModalSubtitle">Выберите причину жалобы. Комментарий оставлять не нужно.</p>
+
+        <form action="/reports/work/0" method="POST" class="report-form" id="reportForm">
+            <input type="hidden" name="csrf_token" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+            <div id="reportFormFields" class="report-form-fields">
+                <div class="report-form-group">
+                    <span class="report-reason-label">Причина жалобы</span>
+                    <div class="report-reasons-list" role="group" aria-label="Причина жалобы">
+                        <% const reportReasonOptions = [
+                            { slug: 'fraud', title: 'Мошенничество', description: 'Обман, подозрительная оплата или попытка увести сделку с платформы.' },
+                            { slug: 'spam', title: 'Спам или реклама', description: 'Повторяющиеся, навязчивые или нерелевантные публикации.' },
+                            { slug: 'prohibited_content', title: 'Запрещённый контент', description: 'Запрещённые товары, услуги, материалы или незаконные предложения.' },
+                            { slug: 'offensive_content', title: 'Оскорбления или дискриминация', description: 'Угрозы, грубость, ненависть или дискриминационные формулировки.' },
+                            { slug: 'copyright_violation', title: 'Нарушение авторских прав', description: 'Чужие тексты, изображения, логотипы или работы без разрешения.' },
+                            { slug: 'incorrect_information', title: 'Недостоверная информация', description: 'Неверная цена, сроки, описание, опыт или характеристики.' },
+                        ]; %>
+                        <% reportReasonOptions.forEach((reason) => { %>
+                            <label class="report-reason-item">
+                                <input class="report-reason-checkbox" type="checkbox" name="reason_codes" value="<%= reason.slug %>">
+                                <span class="report-reason-text">
+                                    <span class="report-reason-title"><%= reason.title %></span>
+                                    <span class="report-reason-description"><%= reason.description %></span>
+                                </span>
+                            </label>
+                        <% }); %>
+                    </div>
+                    <p class="report-validation-error" id="reportValidationError" role="alert" style="display:none;">Выберите минимум одну причину жалобы.</p>
+                </div>
+                <button type="submit" class="report-submit-btn">Отправить жалобу</button>
+            </div>
+        </form>
+
+        <div class="report-success-state" id="reportSuccessState">
+            <div class="success-content" role="status">
+                <svg class="success-icon" width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <circle cx="30" cy="30" r="28" stroke="#8CBA0B" stroke-width="2" fill="white"/>
+                    <path d="M18 30L26 38L42 22" stroke="#8CBA0B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <h3>Жалоба отправлена</h3>
+                <p>Спасибо. Мы проверим материал и примем меры при необходимости.</p>
+            </div>
+        </div>
+    </div>
+</div>

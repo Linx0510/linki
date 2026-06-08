@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Лента | Креативная навигация</title>
+    <link rel="stylesheet" href="/css/lenta_new.css">
+    <link rel="stylesheet" href="/css/confirm-modal.css">
+    <link rel="stylesheet" href="/css/header.css">
+    <link rel="stylesheet" href="/css/report-modal.css">
+</head>
+<body>
+    <main>
+
+        <%- include('partials/header-actions') %>
+             <div class="main-content-lenta">
+            <div class="lenta">
+                <% if (works && works.length) { %>
+                    <% works.forEach((work) => { %>
+                        <div
+                            class="post"
+                            data-work-id="<%= work.id %>"
+                            data-work-category-ids="<%= (work.category_ids || []).join(',') %>"
+                        >
+                            <div class="post-avatar">
+                                <a href="/profile/<%= work.user_id %>" class="user-post-avatar">
+                                    <div class="user-post-avatar-img">
+                                        <img src="<%= work.avatar || '/img/Group.svg' %>" alt="Аватар <%= work.first_name %>" class="post-author-avatar-img" loading="lazy" decoding="async">
+                                    </div>
+                                    <p class="user-post-avatar-nik"><%= work.first_name %> <%= work.last_name %></p>
+                                </a>
+                                <div class="post-avatar-action">
+                                    <% if (currentUser && currentUser.id !== work.user_id) { %>
+                                        <button
+                                            class="btn-subscribe"
+                                            data-user-id="<%= work.user_id %>"
+                                            data-subscribed="<%= work.is_subscribed ? 'true' : 'false' %>"
+                                        >
+                                            <%= work.is_subscribed ? 'Отписаться' : 'Подписаться' %>
+                                        </button>
+                                    <% } %>
+                                    <button class="btn-complain" title="Пожаловаться" data-work-id="<%= work.id %>" data-report-type="work" data-report-id="<%= work.id %>" data-report-title="<%= work.title || 'Проект' %>">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path class="svg-hover" d="M12 22C14.7614 22 17.2614 20.8807 19.0711 19.0711C20.8807 17.2614 22 14.7614 22 12C22 9.2386 20.8807 6.7386 19.0711 4.92893C17.2614 3.11929 14.7614 2 12 2C9.2386 2 6.7386 3.11929 4.92893 4.92893C3.11929 6.7386 2 9.2386 2 12C2 14.7614 3.11929 17.2614 4.92893 19.0711C6.7386 20.8807 9.2386 22 12 22Z" fill="#292929"/>
+                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 18.5C12.6904 18.5 13.25 17.9404 13.25 17.25C13.25 16.5597 12.6904 16 12 16C11.3097 16 10.75 16.5597 10.75 17.25C10.75 17.9404 11.3097 18.5 12 18.5Z" fill="white"/>
+                                            <path d="M12 6V14" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="post-gallery" data-gallery>
+                                <button class="gallery-arrow gallery-arrow-left" type="button" data-gallery-prev aria-label="Предыдущее изображение">&#10094;</button>
+                                <div class="image-track" data-gallery-track>
+                                    <% const images = (work.images && work.images.length ? work.images : ['/img/work_img.svg']); %>
+                                    <% images.forEach((imageUrl, idx) => { %>
+                                        <div class="image img1">
+                                            <img src="<%= imageUrl %>" alt="Изображение проекта <%= idx + 1 %>" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/img/work_img.svg';">
+                                        </div>
+                                    <% }) %>
+                                </div>
+                                <button class="gallery-arrow gallery-arrow-right" type="button" data-gallery-next aria-label="Следующее изображение">&#10095;</button>
+                            </div>
+                            <div class="post-text-content">
+                                <h3 class="name-project"><a href="/works/<%= work.id %>" class="work-link"><%= work.title %></a></h3>
+                                <a href="/works/<%= work.id %>" class="work-details-btn">Подробнее</a>
+                            </div>
+                            <div class="post-tegs">
+                                <% if (work.categories && work.categories.length) { %>
+                                    <% work.categories.forEach((categoryName) => { %>
+                                        <div class="teg"><p><%= categoryName %></p></div>
+                                    <% }) %>
+                                <% } else { %>
+                                    <div class="teg"><p>Без категории</p></div>
+                                <% } %>
+                            </div>
+                            <div class="post-bottom">
+                                <button class="post-like-btn <%= work.is_liked ? 'is-liked' : '' %>" data-work-id="<%= work.id %>" data-liked="<%= work.is_liked ? 'true' : 'false' %>">
+                                    <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M16 28C15.5985 27.9995 15.2065 27.8782 14.875 27.6519C9.96309 24.3175 7.83621 22.0312 6.66309 20.6019C4.16309 17.555 2.96621 14.4269 2.99996 11.0394C3.03934 7.1575 6.15371 4 9.94246 4C12.6975 4 14.6056 5.55188 15.7168 6.84438C15.752 6.88491 15.7955 6.91741 15.8444 6.93968C15.8932 6.96195 15.9463 6.97348 16 6.97348C16.0536 6.97348 16.1067 6.96195 16.1555 6.93968C16.2044 6.91741 16.2479 6.88491 16.2831 6.84438C17.3943 5.55063 19.3025 4 22.0575 4C25.8462 4 28.9606 7.1575 29 11.04C29.0337 14.4281 27.8356 17.5563 25.3368 20.6025C24.1637 22.0319 22.0368 24.3181 17.125 27.6525C16.7933 27.8786 16.4013 27.9997 16 28Z" fill="none" stroke="#696969" stroke-width="3px"/>
+                                    </svg>
+
+                                    <span class="post-like-count"><%= work.likes || 0 %></span>
+                                </button>
+                                <p class="post-bottom-data"><%= new Date(work.created_at).toLocaleDateString('ru-RU') %></p>
+                            </div>
+                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <div class="post"><p class="bio-project">Пока нет работ для отображения.</p></div>
+                <% } %>
+            </div>
+            <div class="filter-container" id="filterWidget">
+            <div class="filter-header">
+                <h2>Фильтр</h2>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M11.5651 7.29199H3.33337C2.9882 7.29199 2.70837 7.01217 2.70837 6.66699C2.70837 6.32181 2.9882 6.04199 3.33337 6.04199H11.5651C11.8225 5.31375 12.517 4.79199 13.3334 4.79199C14.1498 4.79199 14.8443 5.31375 15.1017 6.04199H16.6667C17.0119 6.04199 17.2917 6.32181 17.2917 6.66699C17.2917 7.01217 17.0119 7.29199 16.6667 7.29199H15.1017C14.8443 8.02024 14.1498 8.54199 13.3334 8.54199C12.517 8.54199 11.8225 8.02024 11.5651 7.29199Z" fill="#535D5A"/>
+                    <path d="M16.6667 13.9587C17.0119 13.9587 17.2917 13.6788 17.2917 13.3337C17.2917 12.9885 17.0119 12.7087 16.6667 12.7087H8.43502C8.17762 11.9804 7.48309 11.4587 6.66671 11.4587C5.85032 11.4587 5.1558 11.9804 4.8984 12.7087H3.33337C2.9882 12.7087 2.70837 12.9885 2.70837 13.3337C2.70837 13.6788 2.9882 13.9587 3.33337 13.9587H4.8984C5.1558 14.6869 5.85032 15.2087 6.66671 15.2087C7.48309 15.2087 8.17762 14.6869 8.43502 13.9587H16.6667Z" fill="#535D5A"/>
+                </svg>
+            </div>
+
+            <div class="filter-list" id="filterList">
+
+            </div>
+
+            <div class="filter-footer">
+                <div class="selected-items-list" id="selectedItemsList">
+                </div>
+                <div class="selected-header">
+                    <span class="selected-counter">Выбрано: <span id="selectedCount">0</span></span>
+                    <button class="reset-btn-bottom" id="resetAllBtn">Сбросить всё</button>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <button class="filter-toggle-btn" id="filterToggleBtn" aria-label="Открыть фильтр" style="display:none;">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M11.5651 7.29199H3.33337C2.9882 7.29199 2.70837 7.01217 2.70837 6.66699C2.70837 6.32181 2.9882 6.04199 3.33337 6.04199H11.5651C11.8225 5.31375 12.517 4.79199 13.3334 4.79199C14.1498 4.79199 14.8443 5.31375 15.1017 6.04199H16.6667C17.0119 6.04199 17.2917 6.32181 17.2917 6.66699C17.2917 7.01217 17.0119 7.29199 16.6667 7.29199H15.1017C14.8443 8.02024 14.1498 8.54199 13.3334 8.54199C12.517 8.54199 11.8225 8.02024 11.5651 7.29199Z" fill="white"/>
+                <path d="M16.6667 13.9587C17.0119 13.9587 17.2917 13.6788 17.2917 13.3337C17.2917 12.9885 17.0119 12.7087 16.6667 12.7087H8.43502C8.17762 11.9804 7.48309 11.4587 6.66671 11.4587C5.85032 11.4587 5.1558 11.9804 4.8984 12.7087H3.33337C2.9882 12.7087 2.70837 12.9885 2.70837 13.3337C2.70837 13.6788 2.9882 13.9587 3.33337 13.9587H4.8984C5.1558 14.6869 5.85032 15.2087 6.66671 15.2087C7.48309 15.2087 8.17762 14.6869 8.43502 13.9587H16.6667Z" fill="white"/>
+            </svg>
+            Фильтр
+        </button>
+        <div class="filter-overlay" id="filterOverlay"></div>
+        <%- include('partials/report-modal') %>
+        <div id="imageViewerModal" class="image-viewer-modal" aria-hidden="true">
+            <div class="image-viewer-overlay" onclick="hideImageViewer()"></div>
+            <div class="image-viewer-content" role="dialog" aria-modal="true" aria-label="Просмотр изображения">
+                <button class="image-viewer-close" type="button" onclick="hideImageViewer()" aria-label="Закрыть">&times;</button>
+                <button class="image-viewer-arrow image-viewer-arrow-left" type="button" id="viewerPrev" aria-label="Предыдущее изображение">&#10094;</button>
+                <div class="image-viewer-track-wrap">
+                    <div class="image-viewer-track" id="viewerTrack"></div>
+                </div>
+                <button class="image-viewer-arrow image-viewer-arrow-right" type="button" id="viewerNext" aria-label="Следующее изображение">&#10095;</button>
+                <div class="image-viewer-dots" id="viewerDots"></div>
+            </div>
+        </div>
+        </section>
+
+    </main>
+    <script>
+        const logoLinkElem = document.getElementById('logoLink');
+        const logoSvg = document.querySelector('.logo-link .logo-svg');
+        let svgRects = [];
+        if (logoSvg) {
+            svgRects = Array.from(logoSvg.querySelectorAll('rect'));
+        }
+        const originalPositions = [
+            { x: 76.6035, y: 13.1301 },
+            { x: 105.049, y: 13.1301 },
+            { x: 76.6001, y: 50.3345 },
+            { x: 105.057, y: 50.3345 }
+        ];
+        const rotatedPositions = [
+            { x: 105.049, y: 13.1301 },
+            { x: 105.057, y: 50.3345 },
+            { x: 76.6035, y: 13.1301 },
+            { x: 76.6001, y: 50.3345 }
+        ];
+        function animateRectsToRotated() {
+            if (svgRects.length === 4) {
+                svgRects.forEach((rect, idx) => {
+                    rect.setAttribute('x', rotatedPositions[idx].x);
+                    rect.setAttribute('y', rotatedPositions[idx].y);
+                });
+            }
+        }
+        function animateRectsToOriginal() {
+            if (svgRects.length === 4) {
+                svgRects.forEach((rect, idx) => {
+                    rect.setAttribute('x', originalPositions[idx].x);
+                    rect.setAttribute('y', originalPositions[idx].y);
+                });
+            }
+        }
+        if (logoLinkElem) {
+            logoLinkElem.addEventListener('mouseenter', animateRectsToRotated);
+            logoLinkElem.addEventListener('mouseleave', animateRectsToOriginal);
+        }
+    </script>
+    <script>
+
+    const notific = document.querySelector('.notific');
+    const user = document.querySelector('.user');
+
+    function closeAllDropdowns() {
+        document.querySelectorAll('.dropdown').forEach(dropdown => {
+            dropdown.style.opacity = '0';
+            dropdown.style.visibility = 'hidden';
+            dropdown.style.transform = 'translateY(-10px)';
+        });
+    }
+
+    function toggleDropdown(dropdown) {
+        const isVisible = dropdown.style.opacity === '1';
+        closeAllDropdowns();
+
+        if (!isVisible) {
+            dropdown.style.opacity = '1';
+            dropdown.style.visibility = 'visible';
+            dropdown.style.transform = 'translateY(0)';
+        }
+    }
+
+    if (notific) {
+        notific.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const dropdown = notific.querySelector('.dropdown');
+            toggleDropdown(dropdown);
+        });
+    }
+
+    if (user) {
+        user.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const dropdown = user.querySelector('.dropdown');
+            toggleDropdown(dropdown);
+        });
+    }
+
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.notific') && !e.target.closest('.user')) {
+            closeAllDropdowns();
+        }
+    });
+</script>
+
+<script>
+(function () {
+    const lenta = document.querySelector('.lenta');
+    const imageViewerModal = document.getElementById('imageViewerModal');
+    const viewerTrack = document.getElementById('viewerTrack');
+    const viewerDots = document.getElementById('viewerDots');
+    const viewerPrev = document.getElementById('viewerPrev');
+    const viewerNext = document.getElementById('viewerNext');
+
+    if (!lenta) return;
+    let viewerImages = [];
+    let viewerCurrentIndex = 0;
+
+    window.updateModalBodyState = function updateModalBodyState() {
+        const hasOpenModal = Boolean(document.querySelector('.report-modal.is-open, .image-viewer-modal.is-open'));
+        document.body.classList.toggle('modal-open', hasOpenModal);
+    };
+
+    function canScroll(el, deltaY) {
+        if (!el) return false;
+        if (deltaY > 0) {
+            return el.scrollTop + el.clientHeight < el.scrollHeight;
+        }
+        return el.scrollTop > 0;
+    }
+
+    document.addEventListener('wheel', (event) => {
+        const openModal = document.querySelector('.report-modal.is-open, .image-viewer-modal.is-open');
+        if (openModal) {
+            const modalScrollable = event.target.closest('.report-modal-content, .image-viewer-content');
+            if (modalScrollable && canScroll(modalScrollable, event.deltaY)) {
+                return;
+            }
+            return;
+        }
+
+        const scrollableParent = event.target.closest('.dropdown-notific, .filter-list, .selected-items-list, .lenta');
+
+        if (scrollableParent && scrollableParent !== lenta && canScroll(scrollableParent, event.deltaY)) {
+            return;
+        }
+
+        lenta.scrollBy({ top: event.deltaY, behavior: 'auto' });
+        event.preventDefault();
+    }, { passive: false });
+
+    function updateImageViewer() {
+        if (!viewerTrack || !viewerDots) return;
+
+        viewerTrack.style.transform = `translateX(-${viewerCurrentIndex * 100}%)`;
+        Array.from(viewerDots.children).forEach((dot, index) => {
+            dot.classList.toggle('active', index === viewerCurrentIndex);
+        });
+    }
+
+    window.showImageViewer = function showImageViewer(images, startIndex = 0) {
+        if (!imageViewerModal || !viewerTrack || !viewerDots) return;
+
+        viewerImages = images;
+        viewerCurrentIndex = startIndex;
+        viewerTrack.innerHTML = '';
+        viewerDots.innerHTML = '';
+
+        viewerImages.forEach((image, index) => {
+            const slide = document.createElement('div');
+            slide.className = 'image-viewer-slide';
+
+            const img = document.createElement('img');
+            img.src = image.src;
+            img.alt = image.alt || `Изображение ${index + 1}`;
+            slide.appendChild(img);
+            viewerTrack.appendChild(slide);
+
+            const dot = document.createElement('button');
+            dot.type = 'button';
+            dot.className = 'dot';
+            dot.setAttribute('aria-label', `Перейти к изображению ${index + 1}`);
+            dot.addEventListener('click', () => {
+                viewerCurrentIndex = index;
+                updateImageViewer();
+            });
+            viewerDots.appendChild(dot);
+        });
+
+        imageViewerModal.classList.add('is-open');
+        imageViewerModal.setAttribute('aria-hidden', 'false');
+        window.updateModalBodyState();
+        updateImageViewer();
+    };
+
+    window.hideImageViewer = function hideImageViewer() {
+        if (!imageViewerModal || imageViewerModal.getAttribute('aria-hidden') === 'true') return;
+
+        imageViewerModal.classList.remove('is-open');
+        imageViewerModal.setAttribute('aria-hidden', 'true');
+        window.updateModalBodyState();
+    };
+
+    if (viewerPrev) {
+        viewerPrev.addEventListener('click', () => {
+            if (!viewerImages.length) return;
+            viewerCurrentIndex = (viewerCurrentIndex - 1 + viewerImages.length) % viewerImages.length;
+            updateImageViewer();
+        });
+    }
+
+    if (viewerNext) {
+        viewerNext.addEventListener('click', () => {
+            if (!viewerImages.length) return;
+            viewerCurrentIndex = (viewerCurrentIndex + 1) % viewerImages.length;
+            updateImageViewer();
+        });
+    }
+
+    window.addEventListener('keydown', (event) => {
+        const viewerOpened = imageViewerModal && imageViewerModal.classList.contains('is-open');
+        if (!viewerOpened) return;
+
+        if (event.key === 'Escape') {
+            window.hideImageViewer();
+        } else if (event.key === 'ArrowLeft' && viewerImages.length) {
+            viewerCurrentIndex = (viewerCurrentIndex - 1 + viewerImages.length) % viewerImages.length;
+            updateImageViewer();
+        } else if (event.key === 'ArrowRight' && viewerImages.length) {
+            viewerCurrentIndex = (viewerCurrentIndex + 1) % viewerImages.length;
+            updateImageViewer();
+        }
+    });
+
+    document.querySelectorAll('[data-gallery]').forEach((gallery) => {
+        const track = gallery.querySelector('[data-gallery-track]');
+        const slides = Array.from(track.children);
+        const prevBtn = gallery.querySelector('[data-gallery-prev]');
+        const nextBtn = gallery.querySelector('[data-gallery-next]');
+
+        let currentIndex = 0;
+
+        const dotsContainer = document.createElement('div');
+        dotsContainer.className = 'gallery-dots';
+
+        const dots = slides.map((_, index) => {
+            const dot = document.createElement('button');
+            dot.type = 'button';
+            dot.className = 'dot';
+            dot.setAttribute('aria-label', `Перейти к изображению ${index + 1}`);
+            dot.addEventListener('click', () => {
+                currentIndex = index;
+                updateGallery();
+            });
+            dotsContainer.appendChild(dot);
+            return dot;
+        });
+
+        gallery.appendChild(dotsContainer);
+
+        function updateGallery() {
+            track.style.transform = `translateX(-${currentIndex * 100}%)`;
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentIndex);
+            });
+        }
+
+        prevBtn.addEventListener('click', () => {
+            currentIndex = (currentIndex - 1 + slides.length) % slides.length;
+            updateGallery();
+        });
+
+        nextBtn.addEventListener('click', () => {
+            currentIndex = (currentIndex + 1) % slides.length;
+            updateGallery();
+        });
+
+        slides.forEach((slide, index) => {
+            const image = slide.querySelector('img');
+            if (!image) return;
+
+            image.addEventListener('click', () => {
+                const images = slides
+                    .map((gallerySlide) => gallerySlide.querySelector('img'))
+                    .filter(Boolean)
+                    .map((img) => ({ src: img.src, alt: img.alt }));
+                window.showImageViewer(images, index);
+            });
+        });
+
+        updateGallery();
+    });
+})();
+</script>
+
+<script>
+
+    const parentCategories = <%- JSON.stringify(categories || []) %>;
+    const childCategories = <%- JSON.stringify(subcategories || []) %>;
+
+    const categoriesData = parentCategories.map((category) => ({
+        id: String(category.id),
+        name: category.name,
+        selected: false,
+        indeterminate: false,
+        open: false,
+        subcategories: childCategories
+            .filter((sub) => sub.parent_id === category.id)
+            .map((sub) => ({
+                id: String(sub.id),
+                name: sub.name,
+                selected: false
+            }))
+    }));
+
+    let filterData = JSON.parse(JSON.stringify(categoriesData));
+
+
+    function recalcAllParents() {
+        for (let cat of filterData) {
+            if (cat.subcategories && cat.subcategories.length > 0) {
+                const allSelected = cat.subcategories.every(sub => sub.selected === true);
+                const someSelected = cat.subcategories.some(sub => sub.selected === true);
+                cat.selected = allSelected;
+                cat.indeterminate = someSelected && !allSelected;
+            } else {
+                cat.indeterminate = false;
+            }
+        }
+    }
+
+
+    function getSelectedItems() {
+        const selected = [];
+        for (let cat of filterData) {
+            if (cat.subcategories && cat.subcategories.length > 0) {
+                for (let sub of cat.subcategories) {
+                    if (sub.selected) {
+                        selected.push({
+                            id: sub.id,
+                            name: sub.name,
+                            categoryId: cat.id,
+                            categoryName: cat.name,
+                            type: 'sub'
+                        });
+                    }
+                }
+            } else {
+                if (cat.selected) {
+                    selected.push({
+                        id: cat.id,
+                        name: cat.name,
+                        categoryId: null,
+                        categoryName: null,
+                        type: 'category'
+                    });
+                }
+            }
+        }
+        return selected;
+    }
+
+
+    function getTotalSelectedCount() {
+        return getSelectedItems().length;
+    }
+
+    function applyPostFilters() {
+        const selectedItems = getSelectedItems();
+        const selectedIds = new Set(selectedItems.map((item) => String(item.id)));
+        const posts = document.querySelectorAll('.lenta .post[data-work-id]');
+
+        if (!posts.length) {
+            return;
+        }
+
+        if (!selectedIds.size) {
+            posts.forEach((post) => {
+                post.style.display = '';
+            });
+            return;
+        }
+
+        posts.forEach((post) => {
+            const categoryIds = (post.dataset.workCategoryIds || '')
+                .split(',')
+                .map((id) => id.trim())
+                .filter(Boolean);
+            const hasMatch = categoryIds.some((id) => selectedIds.has(id));
+            post.style.display = hasMatch ? '' : 'none';
+        });
+    }
+
+
+    function updateSelectedDisplay() {
+        const selectedCountSpan = document.getElementById('selectedCount');
+        const selectedItemsContainer = document.getElementById('selectedItemsList');
+
+        if (!selectedItemsContainer) return;
+
+        const selectedItems = getSelectedItems();
+        const count = selectedItems.length;
+        if (selectedCountSpan) {
+            selectedCountSpan.innerText = count;
+        }
+
+        if (count === 0) {
+            selectedItemsContainer.innerHTML = '<div class="empty-selected">Ничего не выбрано</div>';
+            applyPostFilters();
+            return;
+        }
+
+        selectedItemsContainer.innerHTML = '';
+        selectedItems.forEach(item => {
+            const tag = document.createElement('div');
+            tag.className = 'selected-tag';
+            tag.innerHTML = `
+                <span>${escapeHtml(item.name)}</span>
+                <span class="remove-tag" data-id="${item.id}" data-type="${item.type}" data-category-id="${item.categoryId || ''}">✕</span>
+            `;
+            selectedItemsContainer.appendChild(tag);
+        });
+
+
+        document.querySelectorAll('.remove-tag').forEach(removeBtn => {
+            removeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const id = removeBtn.dataset.id;
+                const type = removeBtn.dataset.type;
+                const categoryId = removeBtn.dataset.categoryId;
+
+                if (type === 'sub') {
+
+                    for (let cat of filterData) {
+                        if (cat.subcategories) {
+                            const sub = cat.subcategories.find(s => s.id === id);
+                            if (sub) {
+                                sub.selected = false;
+                                break;
+                            }
+                        }
+                    }
+                } else if (type === 'category') {
+
+                    const cat = filterData.find(c => c.id === id);
+                    if (cat) cat.selected = false;
+                }
+
+                recalcAllParents();
+                renderFilter();
+                updateSelectedDisplay();
+            });
+        });
+
+        applyPostFilters();
+    }
+
+
+    function escapeHtml(str) {
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+
+    function resetAllFilters() {
+        for (let cat of filterData) {
+            cat.selected = false;
+            cat.indeterminate = false;
+            cat.open = false;
+            if (cat.subcategories) {
+                for (let sub of cat.subcategories) {
+                    sub.selected = false;
+                }
+            }
+        }
+        recalcAllParents();
+        renderFilter();
+        updateSelectedDisplay();
+        applyPostFilters();
+    }
+
+
+    function renderFilter() {
+        const container = document.getElementById('filterList');
+        if (!container) return;
+
+        container.innerHTML = '';
+
+        for (let cat of filterData) {
+            const catDiv = document.createElement('div');
+            catDiv.className = 'category-item';
+            if (cat.open) catDiv.classList.add('open');
+
+
+            const mainRow = document.createElement('div');
+            mainRow.className = 'category-main';
+            if (cat.selected) mainRow.classList.add('selected');
+
+
+            const leftDiv = document.createElement('div');
+            leftDiv.className = 'category-left';
+
+            const checkSpan = document.createElement('span');
+            checkSpan.className = 'custom-check';
+
+
+            if (cat.indeterminate) {
+                checkSpan.classList.add('indeterminate');
+            } else if (cat.selected) {
+                checkSpan.classList.add('checked');
+            }
+
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'category-name';
+            nameSpan.innerText = cat.name;
+
+            leftDiv.appendChild(checkSpan);
+            leftDiv.appendChild(nameSpan);
+
+            const chevronSpan = document.createElement('span');
+            chevronSpan.className = 'chevron';
+            chevronSpan.innerHTML = '⌵';
+
+
+            const hasSubcategories = cat.subcategories && cat.subcategories.length > 0;
+
+            if (hasSubcategories) {
+                mainRow.appendChild(leftDiv);
+                mainRow.appendChild(chevronSpan);
+
+
+                const toggleOpen = (e) => {
+                    if (e.target === checkSpan || e.target === nameSpan || checkSpan.contains(e.target) || nameSpan.contains(e.target)) {
+                        return;
+                    }
+                    const shouldOpen = !cat.open;
+                    for (let otherCat of filterData) {
+                        if (otherCat !== cat) {
+                            otherCat.open = false;
+                        }
+                    }
+                    cat.open = shouldOpen;
+                    renderFilter();
+                };
+                mainRow.addEventListener('click', toggleOpen);
+
+
+                const selectAllHandler = (e) => {
+                    e.stopPropagation();
+                    const newState = !cat.selected;
+                    for (let sub of cat.subcategories) {
+                        sub.selected = newState;
+                    }
+                    recalcAllParents();
+                    renderFilter();
+                    updateSelectedDisplay();
+                };
+                checkSpan.addEventListener('click', selectAllHandler);
+                nameSpan.addEventListener('click', selectAllHandler);
+            } else {
+
+                mainRow.appendChild(leftDiv);
+                mainRow.addEventListener('click', () => {
+                    cat.selected = !cat.selected;
+                    recalcAllParents();
+                    renderFilter();
+                    updateSelectedDisplay();
+                });
+            }
+
+            catDiv.appendChild(mainRow);
+
+
+            if (hasSubcategories) {
+                const subList = document.createElement('div');
+                subList.className = 'subcategory-list';
+
+                for (let sub of cat.subcategories) {
+                    const subItem = document.createElement('div');
+                    subItem.className = 'sub-item';
+                    if (sub.selected) subItem.classList.add('selected');
+
+                    const subCheck = document.createElement('span');
+                    subCheck.className = 'sub-check';
+                    if (sub.selected) {
+                        subCheck.classList.add('checked');
+                    }
+
+                    const subLabel = document.createElement('span');
+                    subLabel.className = 'sub-label';
+                    subLabel.innerText = sub.name;
+
+                    subItem.appendChild(subCheck);
+                    subItem.appendChild(subLabel);
+
+                    subItem.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        sub.selected = !sub.selected;
+                        recalcAllParents();
+                        renderFilter();
+                        updateSelectedDisplay();
+                    });
+
+                    subList.appendChild(subItem);
+                }
+                catDiv.appendChild(subList);
+            }
+
+            container.appendChild(catDiv);
+        }
+
+        updateSelectedDisplay();
+    }
+
+
+    function init() {
+        for (let cat of filterData) {
+            cat.selected = false;
+            cat.indeterminate = false;
+            cat.open = false;
+            if (cat.subcategories) {
+                for (let sub of cat.subcategories) {
+                    sub.selected = false;
+                }
+            }
+        }
+        recalcAllParents();
+        renderFilter();
+
+        const resetBtn = document.getElementById('resetAllBtn');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', resetAllFilters);
+        }
+    }
+
+    init();
+</script>
+<%- include('partials/report-modal-script') %>
+<script>
+    const syncSubscribeButtons = (userId, isSubscribed) => {
+        document.querySelectorAll(`.btn-subscribe[data-user-id="${userId}"]`).forEach((button) => {
+            button.dataset.subscribed = isSubscribed ? 'true' : 'false';
+            button.textContent = isSubscribed ? 'Отписаться' : 'Подписаться';
+        });
+    };
+
+    document.querySelectorAll('.btn-subscribe').forEach((button) => {
+        button.addEventListener('click', async () => {
+            const userId = button.dataset.userId;
+            if (!userId) return;
+
+            const isSubscribed = button.dataset.subscribed === 'true';
+            const action = isSubscribed ? 'unsubscribe' : 'subscribe';
+
+            button.disabled = true;
+
+            try {
+                const response = await fetch('/api/subscribe', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ userId, action })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Subscription request failed');
+                }
+
+                syncSubscribeButtons(userId, !isSubscribed);
+            } catch (error) {
+                console.error('Не удалось изменить подписку:', error);
+            } finally {
+                button.disabled = false;
+            }
+        });
+    });
+</script>
+<script>
+    document.querySelectorAll('.post-like-btn').forEach((button) => {
+        button.addEventListener('click', async () => {
+            const workId = button.dataset.workId;
+            if (!workId) return;
+
+            try {
+                const response = await fetch(`/api/works/${workId}/like`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Like request failed');
+                }
+
+                const payload = await response.json();
+                const counter = button.querySelector('.post-like-count');
+                if (counter) {
+                    counter.textContent = payload.likes;
+                }
+
+                button.classList.toggle('is-liked', Boolean(payload.liked));
+                button.dataset.liked = payload.liked ? 'true' : 'false';
+            } catch (error) {
+                console.error('Не удалось поставить лайк:', error);
+            }
+        });
+    });
+</script>
+<script>
+
+(function() {
+    const btn = document.getElementById('filterToggleBtn');
+    const filter = document.getElementById('filterWidget');
+    const overlay = document.getElementById('filterOverlay');
+    if (!btn || !filter || !overlay) return;
+
+    function isMobile() { return window.innerWidth <= 900; }
+
+    function showBtn() {
+        if (isMobile()) btn.style.display = 'flex';
+        else btn.style.display = 'none';
+    }
+    showBtn();
+    window.addEventListener('resize', showBtn);
+
+    btn.addEventListener('click', () => {
+        filter.classList.toggle('filter-open');
+        overlay.classList.toggle('filter-open');
+    });
+    overlay.addEventListener('click', () => {
+        filter.classList.remove('filter-open');
+        overlay.classList.remove('filter-open');
+    });
+})();
+</script>
+</body>
+</html>

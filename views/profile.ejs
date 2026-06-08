@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= profileUser.first_name %> <%= profileUser.last_name %> | Линити</title>
+    <link rel="stylesheet" href="/css/profile.css">
+    <link rel="stylesheet" href="/css/confirm-modal.css">
+    <link rel="stylesheet" href="/css/header.css">
+</head>
+<body>
+    <main>
+        <%- include('partials/header-actions') %>
+        <% if (profileUpdated || workCreated || workUpdated) { %>
+            <div class="profile-toast" id="profileToast" role="status" aria-live="polite">
+                <%= profileUpdated ? 'Профиль успешно обновлён' : (workUpdated ? 'Работа успешно отредактирована' : 'Работа отправлена на модерацию') %>
+            </div>
+        <% } %>
+
+        <div class="profile-container">
+            <div class="contentprof">
+                <% if (profileUser.bio) { %>
+                    <div class="profile-bio">
+                        <h3>О себе</h3>
+                        <p><%= profileUser.bio %></p>
+                    </div>
+                <% } %>
+
+                <div class="profile-works">
+                    <div class="profile-works-header">
+                        <h2>Последние работы</h2>
+                        <a class="view-work-btn" href="/portfolio/<%= profileUser.id %>">Перейти в портфолио</a>
+                    </div>
+                    <% if (works && works.length > 0) { %>
+                        <div class="recent-works-grid">
+                            <% works.slice(0, 4).forEach(work => { %>
+                                <div class="recent-work-card">
+                                    <a href="/works/<%= work.id %>">
+                                        <% const previewImage = (work.images && work.images.length) ? work.images[0] : '/img/work_img.svg'; %>
+                                        <div class="recent-work-image">
+                                            <img src="<%= previewImage %>" alt="<%= work.title %>" loading="lazy" onerror="this.onerror=null;this.src='/img/work_img.svg';">
+                                        </div>
+                                        <h3><%= work.title %></h3>
+                                    </a>
+                                </div>
+                            <% }) %>
+                        </div>
+                    <% } else { %>
+                        <p class="no-works-text">Пока нет опубликованных работ.</p>
+                    <% } %>
+                </div>
+
+                <% const dealStatusTexts = STATUS_LABELS_BY_CONTEXT.deal; %>
+                <div class="profile-works profile-deals-section">
+                    <div class="profile-works-header">
+                        <h2>Последние сделки</h2>
+                        <% if (isOwnProfile) { %>
+                            <a class="view-work-btn" href="/deals">Перейти к сделкам</a>
+                        <% } %>
+                    </div>
+                    <% if (deals && deals.length > 0) { %>
+                        <div class="recent-deals-grid">
+                            <% deals.forEach(deal => { %>
+                                <% const isCustomerDeal = profileUser.id === deal.customer_id; %>
+                                <% const partnerName = isCustomerDeal
+                                    ? ((deal.executor_first_name || deal.executor_last_name) ? ((deal.executor_first_name || '') + ' ' + (deal.executor_last_name || '')) : 'Исполнитель не назначен')
+                                    : ((deal.customer_first_name || deal.customer_last_name) ? ((deal.customer_first_name || '') + ' ' + (deal.customer_last_name || '')) : 'Заказчик не указан'); %>
+                                <% const totalStages = Number(deal.total_stages || 0); %>
+                                <% const completedStages = Number(deal.completed_stages || 0); %>
+                                <% const progress = totalStages ? Math.round((completedStages / totalStages) * 100) : 0; %>
+                                <article class="recent-deal-card">
+                                    <a href="/deals/<%= deal.id %>">
+                                        <div class="recent-deal-topline">
+                                            <span>Сделка #<%= deal.id %></span>
+                                            <b class="recent-deal-status status-<%= deal.status %>"><%= dealStatusTexts[deal.status] || statusLabel(deal.status, 'deal') %></b>
+                                        </div>
+                                        <h3><%= deal.title || 'Сделка без названия' %></h3>
+                                        <div class="recent-deal-meta">
+                                            <span><%= isCustomerDeal ? 'Заказчик' : 'Исполнитель' %></span>
+                                            <strong><%= Number(deal.price || 0).toLocaleString('ru-RU') %> ₽</strong>
+                                        </div>
+                                        <p class="recent-deal-partner"><%= isCustomerDeal ? 'Исполнитель' : 'Заказчик' %>: <%= partnerName %></p>
+                                        <div class="recent-deal-progress" aria-label="Прогресс этапов">
+                                            <div class="recent-deal-progress-label">
+                                                <span>Этапы: <%= completedStages %>/<%= totalStages %></span>
+                                                <span><%= progress %>%</span>
+                                            </div>
+                                            <div class="recent-deal-progress-track">
+                                                <span style="width: <%= progress %>%"></span>
+                                            </div>
+                                        </div>
+                                        <p class="recent-deal-date">Дедлайн: <%= deal.deadline ? new Date(deal.deadline).toLocaleDateString('ru-RU') : 'не указан' %></p>
+                                    </a>
+                                </article>
+                            <% }) %>
+                        </div>
+                    <% } else { %>
+                        <p class="no-works-text">Пока нет сделок.</p>
+                    <% } %>
+                </div>
+
+                <div class="profile-works profile-reviews-section">
+                    <div class="profile-works-header">
+                        <h2>Последние отзывы</h2>
+                         <% if (isOwnProfile) { %>
+                          <a class="view-work-btn" href="/users/<%= profileUser.id %>/review">Перейти к отзывам</a>
+                        <% } %>
+
+                        <% if (!isOwnProfile) { %>
+                            <a class="view-work-btn" href="/users/<%= profileUser.id %>/review">Оставить отзыв</a>
+                        <% } %>
+                    </div>
+                    <% if (reviews && reviews.length > 0) { %>
+                        <div class="recent-reviews-grid">
+                            <% reviews.forEach(review => { %>
+                                <% const reviewerName = ((review.first_name || '') + ' ' + (review.last_name || '')).trim() || 'Пользователь'; %>
+                                <article class="recent-review-card">
+                                    <div class="recent-review-header">
+                                        <a class="recent-review-author" href="/profile/<%= review.reviewer_id %>">
+                                            <img src="<%= review.avatar || '/img/Group.svg' %>" alt="<%= reviewerName %>" loading="lazy">
+                                            <span><%= reviewerName %></span>
+                                        </a>
+                                        <span class="recent-review-date"><%= review.created_at ? new Date(review.created_at).toLocaleDateString('ru-RU') : '' %></span>
+                                    </div>
+                                    <div class="recent-review-rating" aria-label="Оценка <%= review.rating %> из 5">
+                                        <% for (let i = 1; i <= 5; i++) { %>
+                                            <span class="<%= i <= Number(review.rating || 0) ? 'is-active' : '' %>">★</span>
+                                        <% } %>
+                                    </div>
+                                    <% if (review.comment) { %>
+                                        <p><%= review.comment %></p>
+                                    <% } else { %>
+                                        <p class="recent-review-empty">Отзыв оставлен без комментария.</p>
+                                    <% } %>
+                                </article>
+                            <% }) %>
+                        </div>
+                    <% } else { %>
+                        <p class="no-works-text">Пока нет отзывов.</p>
+                    <% } %>
+                </div>
+            </div>
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    <img src="<%= profileUser.avatar || '/img/Group.svg' %>" alt="Аватар">
+                </div>
+
+
+                <div class="profile-info">
+                    <h1><%= profileUser.first_name %> <%= profileUser.last_name %></h1>
+                    <p class="profile-email"><%= profileUser.email %></p>
+                    <% if (!isOwnProfile) { %>
+                        <div class="profile-actions">
+                            <button class="subscribe-btn" data-user-id="<%= profileUser.id %>" data-subscribed="<%= isSubscribed ? 'true' : 'false' %>">
+                                <%= isSubscribed ? 'Отписаться' : 'Подписаться' %>
+                            </button>
+                            <a class="mess-btn" href="/chat?user=<%= profileUser.id %>" aria-label="Написать пользователю">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M7.28924 4.90761C10.4239 4.63513 13.5763 4.63512 16.7109 4.90761L18.2211 5.03889C19.2265 5.12629 20.0876 5.72596 20.5337 6.58374C20.5908 6.69347 20.548 6.82633 20.4428 6.89144L14.1769 10.7704C12.833 11.6023 11.1385 11.6197 9.77778 10.8157L3.46995 7.08833C3.36804 7.02811 3.32126 6.90415 3.36719 6.79505C3.77535 5.82548 4.69298 5.1333 5.77901 5.0389L7.28924 4.90761Z" fill="white"/>
+                                    <path d="M3.36206 8.76688C3.20609 8.67472 3.00709 8.7739 2.98891 8.95414C2.73518 11.4698 2.79659 14.0092 3.17314 16.5133C3.37166 17.8334 4.44907 18.8455 5.77901 18.9611L7.28924 19.0924C10.4239 19.3649 13.5763 19.3649 16.7109 19.0924L18.2211 18.9611C19.5511 18.8455 20.6285 17.8334 20.827 16.5133C21.2145 13.9363 21.2683 11.3217 20.9882 8.73428C20.9686 8.55276 20.7662 8.45541 20.611 8.55151L14.9664 12.0458C13.1482 13.1713 10.8557 13.1949 9.01468 12.1071L3.36206 8.76688Z" fill="white"/>
+                                </svg>
+                            </a>
+                        </div>
+
+                    <% } else { %>
+                        <div class="profile-actions">
+                            <a href="/settings" class="edit-profile-btn">Настройки</a>
+                            <a href="/works/create" class="create-work-btn">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12.75 7C12.75 6.58579 12.4142 6.25 12 6.25C11.5858 6.25 11.25 6.58579 11.25 7V11.25H7C6.58579 11.25 6.25 11.5858 6.25 12C6.25 12.4142 6.58579 12.75 7 12.75H11.25V17C11.25 17.4142 11.5858 17.75 12 17.75C12.4142 17.75 12.75 17.4142 12.75 17V12.75H17C17.4142 12.75 17.75 12.4142 17.75 12C17.75 11.5858 17.4142 11.25 17 11.25H12.75V7Z" fill="white"/>
+                                </svg>
+                            </a>
+                        </div>
+                    <% } %>
+                    <div class="profile-stats">
+                        <div class="stat">
+                            <span class="stat-value"><%= Number(profileUser.avg_rating || 0).toFixed(1) %></span>
+                            <span class="stat-label">Рейтинг</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value"><%= followersCount %></span>
+                            <span class="stat-label">Подписчиков</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value"><%= works.length %></span>
+                            <span class="stat-label">Работ</span>
+                        </div>
+                    </div>
+                    <% if (!isOwnProfile) { %>
+
+                    <% } else { %>
+                        <a href="/balance" class="count-prof">
+                            <div class="cont">
+                                <p><%= Number(currentUser.total_balance || 0).toLocaleString('ru-RU') %></p>
+                                <svg width="17" height="20" viewBox="0 0 17 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M1.87573 19.9919V-5.79357e-05H8.79173C11.3304 -5.79357e-05 13.2251 0.550609 14.4757 1.65194C15.7451 2.75328 16.3797 4.32128 16.3797 6.35594C16.3797 7.51328 16.1371 8.60528 15.6517 9.63194C15.1851 10.6399 14.4011 11.4613 13.2997 12.0959C12.1984 12.7306 10.6957 13.0573 8.79173 13.0759H7.27973V19.9919H1.87573ZM-0.000273418 18.1999V14.9239H10.7797V18.1999H-0.000273418ZM-0.000273418 13.0759V8.67994H8.20373V13.0759H-0.000273418ZM8.25973 8.67994C8.72639 8.67994 9.15573 8.59594 9.54773 8.42794C9.95839 8.25994 10.2851 8.00794 10.5277 7.67194C10.7891 7.31728 10.9197 6.88794 10.9197 6.38394C10.9197 5.74928 10.7424 5.25461 10.3877 4.89994C10.0331 4.54528 9.46373 4.36794 8.67973 4.36794H7.27973V8.67994H8.25973Z" fill="white"/>
+                                </svg>
+                            </div>
+                            <button class="plus_count" type="button" data-open-deposit-modal>Пополнить</button>
+                        </a>
+                    <% } %>
+
+                </div>
+            </div>
+        </div>
+    </main>
+    <%- include('partials/confirm-modal') %>
+    <script>
+        function showConfirm(message, onConfirm, options = {}) {
+            const modal = document.getElementById('confirmModal');
+            const titleEl = document.getElementById('confirmModalTitle');
+            const msgEl = document.getElementById('confirmModalMessage');
+            const okBtn = document.getElementById('confirmModalOk');
+            const cancelBtn = document.getElementById('confirmModalCancel');
+            titleEl.textContent = options.title || 'Подтвердите действие';
+            msgEl.textContent = message;
+            okBtn.textContent = options.confirmText || 'Подтвердить';
+            cancelBtn.style.display = options.hideCancel ? 'none' : 'inline-block';
+            modal.style.display = 'flex';
+            const cleanup = () => { modal.style.display = 'none'; okBtn.onclick = null; };
+            okBtn.onclick = () => { cleanup(); onConfirm(); };
+            cancelBtn.onclick = cleanup;
+        }
+        function closeConfirm() {
+            document.getElementById('confirmModal').style.display = 'none';
+        }
+        function showAlert(message) {
+            showConfirm(message, () => {}, { title: 'Внимание', confirmText: 'OK', hideCancel: true });
+        }
+    </script>
+
+    <div id="workViewerModal" class="work-viewer-modal" aria-hidden="true">
+        <div class="work-viewer-overlay" data-close-work-viewer></div>
+        <div class="work-viewer-content" role="dialog" aria-modal="true" aria-label="Просмотр работы">
+            <button class="work-viewer-close" type="button" data-close-work-viewer aria-label="Закрыть">&times;</button>
+            <h3 id="workViewerTitle"></h3>
+            <div class="work-viewer-gallery" data-viewer-gallery>
+                <button class="gallery-arrow gallery-arrow-left" type="button" data-viewer-prev aria-label="Предыдущее изображение">&#10094;</button>
+                <div class="work-viewer-track" id="workViewerTrack"></div>
+                <button class="gallery-arrow gallery-arrow-right" type="button" data-viewer-next aria-label="Следующее изображение">&#10095;</button>
+            </div>
+            <div class="work-viewer-dots" id="workViewerDots"></div>
+            <p id="workViewerDescription"></p>
+            <div id="workViewerStats" class="work-stats"></div>
+        </div>
+    </div>
+
+    <div id="deleteWorkModal" class="delete-work-modal" aria-hidden="true">
+        <div class="delete-work-modal-overlay" data-close-delete-modal></div>
+        <div class="delete-work-modal-content" role="dialog" aria-modal="true" aria-labelledby="deleteWorkModalTitle">
+            <button class="delete-work-modal-close" type="button" data-close-delete-modal aria-label="Закрыть">&times;</button>
+            <h2 id="deleteWorkModalTitle">Удалить работу</h2>
+            <form class="delete-work-form" id="deleteWorkForm">
+                <div class="delete-work-form-group">
+                    <p class="delete-work-modal-text">
+                        Вы уверены, что хотите удалить эту работу? <br>Действие нельзя отменить.
+                    </p>
+                </div>
+                <p class="delete-work-validation-error" id="deleteWorkValidationError" role="alert" style="display:none;"></p>
+                <button type="submit" class="delete-work-submit-btn">Удалить</button>
+            </form>
+            <div class="report-success-state" id="deleteWorkSuccessState">
+                <div class="success-content" role="status">
+                    <svg width="180" height="304" viewBox="0 0 180 304" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <g clip-path="url(#clip0_559_2829)">
+                            <path d="M82.1031 0.649285C80.7254 1.12434 77.1559 2.8464 74.1501 4.56847C68.5141 7.71569 67.5122 8.90333 68.1384 11.9318C68.3263 12.6444 87.0502 42.2164 109.844 77.6078C132.639 112.999 151.301 142.036 151.301 142.156C151.301 142.275 119.05 142.393 79.5982 142.393C19.6689 142.393 7.52024 142.512 5.76682 143.224C3.01145 144.293 0.3187 147.737 0.00558935 150.529C-0.432765 153.913 25.0544 291.975 26.62 294.944C28.436 298.21 33.1953 301.952 36.8899 303.02C41.5867 304.327 122.619 304.327 127.316 303.02C131.136 301.952 135.707 298.269 137.461 294.826C138.526 292.688 148.107 241.797 163.888 153.913L164.576 150.291L168.334 148.568C176.162 145.005 180.67 137.999 179.918 130.516C179.543 126.36 179.543 126.36 167.833 108.13C162.51 99.8759 158.063 92.8095 157.876 92.3938C157.751 91.9187 159.191 90.7311 161.32 89.4248C167.582 85.743 170.401 80.0424 169.022 73.8074C168.02 69.3538 151.801 43.6416 148.044 40.6131C142.909 36.397 136.584 36.397 129.445 40.5537C127.505 41.6226 125.814 42.4539 125.625 42.3352C125.438 42.2164 120.302 34.4373 114.29 25.1145C108.342 15.7322 102.455 7.06249 101.328 5.81549C97.195 1.18372 88.1774 -1.25092 82.1031 0.649285ZM91.0581 10.2097C91.9974 10.6848 93.3124 11.6943 94.0639 12.4662C95.3163 13.7726 166.894 124.638 169.148 128.676C170.401 130.992 170.15 134.495 168.584 136.752C167.582 138.177 162.76 140.968 162.197 140.434C162.008 140.255 143.41 111.455 120.866 76.4201C82.6041 17.0386 79.9113 12.6444 80.9759 11.8724C84.2948 9.43776 88.1774 8.78456 91.0581 10.2097ZM141.782 47.7983C143.786 49.4609 159.442 74.9949 159.442 76.5983C159.442 77.3703 159.004 78.6173 158.439 79.3299C157.5 80.6362 152.616 83.9023 152.24 83.4866C151.614 82.9521 131.261 51.2424 131.261 50.8861C131.261 50.1735 137.774 46.7888 139.152 46.7888C139.903 46.7888 141.094 47.2638 141.782 47.7983ZM153.555 154.982C153.304 156.704 152.803 159.376 152.491 160.92L151.801 163.771H81.8527H11.9038L11.0897 159.139C10.6513 156.645 10.1504 153.972 9.96249 153.2L9.64939 151.894H81.79H153.993L153.555 154.982ZM150.048 173.805C150.048 174.459 130.197 283.662 129.32 287.641C128.882 289.718 128.13 291.204 126.815 292.391L124.937 294.113L82.9798 294.291C36.389 294.469 37.5788 294.528 35.7001 290.61C35.1992 289.6 30.1894 263.234 24.4908 232.059C18.7922 200.883 14.0329 174.875 13.9076 174.281C13.6572 173.331 17.2266 173.271 81.8527 173.271C119.363 173.271 150.048 173.509 150.048 173.805Z" fill="#CF2F2F" fill-opacity="0.5"/>
+                            <path d="M113.289 201.834C112.537 202.071 111.536 202.903 110.972 203.675C110.409 204.565 108.656 215.017 106.15 232.237L102.268 259.435L103.52 261.037C104.522 262.343 105.273 262.641 107.465 262.641C112.036 262.641 111.911 262.997 116.295 232.475L120.178 205.277L118.925 203.675C117.548 201.893 115.231 201.122 113.289 201.834Z" fill="#CF2F2F" fill-opacity="0.5"/>
+                            <path d="M46.1588 203.318C45.4699 204.209 44.8438 205.338 44.8438 205.812C44.8438 206.346 46.5345 218.639 48.601 233.187C52.8594 262.937 52.7967 262.641 57.3681 262.641C59.5599 262.641 60.3114 262.344 61.3133 261.037L62.5657 259.434L58.6832 232.237C54.3623 202.012 54.4248 202.19 50.0413 201.893C47.9122 201.716 47.2859 201.953 46.1588 203.318Z" fill="#CF2F2F" fill-opacity="0.5"/>
+                            <path d="M78.9718 203.259L77.4062 204.685V232.653V260.622L78.9718 262.047C80.9758 264.007 83.8564 264.007 85.8603 262.047L87.4258 260.622V232.653V204.685L85.8603 203.259C84.9209 202.309 83.6059 201.775 82.4161 201.775C81.2263 201.775 79.9112 202.309 78.9718 203.259Z" fill="#CF2F2F" fill-opacity="0.5"/>
+                            <path d="M46.9101 60.1495C46.1587 60.684 45.0315 62.4653 44.4679 64.2468C43.5911 66.9783 43.5286 67.6315 44.28 69.1161C45.3446 71.1945 47.9121 72.2039 50.3543 71.3725C52.2956 70.7788 54.8005 66.5626 54.8631 63.8312C54.8631 60.2683 50.1039 58.0711 46.9101 60.1495Z" fill="#CF2F2F" fill-opacity="0.5"/>
+                            <path d="M23.5507 64.0095C21.5467 65.9097 21.672 68.2255 23.989 72.6199C24.8657 74.2231 26.1182 76.1827 26.8696 76.8953C29.6876 79.8644 34.8227 77.6673 34.8227 73.6293C34.8227 71.4916 32.3178 66.266 30.2512 64.1282C28.6231 62.4656 25.3041 62.3469 23.5507 64.0095Z" fill="#CF2F2F" fill-opacity="0.5"/>
+                            <path d="M7.26864 77.8455C3.69918 79.5676 4.07491 84.3181 8.0201 86.159C12.0905 88.0591 14.4701 88.1185 16.2862 86.3965C19.48 83.368 18.0397 79.627 13.0925 78.0236C9.58566 76.8955 9.27254 76.8955 7.26864 77.8455Z" fill="#CF2F2F" fill-opacity="0.5"/>
+                            <path d="M44.0922 86.8118C38.1431 89.781 19.2312 101.004 17.8535 102.429C16.9142 103.32 15.8496 105.101 15.4112 106.348C14.0336 110.505 14.9729 112.88 21.8613 123.094L28.2488 132.596L34.0726 132.773C37.2037 132.833 39.8338 132.773 39.8338 132.535C39.8338 132.298 36.4522 127.132 32.3192 120.956C28.1861 114.84 24.8046 109.555 24.8046 109.258C24.8046 108.724 46.0334 96.3722 46.3465 96.7879C46.4091 96.8473 49.5403 101.479 53.2349 107.061C62.6909 121.194 63.8808 122.203 70.3308 122.203C73.9003 122.203 74.4012 122.025 85.548 115.612C96.319 109.496 97.133 109.139 97.9471 110.149C98.3855 110.743 102.08 116.087 106.088 122.025L113.352 132.892H119.176C124.687 132.892 125 132.833 124.436 131.823C122.62 128.616 104.084 101.479 102.769 100.173C101.955 99.3414 100.452 98.3319 99.5127 97.9756C95.4423 96.4316 50.918 85.9805 48.4757 85.9805C46.9727 85.9805 45.0315 86.3962 44.0922 86.8118ZM72.9609 101.123C79.3484 102.607 84.7964 104.033 85.1096 104.211C85.8611 104.626 70.5813 113.296 69.6419 112.94C69.0157 112.702 59.9355 99.8165 59.3093 98.2725C59.184 97.9756 59.6224 97.8568 60.2487 98.0944C60.9374 98.2725 66.6361 99.6383 72.9609 101.123Z" fill="#CF2F2F" fill-opacity="0.5"/>
+                        </g>
+                        <defs>
+                            <clipPath id="clip0_559_2829">
+                                <rect width="180" height="304" fill="white"/>
+                            </clipPath>
+                        </defs>
+                    </svg>
+
+
+                    <h3>Работа удалена</h3>
+                    <p>Ждем ваших новых работ!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="collectionModal" class="delete-work-modal collection-modal" aria-hidden="true">
+        <div class="delete-work-modal-overlay collection-modal-overlay" data-close-collection-modal></div>
+        <div class="delete-work-modal-content collection-modal-content" role="dialog" aria-modal="true" aria-labelledby="collectionModalTitle">
+            <button class="delete-work-modal-close collection-modal-close" type="button" data-close-collection-modal aria-label="Закрыть">&times;</button>
+            <div class="collection-modal-header">
+                <span class="collection-modal-kicker">Портфолио</span>
+                <h2 id="collectionModalTitle">Новый сборник</h2>
+                <p>Объедините лучшие работы в тематический набор, чтобы клиентам было проще оценить ваш стиль.</p>
+            </div>
+            <form class="delete-work-form collection-form" id="collectionForm">
+                <div class="delete-work-form-group collection-form-group">
+                    <label for="collectionName">Название сборника</label>
+                    <input id="collectionName" name="collectionName" type="text" required maxlength="80" placeholder="Например: Иллюстрации для бренда">
+                </div>
+                <div class="delete-work-form-group collection-form-group">
+                    <p class="collection-form-label">Выберите работы</p>
+                    <div id="collectionWorksList" class="collection-works-list"></div>
+                </div>
+                <button type="submit" class="delete-work-submit-btn collection-submit-btn">Создать сборник</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="reportModal" class="report-modal" aria-hidden="true">
+        <div class="report-modal-overlay" data-close-report-modal></div>
+        <div class="report-modal-content" role="dialog" aria-modal="true" aria-labelledby="reportModalTitle">
+            <button class="report-modal-close" type="button" data-close-report-modal aria-label="Закрыть">&times;</button>
+            <h2 id="reportModalTitle">Пожаловаться на работу</h2>
+
+            <form action="/works/report" method="POST" class="report-form" id="reportForm">
+                <div style="display: flex; flex-direction: column;" id="reportFormFields">
+                    <div class="report-form-group">
+                        <input type="hidden" name="reason" id="reportReasonValue" required>
+                        <input type="hidden" name="csrf_token" value="<%= csrfToken %>">
+                        <div class="report-reasons-list" role="group" aria-label="Причина жалобы">
+                            <label class="report-reason-item">
+                                <input type="checkbox" class="report-reason-checkbox" value="fraud">
+                                <span class="report-reason-text">
+                                    <span class="report-reason-title">Мошенничество</span>
+                                    <span class="report-reason-description">Обман, подозрительная оплата или попытка увести сделку с платформы.</span>
+                                </span>
+                            </label>
+                            <label class="report-reason-item">
+                                <input type="checkbox" class="report-reason-checkbox" value="spam">
+                                <span class="report-reason-text">
+                                    <span class="report-reason-title">Спам или реклама</span>
+                                    <span class="report-reason-description">Повторяющиеся, навязчивые или нерелевантные публикации.</span>
+                                </span>
+                            </label>
+                            <label class="report-reason-item">
+                                <input type="checkbox" class="report-reason-checkbox" value="prohibited_content">
+                                <span class="report-reason-text">
+                                    <span class="report-reason-title">Запрещённый контент</span>
+                                    <span class="report-reason-description">Запрещённые товары, услуги, материалы или незаконные предложения.</span>
+                                </span>
+                            </label>
+                            <label class="report-reason-item">
+                                <input type="checkbox" class="report-reason-checkbox" value="offensive_content">
+                                <span class="report-reason-text">
+                                    <span class="report-reason-title">Оскорбления или дискриминация</span>
+                                    <span class="report-reason-description">Угрозы, грубость, ненависть или дискриминационные формулировки.</span>
+                                </span>
+                            </label>
+                            <label class="report-reason-item">
+                                <input type="checkbox" class="report-reason-checkbox" value="copyright_violation">
+                                <span class="report-reason-text">
+                                    <span class="report-reason-title">Нарушение авторских прав</span>
+                                    <span class="report-reason-description">Чужие тексты, изображения, логотипы или работы без разрешения.</span>
+                                </span>
+                            </label>
+                            <label class="report-reason-item">
+                                <input type="checkbox" class="report-reason-checkbox" value="incorrect_information">
+                                <span class="report-reason-text">
+                                    <span class="report-reason-title">Недостоверная информация</span>
+                                    <span class="report-reason-description">Неверная цена, сроки, описание, опыт или характеристики.</span>
+                                </span>
+                            </label>
+                        </div>
+                        <p class="report-validation-error" id="reportValidationError" role="alert" style="display:none;">Выберите причину жалобы.</p>
+                    </div>
+                    <button style="margin-top: 20px;" type="submit" class="report-submit-btn">Отправить жалобу</button>
+                </div>
+            </form>
+
+            <div class="report-success-state" id="reportSuccessState">
+                <div class="success-content" role="status">
+                    <svg class="success-icon" width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="30" cy="30" r="28" stroke="#8CBA0B" stroke-width="2" fill="white"/>
+                        <path d="M18 30L26 38L42 22" stroke="#8CBA0B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <h3>Сообщение отправлено!</h3>
+                    <p>Спасибо за обращение. Мы обработаем вашу жалобу и отправим уведомление о результате.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        document.querySelectorAll('.subscribe-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const userId = btn.dataset.userId;
+                const isSubscribed = btn.dataset.subscribed === 'true';
+
+                try {
+                    btn.disabled = true;
+                    const response = await fetch('/api/subscribe', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-Token': '<%= csrfToken %>'
+                        },
+                        body: JSON.stringify({ userId, action: isSubscribed ? 'unsubscribe' : 'subscribe' })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Ошибка изменения подписки');
+                    }
+
+                    const nextSubscribedState = !isSubscribed;
+                    btn.dataset.subscribed = nextSubscribedState ? 'true' : 'false';
+                    btn.textContent = nextSubscribedState ? 'Отписаться' : 'Подписаться';
+
+                    const followersCounter = document.querySelector('.profile-stats .stat:nth-child(2) .stat-value');
+                    if (followersCounter) {
+                        const currentCount = Number(followersCounter.textContent) || 0;
+                        followersCounter.textContent = Math.max(currentCount + (nextSubscribedState ? 1 : -1), 0);
+                    }
+                } catch (error) {
+                    console.error(error);
+                } finally {
+                    btn.disabled = false;
+                }
+            });
+        });
+
+        const profileToast = document.getElementById('profileToast');
+        if (profileToast) {
+            window.setTimeout(() => {
+                profileToast.classList.add('profile-toast--hidden');
+            }, 2600);
+
+            window.setTimeout(() => {
+                profileToast.remove();
+            }, 3200);
+
+            if (window.history.replaceState) {
+                const currentUrl = new URL(window.location.href);
+                currentUrl.searchParams.delete('profile_updated');
+                currentUrl.searchParams.delete('work_created');
+                currentUrl.searchParams.delete('work_updated');
+                window.history.replaceState({}, document.title, currentUrl.pathname + currentUrl.search + currentUrl.hash);
+            }
+        }
+
+        document.querySelectorAll('[data-gallery]').forEach((gallery) => {
+            const track = gallery.querySelector('[data-gallery-track]');
+            if (!track) return;
+            const slides = Array.from(track.children);
+            const prevBtn = gallery.querySelector('[data-gallery-prev]');
+            const nextBtn = gallery.querySelector('[data-gallery-next]');
+
+            let currentIndex = 0;
+
+            const dotsContainer = document.createElement('div');
+            dotsContainer.className = 'gallery-dots';
+
+            const dots = slides.map((_, index) => {
+                const dot = document.createElement('button');
+                dot.type = 'button';
+                dot.className = 'dot';
+                dot.setAttribute('aria-label', `Перейти к изображению ${index + 1}`);
+                dot.addEventListener('click', () => {
+                    currentIndex = index;
+                    updateGallery();
+                });
+                dotsContainer.appendChild(dot);
+                return dot;
+            });
+
+            gallery.appendChild(dotsContainer);
+
+            function updateGallery() {
+                track.style.transform = `translateX(-${currentIndex * 100}%)`;
+                dots.forEach((dot, index) => {
+                    dot.classList.toggle('active', index === currentIndex);
+                });
+            }
+
+            if (prevBtn) {
+                prevBtn.addEventListener('click', () => {
+                    currentIndex = (currentIndex - 1 + slides.length) % slides.length;
+                    updateGallery();
+                });
+            }
+
+            if (nextBtn) {
+                nextBtn.addEventListener('click', () => {
+                    currentIndex = (currentIndex + 1) % slides.length;
+                    updateGallery();
+                });
+            }
+
+            updateGallery();
+        });
+
+        const workViewerModal = document.getElementById('workViewerModal');
+        const workViewerTitle = document.getElementById('workViewerTitle');
+        const workViewerTrack = document.getElementById('workViewerTrack');
+        const workViewerDescription = document.getElementById('workViewerDescription');
+        const workViewerStats = document.getElementById('workViewerStats');
+        const workViewerDots = document.getElementById('workViewerDots');
+        const viewerPrevBtn = document.querySelector('[data-viewer-prev]');
+        const viewerNextBtn = document.querySelector('[data-viewer-next]');
+        const deleteWorkModal = document.getElementById('deleteWorkModal');
+        const deleteWorkForm = document.getElementById('deleteWorkForm');
+        const deleteWorkValidationError = document.getElementById('deleteWorkValidationError');
+        const deleteWorkSuccessState = document.getElementById('deleteWorkSuccessState');
+        const reportModal = document.getElementById('reportModal');
+        const reportForm = document.getElementById('reportForm');
+        const reportFormFields = document.getElementById('reportFormFields');
+        const reportSuccessState = document.getElementById('reportSuccessState');
+        const reportReasonValue = document.getElementById('reportReasonValue');
+        const reportReasonCheckboxes = document.querySelectorAll('.report-reason-checkbox');
+        const reportValidationError = document.getElementById('reportValidationError');
+        const complainButtons = document.querySelectorAll('.btn-complain');
+        const pendingToggle = document.querySelector('[data-pending-toggle]');
+        const pendingContent = document.querySelector('[data-pending-content]');
+        const collectionModal = document.getElementById('collectionModal');
+        const collectionForm = document.getElementById('collectionForm');
+        const openCollectionModalBtn = document.getElementById('openCollectionModal');
+        const collectionWorksList = document.getElementById('collectionWorksList');
+        const portfolioCollections = document.getElementById('portfolioCollections');
+        let viewerImages = [];
+        let viewerIndex = 0;
+        let pendingDelete = null;
+
+        const updateViewer = () => {
+            workViewerTrack.style.transform = `translateX(-${viewerIndex * 100}%)`;
+            Array.from(workViewerDots.children).forEach((dot, index) => {
+                dot.classList.toggle('active', index === viewerIndex);
+            });
+        };
+
+        const openWorkViewer = (card) => {
+            if (!card) return;
+            const title = card.querySelector('h3')?.textContent?.trim() || 'Работа';
+            const description = card.querySelector('.work-description')?.textContent?.trim() || 'Описание отсутствует';
+            const statItems = Array.from(card.querySelectorAll('.work-stats span')).map((node) => node.textContent.trim());
+            const images = Array.from(card.querySelectorAll('.work-image img')).map((img) => ({
+                src: img.src,
+                alt: img.alt || title
+            }));
+
+            viewerImages = images.length ? images : [{ src: '/img/work_img.svg', alt: title }];
+            viewerIndex = 0;
+
+            workViewerTitle.textContent = title;
+            workViewerDescription.textContent = description;
+            workViewerStats.innerHTML = statItems.map((stat) => `<span>${stat}</span>`).join('');
+            workViewerTrack.innerHTML = viewerImages.map((image) => `
+                <div class="work-viewer-image">
+                    <img src="${image.src}" alt="${image.alt}">
+                </div>
+            `).join('');
+            workViewerDots.innerHTML = viewerImages.map((_image, index) => `
+                <button type="button" class="dot ${index === 0 ? 'active' : ''}" aria-label="Перейти к изображению ${index + 1}"></button>
+            `).join('');
+
+            Array.from(workViewerDots.children).forEach((dot, index) => {
+                dot.addEventListener('click', () => {
+                    viewerIndex = index;
+                    updateViewer();
+                });
+            });
+
+            updateViewer();
+            workViewerModal.classList.add('is-open');
+            workViewerModal.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('modal-open');
+        };
+
+        const closeWorkViewer = () => {
+            workViewerModal.classList.remove('is-open');
+            workViewerModal.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('modal-open');
+        };
+
+        const openDeleteWorkModal = (workId, card, btn) => {
+            pendingDelete = { workId, card, btn };
+            deleteWorkValidationError.style.display = 'none';
+            deleteWorkValidationError.textContent = '';
+            if (deleteWorkForm) deleteWorkForm.style.display = 'flex';
+            if (deleteWorkSuccessState) deleteWorkSuccessState.classList.remove('is-visible');
+            deleteWorkModal.classList.add('is-open');
+            deleteWorkModal.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('modal-open');
+        };
+
+        const closeDeleteWorkModal = () => {
+            deleteWorkModal.classList.remove('is-open');
+            deleteWorkModal.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('modal-open');
+            if (pendingDelete?.btn) {
+                pendingDelete.btn.disabled = false;
+            }
+            pendingDelete = null;
+        };
+        const openCollectionModal = () => {
+            collectionModal?.classList.add('is-open');
+            collectionModal?.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('modal-open');
+        };
+        const closeCollectionModal = () => {
+            collectionModal?.classList.remove('is-open');
+            collectionModal?.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('modal-open');
+            collectionForm?.reset();
+        };
+        const renderCollectionChoices = () => {
+            if (!collectionWorksList) return;
+            const cards = Array.from(document.querySelectorAll('.works-grid .work-card'));
+            collectionWorksList.innerHTML = cards.map((card) => {
+                const id = card.dataset.workId;
+                const title = card.querySelector('.work-info h3')?.textContent?.trim() || `Работа #${id}`;
+                const image = card.querySelector('.work-image img')?.getAttribute('src') || '/img/work_img.svg';
+                return `<label class="collection-work-option"><input class="collection-work-checkbox" type="checkbox" name="workIds" value="${id}"><span class="collection-work-check" aria-hidden="true"></span><img src="${image}" alt="${title}"><span>${title}</span></label>`;
+            }).join('');
+        };
+        const appendCollection = (name, ids) => {
+            if (!portfolioCollections) return;
+            const preview = ids.map((id) => {
+                const card = document.querySelector(`.works-grid .work-card[data-work-id="${id}"]`);
+                const title = card?.querySelector('.work-info h3')?.textContent?.trim() || 'Без названия';
+                const image = card?.querySelector('.work-image img')?.getAttribute('src') || '/img/work_img.svg';
+                return `<div class="collection-preview-item"><img src="${image}" alt="${title}"><p>${title}</p></div>`;
+            }).join('');
+            portfolioCollections.insertAdjacentHTML('beforeend', `<article class="portfolio-collection-card"><h3>${name}</h3><p>${ids.length} работ</p><div class="collection-preview-grid">${preview}</div></article>`);
+        };
+        const loadCollections = async () => {
+            if (!portfolioCollections) return;
+            try {
+                const response = await fetch('/api/collections', {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || 'Не удалось загрузить сборники');
+                }
+                portfolioCollections.innerHTML = '';
+                data.collections.forEach((collection) => {
+                    appendCollection(collection.title, collection.workIds || []);
+                });
+            } catch (_error) {
+                portfolioCollections.innerHTML = '<p class="portfolio-empty">Не удалось загрузить сборники.</p>';
+            }
+        };
+
+        const getSelectedReportReasons = () => Array.from(reportReasonCheckboxes)
+            .filter((checkbox) => checkbox.checked)
+            .map((checkbox) => checkbox.value);
+
+        const hideReportValidationError = () => {
+            if (reportValidationError) reportValidationError.style.display = 'none';
+        };
+
+        const showReportValidationError = () => {
+            if (reportValidationError) reportValidationError.style.display = 'block';
+        };
+
+        const syncReportReasonSelection = (activeCheckbox) => {
+            if (!reportReasonCheckboxes.length) return;
+
+            reportReasonCheckboxes.forEach((checkbox) => {
+                if (checkbox !== activeCheckbox) checkbox.checked = false;
+            });
+
+            const selectedReasons = getSelectedReportReasons();
+            if (reportReasonValue) {
+                reportReasonValue.value = selectedReasons[0] || '';
+            }
+            if (selectedReasons.length > 0) {
+                hideReportValidationError();
+            }
+        };
+
+        const openReportModal = (workId) => {
+            if (!reportModal) return;
+            if (reportForm) {
+                reportForm.action = workId ? `/works/${workId}/report` : '/works/report';
+            }
+            syncReportReasonSelection(null);
+            if (reportFormFields) reportFormFields.style.display = 'flex';
+            if (reportSuccessState) reportSuccessState.classList.remove('is-visible');
+
+            reportModal.classList.add('is-open');
+            reportModal.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('modal-open');
+        };
+
+        const closeReportModal = () => {
+            if (!reportModal) return;
+            reportModal.classList.remove('is-open');
+            reportModal.setAttribute('aria-hidden', 'true');
+
+            if (reportForm) reportForm.reset();
+            syncReportReasonSelection(null);
+            if (reportFormFields) reportFormFields.style.display = 'flex';
+            if (reportSuccessState) reportSuccessState.classList.remove('is-visible');
+
+            document.body.classList.remove('modal-open');
+        };
+
+        document.querySelectorAll('[data-open-work]').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                openWorkViewer(btn.closest('.work-card'));
+            });
+        });
+
+        pendingToggle?.addEventListener('click', () => {
+            const isExpanded = pendingToggle.getAttribute('aria-expanded') === 'true';
+            pendingToggle.setAttribute('aria-expanded', isExpanded ? 'false' : 'true');
+            if (pendingContent) {
+                pendingContent.hidden = isExpanded;
+            }
+        });
+        openCollectionModalBtn?.addEventListener('click', () => {
+            renderCollectionChoices();
+            openCollectionModal();
+        });
+        loadCollections();
+        collectionForm?.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const name = collectionForm.querySelector('#collectionName')?.value?.trim();
+            const selected = Array.from(collectionForm.querySelectorAll('input[name="workIds"]:checked')).map((item) => item.value);
+            if (!name || !selected.length) {
+                showAlert('Укажите название сборника и выберите хотя бы одну работу.');
+                return;
+            }
+            try {
+                const response = await fetch('/api/collections', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title: name,
+                        workIds: selected
+                    })
+                });
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || 'Не удалось создать сборник');
+                }
+                appendCollection(data.collection.title, data.collection.workIds);
+                closeCollectionModal();
+            } catch (error) {
+                showAlert(error.message || 'Не удалось создать сборник. Попробуйте ещё раз.');
+            }
+        });
+        document.querySelectorAll('[data-close-collection-modal]').forEach((node) => node.addEventListener('click', closeCollectionModal));
+
+        document.querySelectorAll('[data-delete-work]').forEach((btn) => {
+            btn.addEventListener('click', async (event) => {
+                event.stopPropagation();
+                const card = btn.closest('.work-card');
+                const workId = card?.dataset?.workId;
+                if (!workId) return;
+                btn.disabled = true;
+                openDeleteWorkModal(workId, card, btn);
+            });
+        });
+
+        complainButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                openReportModal(button.dataset.workId || '');
+            });
+        });
+
+        reportReasonCheckboxes.forEach((checkbox) => {
+            checkbox.addEventListener('change', () => {
+                syncReportReasonSelection(checkbox);
+            });
+        });
+
+        reportForm?.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const selectedReasons = getSelectedReportReasons();
+            if (selectedReasons.length === 0) {
+                showReportValidationError();
+                return;
+            }
+
+            if (reportReasonValue) {
+                reportReasonValue.value = selectedReasons[0];
+            }
+
+            if (!reportForm.checkValidity()) {
+                reportForm.reportValidity();
+                return;
+            }
+
+            const submitButton = reportForm.querySelector('button[type="submit"]');
+
+            try {
+                if (submitButton) submitButton.disabled = true;
+
+                const response = await fetch(reportForm.action, {
+                    method: 'POST',
+                    body: new URLSearchParams(new FormData(reportForm)),
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Ошибка при отправке жалобы');
+                }
+
+                if (reportFormFields) reportFormFields.style.display = 'none';
+                if (reportSuccessState) reportSuccessState.classList.add('is-visible');
+                reportForm.reset();
+                syncReportReasonSelection(null);
+            } catch (_error) {
+                showAlert('Не удалось отправить жалобу. Попробуйте еще раз.');
+            } finally {
+                if (submitButton) submitButton.disabled = false;
+            }
+        });
+
+        deleteWorkForm?.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            if (!pendingDelete?.workId || !pendingDelete?.card) return;
+
+            const { workId, card, btn } = pendingDelete;
+
+            try {
+                const response = await fetch(`/works/${workId}/delete`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-Token': '<%= csrfToken %>'
+                    }
+                });
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || 'Не удалось удалить работу');
+                }
+
+                card.remove();
+                const worksCounter = document.querySelector('.profile-stats .stat:last-child .stat-value');
+                if (worksCounter) {
+                    const currentCount = Number(worksCounter.textContent) || 0;
+                    worksCounter.textContent = Math.max(currentCount - 1, 0);
+                }
+                if (deleteWorkForm) deleteWorkForm.style.display = 'none';
+                if (deleteWorkSuccessState) deleteWorkSuccessState.classList.add('is-visible');
+                setTimeout(() => {
+                    closeDeleteWorkModal();
+                }, 1500);
+            } catch (error) {
+                deleteWorkValidationError.textContent = error.message || 'Не удалось удалить работу';
+                deleteWorkValidationError.style.display = 'block';
+                if (btn) {
+                    btn.disabled = false;
+                }
+            }
+        });
+
+        document.querySelectorAll('[data-close-delete-modal]').forEach((node) => {
+            node.addEventListener('click', closeDeleteWorkModal);
+        });
+        document.querySelectorAll('[data-close-report-modal]').forEach((node) => {
+            node.addEventListener('click', closeReportModal);
+        });
+
+        viewerPrevBtn?.addEventListener('click', () => {
+            if (!viewerImages.length) return;
+            viewerIndex = (viewerIndex - 1 + viewerImages.length) % viewerImages.length;
+            updateViewer();
+        });
+
+        viewerNextBtn?.addEventListener('click', () => {
+            if (!viewerImages.length) return;
+            viewerIndex = (viewerIndex + 1) % viewerImages.length;
+            updateViewer();
+        });
+
+        document.querySelectorAll('[data-close-work-viewer]').forEach((node) => {
+            node.addEventListener('click', closeWorkViewer);
+        });
+
+        window.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                if (workViewerModal.classList.contains('is-open')) closeWorkViewer();
+                if (deleteWorkModal.classList.contains('is-open')) closeDeleteWorkModal();
+                if (reportModal?.classList.contains('is-open')) closeReportModal();
+                if (collectionModal?.classList.contains('is-open')) closeCollectionModal();
+                if (depositModal?.classList.contains('is-open')) closeDepositModal();
+            }
+
+            if (workViewerModal.classList.contains('is-open')) {
+                if (event.key === 'ArrowLeft' && viewerImages.length) {
+                    viewerIndex = (viewerIndex - 1 + viewerImages.length) % viewerImages.length;
+                    updateViewer();
+                }
+                if (event.key === 'ArrowRight' && viewerImages.length) {
+                    viewerIndex = (viewerIndex + 1) % viewerImages.length;
+                    updateViewer();
+                }
+            }
+        });
+
+
+        const depositModal = document.getElementById('depositModal');
+        const openDepositBtn = document.querySelector('[data-open-deposit-modal]');
+        const closeDepositNodes = document.querySelectorAll('[data-close-deposit-modal]');
+
+        function openDepositModal() {
+            if (depositModal) {
+                depositModal.classList.add('is-open');
+                depositModal.setAttribute('aria-hidden', 'false');
+            }
+        }
+        function closeDepositModal() {
+            if (depositModal) {
+                depositModal.classList.remove('is-open');
+                depositModal.setAttribute('aria-hidden', 'true');
+            }
+        }
+
+        openDepositBtn?.addEventListener('click', openDepositModal);
+        closeDepositNodes.forEach((node) => {
+            node.addEventListener('click', closeDepositModal);
+        });
+
+        const amountBtns = document.querySelectorAll('.deposit-amount-btn');
+        const customInput = document.getElementById('customAmount');
+        const depositError = document.getElementById('depositError');
+        const depositForm = document.getElementById('depositForm');
+
+        amountBtns.forEach((btn) => {
+            btn.addEventListener('click', () => {
+                amountBtns.forEach((b) => b.classList.remove('is-active'));
+                btn.classList.add('is-active');
+                customInput.value = btn.dataset.amount;
+                if (depositError) depositError.style.display = 'none';
+            });
+        });
+
+        customInput?.addEventListener('input', () => {
+            amountBtns.forEach((b) => b.classList.remove('is-active'));
+            if (depositError) depositError.style.display = 'none';
+        });
+
+        depositForm?.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            if (depositError) {
+                depositError.style.display = 'none';
+                depositError.textContent = '';
+            }
+
+            const amount = parseInt(customInput.value, 10);
+            if (!amount || amount < 100) {
+                if (depositError) {
+                    depositError.textContent = 'Минимальная сумма пополнения — 100 ₽';
+                    depositError.style.display = 'block';
+                }
+                return;
+            }
+            if (amount > 500000) {
+                if (depositError) {
+                    depositError.textContent = 'Максимальная сумма пополнения — 500 000 ₽';
+                    depositError.style.display = 'block';
+                }
+                return;
+            }
+
+            const submitBtn = depositForm.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Зачисляем...';
+            }
+
+            try {
+                const response = await fetch('/api/payments/topup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': '<%= csrfToken %>'
+                    },
+                    body: JSON.stringify({ amount, csrf_token: '<%= csrfToken %>' })
+                });
+
+                const data = await response.json().catch(() => ({}));
+                if (data.success) {
+                    window.location.href = '/balance?status=success';
+                } else {
+                    throw new Error(data.error || 'Не удалось пополнить баланс');
+                }
+            } catch (error) {
+                if (depositError) {
+                    depositError.textContent = error.message || 'Ошибка при пополнении';
+                    depositError.style.display = 'block';
+                }
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Пополнить';
+                }
+            }
+        });
+
+        document.querySelectorAll('.post-like-btn').forEach((button) => {
+            button.addEventListener('click', async () => {
+                const workId = button.dataset.workId;
+                if (!workId) return;
+
+                try {
+                    const response = await fetch(`/api/works/${workId}/like`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Like request failed');
+                    }
+
+                    const payload = await response.json();
+                    const counter = button.querySelector('.post-like-count');
+                    if (counter) {
+                        counter.textContent = payload.likes;
+                    }
+
+                    button.classList.toggle('is-liked', Boolean(payload.liked));
+                    button.dataset.liked = payload.liked ? 'true' : 'false';
+                } catch (error) {
+                    console.error('Не удалось поставить лайк:', error);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

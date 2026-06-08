@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Портфолио | Линити</title>
+    <link rel="stylesheet" href="/css/portfolio.css">
+        <link rel="stylesheet" href="/css/profile.css">
+    <link rel="stylesheet" href="/css/confirm-modal.css">
+    <link rel="stylesheet" href="/css/header.css">
+</head>
+<body>
+    <main>
+        <%- include('partials/header-actions') %>
+        <% const profileUpdatedSafe = Boolean(typeof profileUpdated !== 'undefined' && profileUpdated); %>
+        <% const workCreatedSafe = Boolean(typeof workCreated !== 'undefined' && workCreated); %>
+        <% const workUpdatedSafe = Boolean(typeof workUpdated !== 'undefined' && workUpdated); %>
+        <% if (profileUpdatedSafe || workCreatedSafe || workUpdatedSafe) { %>
+            <div class="profile-toast" id="profileToast" role="status" aria-live="polite">
+                <%= profileUpdatedSafe ? 'Профиль успешно обновлён' : (workUpdatedSafe ? 'Работа успешно отредактирована' : 'Работа отправлена на модерацию') %>
+            </div>
+        <% } %>
+
+        <section class="profile-works portfolio-page-content">
+            <div class="portfolio-toolbar">
+                <h1>Портфолио <%= !isOwnProfile ? ('— ' + portfolioUser.first_name + ' ' + portfolioUser.last_name) : '' %></h1>
+                <% if (isOwnProfile) { %>
+                <button type="button" class="create-collection-btn" id="openCollectionModal">+ Создать сборник</button>
+                <% } %>
+            </div>
+            <div class="orders-tabs portfolio-tabs" role="tablist" aria-label="Разделы портфолио">
+                <button type="button" class="tab-btn active" data-portfolio-tab="collections" aria-selected="true">Сборники</button>
+                <button type="button" class="tab-btn" data-portfolio-tab="works" aria-selected="false">Все работы</button>
+            </div>
+
+            <div class="portfolio-tab-panel" data-portfolio-panel="collections">
+                <div class="portfolio-collections" id="portfolioCollections"></div>
+            </div>
+
+            <div class="portfolio-tab-panel" data-portfolio-panel="works" hidden>
+                <% if (isOwnProfile && pendingWorks && pendingWorks.length) { %>
+                    <div class="pending-works">
+                        <button class="pending-works-toggle" type="button" data-pending-toggle aria-expanded="false">
+                            <span>На модерации</span>
+                            <span class="pending-works-count"><%= pendingWorks.length %></span>
+                        </button>
+                        <div class="pending-works-content" data-pending-content hidden>
+                            <div class="pending-works-list">
+                                <% pendingWorks.forEach(work => { %>
+                                    <div class="pending-work-item">
+                                        <div class="pending-work-item-head">
+                                            <h3><%= work.title %></h3>
+                                            <span><%= new Date(work.created_at).toLocaleDateString('ru-RU') %></span>
+                                        </div>
+                                        <p>Работа отправлена на модерацию и станет доступна после проверки.</p>
+                                    </div>
+                                <% }) %>
+                            </div>
+                        </div>
+                    </div>
+                <% } %>
+                <div class="works-grid">
+                    <% activeWorks.forEach(work => { %>
+                        <div class="work-card" data-work-id="<%= work.id %>">
+                            <% if (isOwnProfile) { %>
+                            <a class="edit-work-btn" href="/works/<%= work.id %>/edit" title="Редактировать работу" aria-label="Редактировать работу">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M16.4767 3.00405C16.6443 3.01998 16.7166 3.22345 16.5976 3.34248L8.27746 11.6626C8.18323 11.7568 8.11581 11.8744 8.08213 12.0034L7.08213 15.8318C7.01484 16.0894 7.08918 16.3634 7.27746 16.5517C7.46573 16.7399 7.73971 16.8143 7.99733 16.747L11.8258 15.747C11.9547 15.7133 12.0723 15.6459 12.1665 15.5517L20.6045 7.11374C20.7229 6.99535 20.9253 7.06618 20.9427 7.23269C21.2943 10.5819 21.2744 13.9602 20.8831 17.3061C20.6603 19.2111 19.1291 20.7069 17.2307 20.9191C13.7825 21.3044 10.2178 21.3044 6.76972 20.9191C4.87132 20.7069 3.34013 19.2111 3.11732 17.3061C2.70504 13.7811 2.70504 10.22 3.11732 6.69501C3.34013 4.78995 4.87132 3.29418 6.76972 3.082C9.96711 2.72465 13.2647 2.69866 16.4767 3.00405Z" fill="#393939"/>
+                                    <path d="M17.8235 4.23781C17.9211 4.14037 18.0792 4.14037 18.1768 4.23781L19.5912 5.65217C19.6888 5.7498 19.6888 5.90809 19.5912 6.00572L11.2977 14.2991C11.2665 14.3304 11.2269 14.353 11.1841 14.3643L9.26973 14.8643C9.08509 14.9124 8.91694 14.7438 8.96487 14.5592L9.46487 12.645C9.47609 12.602 9.49857 12.5628 9.52998 12.5314L17.8235 4.23781Z" fill="#393939"/>
+                                </svg>
+
+                            </a>
+                            <button class="delete-work-btn" type="button" data-delete-work aria-label="Удалить работу" title="Удалить работу">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M9.25 3C9.25 2.58579 9.58579 2.25 10 2.25H14C14.4142 2.25 14.75 2.58579 14.75 3V3.75H19C19.4142 3.75 19.75 4.08579 19.75 4.5C19.75 4.91421 19.4142 5.25 19 5.25H5C4.58579 5.25 4.25 4.91421 4.25 4.5C4.25 4.08579 4.58579 3.75 5 3.75H9.25V3Z" fill="#393939"/>
+                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M6.2399 7.94478C6.26803 7.69157 6.48206 7.5 6.73684 7.5H17.2632C17.5179 7.5 17.732 7.69157 17.7601 7.94478L17.9602 9.74613C18.321 12.9931 18.321 16.2701 17.9602 19.517L17.9405 19.6944C17.8091 20.8769 16.8926 21.8199 15.7143 21.9849C13.2501 22.3299 10.7499 22.3299 8.28574 21.9849C7.10737 21.8199 6.19085 20.8769 6.05945 19.6944L6.03975 19.517C5.67897 16.2701 5.67897 12.9931 6.03975 9.74613L6.2399 7.94478ZM10.75 11.4C10.75 10.9858 10.4142 10.65 10 10.65C9.58579 10.65 9.25 10.9858 9.25 11.4L9.25 18.4C9.25 18.8142 9.58579 19.15 10 19.15C10.4142 19.15 10.75 18.8142 10.75 18.4L10.75 11.4ZM14.75 11.4C14.75 10.9858 14.4142 10.65 14 10.65C13.5858 10.65 13.25 10.9858 13.25 11.4V18.4C13.25 18.8142 13.5858 19.15 14 19.15C14.4142 19.15 14.75 18.8142 14.75 18.4V11.4Z" fill="#393939"/>
+                                </svg>
+                            </button>
+                            <% } %>
+                            <% const portfolioImages = (work.images && work.images.length ? work.images : ['/img/work_img.svg']); %>
+                            <div class="work-gallery" data-gallery>
+                                <button class="gallery-arrow gallery-arrow-left" type="button" data-gallery-prev aria-label="Предыдущее изображение">&#10094;</button>
+                                <div class="work-image-track" data-gallery-track>
+                                    <% portfolioImages.forEach((imageUrl, idx) => { %>
+                                        <div class="work-image">
+                                            <img src="<%= imageUrl %>" alt="<%= work.title %> — изображение <%= idx + 1 %>" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/img/work_img.svg';">
+                                        </div>
+                                    <% }) %>
+                                </div>
+                                <button class="gallery-arrow gallery-arrow-right" type="button" data-gallery-next aria-label="Следующее изображение">&#10095;</button>
+                            </div>
+                            <div class="work-info">
+                                <h3><%= work.title %></h3>
+                                <p class="work-description"><%= work.description || 'Описание не добавлено.' %></p>
+                                <a class="view-work-btn" href="/works/<%= work.id %>">Просмотреть работу</a>
+                                <div class="work-card-footer">
+                                    <button
+                                        class="post-like-btn <%= work.is_liked ? 'is-liked' : '' %>"
+                                        type="button"
+                                        data-work-id="<%= work.id %>"
+                                        data-liked="<%= work.is_liked ? 'true' : 'false' %>"
+                                        aria-pressed="<%= work.is_liked ? 'true' : 'false' %>"
+                                        aria-label="Поставить лайк проекту"
+                                    >
+                                        <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                            <path d="M16 28C15.5985 27.9995 15.2065 27.8782 14.875 27.6519C9.96309 24.3175 7.83621 22.0312 6.66309 20.6019C4.16309 17.555 2.96621 14.4269 2.99996 11.0394C3.03934 7.1575 6.15371 4 9.94246 4C12.6975 4 14.6056 5.55188 15.7168 6.84438C15.752 6.88491 15.7955 6.91741 15.8444 6.93968C15.8932 6.96195 15.9463 6.97348 16 6.97348C16.0536 6.97348 16.1067 6.96195 16.1555 6.93968C16.2044 6.91741 16.2479 6.88491 16.2831 6.84438C17.3943 5.55063 19.3025 4 22.0575 4C25.8462 4 28.9606 7.1575 29 11.04C29.0337 14.4281 27.8356 17.5563 25.3368 20.6025C24.1637 22.0319 22.0368 24.3181 17.125 27.6525C16.7933 27.8786 16.4013 27.9997 16 28Z" fill="none" stroke="#696969" stroke-width="3px"/>
+                                        </svg>
+                                        <span class="post-like-count"><%= work.likes || 0 %></span>
+                                    </button>
+                                    <p class="post-bottom-data"><%= new Date(work.created_at).toLocaleDateString('ru-RU') %></p>
+                                </div>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+            </div>
+        </section>
+    </main>
+    <%- include('partials/confirm-modal') %>
+    <script>
+        function showConfirm(message, onConfirm, options = {}) {
+            const modal = document.getElementById('confirmModal');
+            const titleEl = document.getElementById('confirmModalTitle');
+            const msgEl = document.getElementById('confirmModalMessage');
+            const okBtn = document.getElementById('confirmModalOk');
+            const cancelBtn = document.getElementById('confirmModalCancel');
+            titleEl.textContent = options.title || 'Подтвердите действие';
+            msgEl.textContent = message;
+            okBtn.textContent = options.confirmText || 'Подтвердить';
+            cancelBtn.style.display = options.hideCancel ? 'none' : 'inline-block';
+            modal.style.display = 'flex';
+            const cleanup = () => { modal.style.display = 'none'; okBtn.onclick = null; };
+            okBtn.onclick = () => { cleanup(); onConfirm(); };
+            cancelBtn.onclick = cleanup;
+        }
+        function closeConfirm() {
+            document.getElementById('confirmModal').style.display = 'none';
+        }
+        function showAlert(message) {
+            showConfirm(message, () => {}, { title: 'Внимание', confirmText: 'OK', hideCancel: true });
+        }
+    </script>
+
+    <div id="workViewerModal" class="work-viewer-modal" aria-hidden="true">
+        <div class="work-viewer-overlay" data-close-work-viewer></div>
+        <div class="work-viewer-content" role="dialog" aria-modal="true" aria-label="Просмотр работы">
+            <button class="work-viewer-close" type="button" data-close-work-viewer aria-label="Закрыть">&times;</button>
+            <h3 id="workViewerTitle"></h3>
+            <div class="work-viewer-gallery" data-viewer-gallery>
+                <button class="gallery-arrow gallery-arrow-left" type="button" data-viewer-prev aria-label="Предыдущее изображение">&#10094;</button>
+                <div class="work-viewer-track" id="workViewerTrack"></div>
+                <button class="gallery-arrow gallery-arrow-right" type="button" data-viewer-next aria-label="Следующее изображение">&#10095;</button>
+            </div>
+            <div class="work-viewer-dots" id="workViewerDots"></div>
+            <p id="workViewerDescription"></p>
+            <div id="workViewerStats" class="work-stats"></div>
+        </div>
+    </div>
+
+    <div id="deleteWorkModal" class="delete-work-modal" aria-hidden="true">
+        <div class="delete-work-modal-overlay" data-close-delete-modal></div>
+        <div class="delete-work-modal-content" role="dialog" aria-modal="true" aria-labelledby="deleteWorkModalTitle">
+            <button class="delete-work-modal-close" type="button" data-close-delete-modal aria-label="Закрыть">&times;</button>
+            <h2 id="deleteWorkModalTitle">Удалить работу</h2>
+            <form class="delete-work-form" id="deleteWorkForm">
+                <div class="delete-work-form-group">
+                    <p class="delete-work-modal-text">
+                        Вы уверены, что хотите удалить эту работу? <br>Действие нельзя отменить.
+                    </p>
+                </div>
+                <p class="delete-work-validation-error" id="deleteWorkValidationError" role="alert" style="display:none;"></p>
+                <button type="submit" class="delete-work-submit-btn">Удалить</button>
+            </form>
+            <div class="report-success-state" id="deleteWorkSuccessState">
+                <div class="success-content" role="status">
+                    <svg width="180" height="304" viewBox="0 0 180 304" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <g clip-path="url(#clip0_559_2829)">
+                            <path d="M82.1031 0.649285C80.7254 1.12434 77.1559 2.8464 74.1501 4.56847C68.5141 7.71569 67.5122 8.90333 68.1384 11.9318C68.3263 12.6444 87.0502 42.2164 109.844 77.6078C132.639 112.999 151.301 142.036 151.301 142.156C151.301 142.275 119.05 142.393 79.5982 142.393C19.6689 142.393 7.52024 142.512 5.76682 143.224C3.01145 144.293 0.3187 147.737 0.00558935 150.529C-0.432765 153.913 25.0544 291.975 26.62 294.944C28.436 298.21 33.1953 301.952 36.8899 303.02C41.5867 304.327 122.619 304.327 127.316 303.02C131.136 301.952 135.707 298.269 137.461 294.826C138.526 292.688 148.107 241.797 163.888 153.913L164.576 150.291L168.334 148.568C176.162 145.005 180.67 137.999 179.918 130.516C179.543 126.36 179.543 126.36 167.833 108.13C162.51 99.8759 158.063 92.8095 157.876 92.3938C157.751 91.9187 159.191 90.7311 161.32 89.4248C167.582 85.743 170.401 80.0424 169.022 73.8074C168.02 69.3538 151.801 43.6416 148.044 40.6131C142.909 36.397 136.584 36.397 129.445 40.5537C127.505 41.6226 125.814 42.4539 125.625 42.3352C125.438 42.2164 120.302 34.4373 114.29 25.1145C108.342 15.7322 102.455 7.06249 101.328 5.81549C97.195 1.18372 88.1774 -1.25092 82.1031 0.649285ZM91.0581 10.2097C91.9974 10.6848 93.3124 11.6943 94.0639 12.4662C95.3163 13.7726 166.894 124.638 169.148 128.676C170.401 130.992 170.15 134.495 168.584 136.752C167.582 138.177 162.76 140.968 162.197 140.434C162.008 140.255 143.41 111.455 120.866 76.4201C82.6041 17.0386 79.9113 12.6444 80.9759 11.8724C84.2948 9.43776 88.1774 8.78456 91.0581 10.2097ZM141.782 47.7983C143.786 49.4609 159.442 74.9949 159.442 76.5983C159.442 77.3703 159.004 78.6173 158.439 79.3299C157.5 80.6362 152.616 83.9023 152.24 83.4866C151.614 82.9521 131.261 51.2424 131.261 50.8861C131.261 50.1735 137.774 46.7888 139.152 46.7888C139.903 46.7888 141.094 47.2638 141.782 47.7983ZM153.555 154.982C153.304 156.704 152.803 159.376 152.491 160.92L151.801 163.771H81.8527H11.9038L11.0897 159.139C10.6513 156.645 10.1504 153.972 9.96249 153.2L9.64939 151.894H81.79H153.993L153.555 154.982ZM150.048 173.805C150.048 174.459 130.197 283.662 129.32 287.641C128.882 289.718 128.13 291.204 126.815 292.391L124.937 294.113L82.9798 294.291C36.389 294.469 37.5788 294.528 35.7001 290.61C35.1992 289.6 30.1894 263.234 24.4908 232.059C18.7922 200.883 14.0329 174.875 13.9076 174.281C13.6572 173.331 17.2266 173.271 81.8527 173.271C119.363 173.271 150.048 173.509 150.048 173.805Z" fill="#CF2F2F" fill-opacity="0.5"/>
+                            <path d="M113.289 201.834C112.537 202.071 111.536 202.903 110.972 203.675C110.409 204.565 108.656 215.017 106.15 232.237L102.268 259.435L103.52 261.037C104.522 262.343 105.273 262.641 107.465 262.641C112.036 262.641 111.911 262.997 116.295 232.475L120.178 205.277L118.925 203.675C117.548 201.893 115.231 201.122 113.289 201.834Z" fill="#CF2F2F" fill-opacity="0.5"/>
+                            <path d="M46.1588 203.318C45.4699 204.209 44.8438 205.338 44.8438 205.812C44.8438 206.346 46.5345 218.639 48.601 233.187C52.8594 262.937 52.7967 262.641 57.3681 262.641C59.5599 262.641 60.3114 262.344 61.3133 261.037L62.5657 259.434L58.6832 232.237C54.3623 202.012 54.4248 202.19 50.0413 201.893C47.9122 201.716 47.2859 201.953 46.1588 203.318Z" fill="#CF2F2F" fill-opacity="0.5"/>
+                            <path d="M78.9718 203.259L77.4062 204.685V232.653V260.622L78.9718 262.047C80.9758 264.007 83.8564 264.007 85.8603 262.047L87.4258 260.622V232.653V204.685L85.8603 203.259C84.9209 202.309 83.6059 201.775 82.4161 201.775C81.2263 201.775 79.9112 202.309 78.9718 203.259Z" fill="#CF2F2F" fill-opacity="0.5"/>
+                            <path d="M46.9101 60.1495C46.1587 60.684 45.0315 62.4653 44.4679 64.2468C43.5911 66.9783 43.5286 67.6315 44.28 69.1161C45.3446 71.1945 47.9121 72.2039 50.3543 71.3725C52.2956 70.7788 54.8005 66.5626 54.8631 63.8312C54.8631 60.2683 50.1039 58.0711 46.9101 60.1495Z" fill="#CF2F2F" fill-opacity="0.5"/>
+                            <path d="M23.5507 64.0095C21.5467 65.9097 21.672 68.2255 23.989 72.6199C24.8657 74.2231 26.1182 76.1827 26.8696 76.8953C29.6876 79.8644 34.8227 77.6673 34.8227 73.6293C34.8227 71.4916 32.3178 66.266 30.2512 64.1282C28.6231 62.4656 25.3041 62.3469 23.5507 64.0095Z" fill="#CF2F2F" fill-opacity="0.5"/>
+                            <path d="M7.26864 77.8455C3.69918 79.5676 4.07491 84.3181 8.0201 86.159C12.0905 88.0591 14.4701 88.1185 16.2862 86.3965C19.48 83.368 18.0397 79.627 13.0925 78.0236C9.58566 76.8955 9.27254 76.8955 7.26864 77.8455Z" fill="#CF2F2F" fill-opacity="0.5"/>
+                            <path d="M44.0922 86.8118C38.1431 89.781 19.2312 101.004 17.8535 102.429C16.9142 103.32 15.8496 105.101 15.4112 106.348C14.0336 110.505 14.9729 112.88 21.8613 123.094L28.2488 132.596L34.0726 132.773C37.2037 132.833 39.8338 132.773 39.8338 132.535C39.8338 132.298 36.4522 127.132 32.3192 120.956C28.1861 114.84 24.8046 109.555 24.8046 109.258C24.8046 108.724 46.0334 96.3722 46.3465 96.7879C46.4091 96.8473 49.5403 101.479 53.2349 107.061C62.6909 121.194 63.8808 122.203 70.3308 122.203C73.9003 122.203 74.4012 122.025 85.548 115.612C96.319 109.496 97.133 109.139 97.9471 110.149C98.3855 110.743 102.08 116.087 106.088 122.025L113.352 132.892H119.176C124.687 132.892 125 132.833 124.436 131.823C122.62 128.616 104.084 101.479 102.769 100.173C101.955 99.3414 100.452 98.3319 99.5127 97.9756C95.4423 96.4316 50.918 85.9805 48.4757 85.9805C46.9727 85.9805 45.0315 86.3962 44.0922 86.8118ZM72.9609 101.123C79.3484 102.607 84.7964 104.033 85.1096 104.211C85.8611 104.626 70.5813 113.296 69.6419 112.94C69.0157 112.702 59.9355 99.8165 59.3093 98.2725C59.184 97.9756 59.6224 97.8568 60.2487 98.0944C60.9374 98.2725 66.6361 99.6383 72.9609 101.123Z" fill="#CF2F2F" fill-opacity="0.5"/>
+                        </g>
+                        <defs>
+                            <clipPath id="clip0_559_2829">
+                                <rect width="180" height="304" fill="white"/>
+                            </clipPath>
+                        </defs>
+                    </svg>
+
+
+                    <h3>Работа удалена</h3>
+                    <p>Ждем ваших новых работ!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="collectionModal" class="delete-work-modal" aria-hidden="true">
+        <div class="delete-work-modal-overlay" data-close-collection-modal></div>
+        <div class="delete-work-modal-content collection-modal-content" role="dialog" aria-modal="true" aria-labelledby="collectionModalTitle">
+            <button class="delete-work-modal-close" type="button" data-close-collection-modal aria-label="Закрыть">&times;</button>
+            <h2 id="collectionModalTitle">Новый сборник</h2>
+            <form class="delete-work-form" id="collectionForm">
+                <div class="delete-work-form-group">
+                    <label for="collectionName">Название сборника</label>
+                    <input id="collectionName" class="collection-name-input" name="collectionName" type="text" required maxlength="80" placeholder="Например: Иллюстрации для бренда">
+                </div>
+                <div class="delete-work-form-group">
+                    <p>Выберите работы</p>
+                    <div id="collectionWorksList" class="collection-works-list"></div>
+                </div>
+                <button type="submit" class="delete-work-submit-btn collection-submit-btn">Создать сборник</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="reportModal" class="report-modal" aria-hidden="true">
+        <div class="report-modal-overlay" data-close-report-modal></div>
+        <div class="report-modal-content" role="dialog" aria-modal="true" aria-labelledby="reportModalTitle">
+            <button class="report-modal-close" type="button" data-close-report-modal aria-label="Закрыть">&times;</button>
+            <h2 id="reportModalTitle">Пожаловаться на работу</h2>
+
+            <form action="/works/report" method="POST" class="report-form" id="reportForm">
+                <div style="display: flex; flex-direction: column;" id="reportFormFields">
+                    <div class="report-form-group">
+                        <input type="hidden" name="reason" id="reportReasonValue" required>
+                        <input type="hidden" name="csrf_token" value="<%= csrfToken %>">
+                        <div class="report-reasons-list" role="group" aria-label="Причина жалобы">
+                            <label class="report-reason-item">
+                                <input type="checkbox" class="report-reason-checkbox" value="fraud">
+                                <span class="report-reason-text">
+                                    <span class="report-reason-title">Мошенничество</span>
+                                    <span class="report-reason-description">Обман, подозрительная оплата или попытка увести сделку с платформы.</span>
+                                </span>
+                            </label>
+                            <label class="report-reason-item">
+                                <input type="checkbox" class="report-reason-checkbox" value="spam">
+                                <span class="report-reason-text">
+                                    <span class="report-reason-title">Спам или реклама</span>
+                                    <span class="report-reason-description">Повторяющиеся, навязчивые или нерелевантные публикации.</span>
+                                </span>
+                            </label>
+                            <label class="report-reason-item">
+                                <input type="checkbox" class="report-reason-checkbox" value="prohibited_content">
+                                <span class="report-reason-text">
+                                    <span class="report-reason-title">Запрещённый контент</span>
+                                    <span class="report-reason-description">Запрещённые товары, услуги, материалы или незаконные предложения.</span>
+                                </span>
+                            </label>
+                            <label class="report-reason-item">
+                                <input type="checkbox" class="report-reason-checkbox" value="offensive_content">
+                                <span class="report-reason-text">
+                                    <span class="report-reason-title">Оскорбления или дискриминация</span>
+                                    <span class="report-reason-description">Угрозы, грубость, ненависть или дискриминационные формулировки.</span>
+                                </span>
+                            </label>
+                            <label class="report-reason-item">
+                                <input type="checkbox" class="report-reason-checkbox" value="copyright_violation">
+                                <span class="report-reason-text">
+                                    <span class="report-reason-title">Нарушение авторских прав</span>
+                                    <span class="report-reason-description">Чужие тексты, изображения, логотипы или работы без разрешения.</span>
+                                </span>
+                            </label>
+                            <label class="report-reason-item">
+                                <input type="checkbox" class="report-reason-checkbox" value="incorrect_information">
+                                <span class="report-reason-text">
+                                    <span class="report-reason-title">Недостоверная информация</span>
+                                    <span class="report-reason-description">Неверная цена, сроки, описание, опыт или характеристики.</span>
+                                </span>
+                            </label>
+                        </div>
+                        <p class="report-validation-error" id="reportValidationError" role="alert" style="display:none;">Выберите причину жалобы.</p>
+                    </div>
+                    <button style="margin-top: 20px;" type="submit" class="report-submit-btn">Отправить жалобу</button>
+                </div>
+            </form>
+
+            <div class="report-success-state" id="reportSuccessState">
+                <div class="success-content" role="status">
+                    <svg class="success-icon" width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="30" cy="30" r="28" stroke="#8CBA0B" stroke-width="2" fill="white"/>
+                        <path d="M18 30L26 38L42 22" stroke="#8CBA0B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <h3>Сообщение отправлено!</h3>
+                    <p>Спасибо за обращение. Мы обработаем вашу жалобу и отправим уведомление о результате.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        document.querySelectorAll('.subscribe-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const userId = btn.dataset.userId;
+                const isSubscribed = btn.dataset.subscribed === 'true';
+
+                try {
+                    btn.disabled = true;
+                    const response = await fetch('/api/subscribe', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-Token': '<%= csrfToken %>'
+                        },
+                        body: JSON.stringify({ userId, action: isSubscribed ? 'unsubscribe' : 'subscribe' })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Ошибка изменения подписки');
+                    }
+
+                    const nextSubscribedState = !isSubscribed;
+                    btn.dataset.subscribed = nextSubscribedState ? 'true' : 'false';
+                    btn.textContent = nextSubscribedState ? 'Отписаться' : 'Подписаться';
+
+                    const followersCounter = document.querySelector('.profile-stats .stat:nth-child(2) .stat-value');
+                    if (followersCounter) {
+                        const currentCount = Number(followersCounter.textContent) || 0;
+                        followersCounter.textContent = Math.max(currentCount + (nextSubscribedState ? 1 : -1), 0);
+                    }
+                } catch (error) {
+                    console.error(error);
+                } finally {
+                    btn.disabled = false;
+                }
+            });
+        });
+
+        const portfolioTabButtons = Array.from(document.querySelectorAll('[data-portfolio-tab]'));
+        const portfolioPanels = Array.from(document.querySelectorAll('[data-portfolio-panel]'));
+        const switchPortfolioTab = (tabName) => {
+            portfolioTabButtons.forEach((button) => {
+                const isActive = button.dataset.portfolioTab === tabName;
+                button.classList.toggle('active', isActive);
+                button.setAttribute('aria-selected', isActive ? 'true' : 'false');
+            });
+            portfolioPanels.forEach((panel) => {
+                panel.hidden = panel.dataset.portfolioPanel !== tabName;
+            });
+        };
+        portfolioTabButtons.forEach((button) => {
+            button.addEventListener('click', () => switchPortfolioTab(button.dataset.portfolioTab));
+        });
+
+        const profileToast = document.getElementById('profileToast');
+        if (profileToast) {
+            window.setTimeout(() => {
+                profileToast.classList.add('profile-toast--hidden');
+            }, 2600);
+
+            window.setTimeout(() => {
+                profileToast.remove();
+            }, 3200);
+
+            if (window.history.replaceState) {
+                const currentUrl = new URL(window.location.href);
+                currentUrl.searchParams.delete('profile_updated');
+                currentUrl.searchParams.delete('work_created');
+                currentUrl.searchParams.delete('work_updated');
+                window.history.replaceState({}, document.title, currentUrl.pathname + currentUrl.search + currentUrl.hash);
+            }
+        }
+
+        document.querySelectorAll('[data-gallery]').forEach((gallery) => {
+            const track = gallery.querySelector('[data-gallery-track]');
+            if (!track) return;
+            const slides = Array.from(track.children);
+            const prevBtn = gallery.querySelector('[data-gallery-prev]');
+            const nextBtn = gallery.querySelector('[data-gallery-next]');
+
+            let currentIndex = 0;
+
+            const dotsContainer = document.createElement('div');
+            dotsContainer.className = 'gallery-dots';
+
+            const dots = slides.map((_, index) => {
+                const dot = document.createElement('button');
+                dot.type = 'button';
+                dot.className = 'dot';
+                dot.setAttribute('aria-label', `Перейти к изображению ${index + 1}`);
+                dot.addEventListener('click', () => {
+                    currentIndex = index;
+                    updateGallery();
+                });
+                dotsContainer.appendChild(dot);
+                return dot;
+            });
+
+            gallery.appendChild(dotsContainer);
+
+            function updateGallery() {
+                track.style.transform = `translateX(-${currentIndex * 100}%)`;
+                dots.forEach((dot, index) => {
+                    dot.classList.toggle('active', index === currentIndex);
+                });
+            }
+
+            if (prevBtn) {
+                prevBtn.addEventListener('click', () => {
+                    currentIndex = (currentIndex - 1 + slides.length) % slides.length;
+                    updateGallery();
+                });
+            }
+
+            if (nextBtn) {
+                nextBtn.addEventListener('click', () => {
+                    currentIndex = (currentIndex + 1) % slides.length;
+                    updateGallery();
+                });
+            }
+
+            updateGallery();
+        });
+
+        const workViewerModal = document.getElementById('workViewerModal');
+        const workViewerTitle = document.getElementById('workViewerTitle');
+        const workViewerTrack = document.getElementById('workViewerTrack');
+        const workViewerDescription = document.getElementById('workViewerDescription');
+        const workViewerStats = document.getElementById('workViewerStats');
+        const workViewerDots = document.getElementById('workViewerDots');
+        const viewerPrevBtn = document.querySelector('[data-viewer-prev]');
+        const viewerNextBtn = document.querySelector('[data-viewer-next]');
+        const deleteWorkModal = document.getElementById('deleteWorkModal');
+        const deleteWorkForm = document.getElementById('deleteWorkForm');
+        const deleteWorkValidationError = document.getElementById('deleteWorkValidationError');
+        const deleteWorkSuccessState = document.getElementById('deleteWorkSuccessState');
+        const reportModal = document.getElementById('reportModal');
+        const reportForm = document.getElementById('reportForm');
+        const reportFormFields = document.getElementById('reportFormFields');
+        const reportSuccessState = document.getElementById('reportSuccessState');
+        const reportReasonValue = document.getElementById('reportReasonValue');
+        const reportReasonCheckboxes = document.querySelectorAll('.report-reason-checkbox');
+        const reportValidationError = document.getElementById('reportValidationError');
+        const complainButtons = document.querySelectorAll('.btn-complain');
+        const pendingToggle = document.querySelector('[data-pending-toggle]');
+        const pendingContent = document.querySelector('[data-pending-content]');
+        const collectionModal = document.getElementById('collectionModal');
+        const collectionForm = document.getElementById('collectionForm');
+        const openCollectionModalBtn = document.getElementById('openCollectionModal');
+        const collectionWorksList = document.getElementById('collectionWorksList');
+        const portfolioCollections = document.getElementById('portfolioCollections');
+        let viewerImages = [];
+        let viewerIndex = 0;
+        let pendingDelete = null;
+
+        const updateViewer = () => {
+            workViewerTrack.style.transform = `translateX(-${viewerIndex * 100}%)`;
+            Array.from(workViewerDots.children).forEach((dot, index) => {
+                dot.classList.toggle('active', index === viewerIndex);
+            });
+        };
+
+        const openWorkViewer = (card) => {
+            if (!card) return;
+            const title = card.querySelector('h3')?.textContent?.trim() || 'Работа';
+            const description = card.querySelector('.work-description')?.textContent?.trim() || 'Описание отсутствует';
+            const statItems = Array.from(card.querySelectorAll('.work-stats span')).map((node) => node.textContent.trim());
+            const images = Array.from(card.querySelectorAll('.work-image img')).map((img) => ({
+                src: img.src,
+                alt: img.alt || title
+            }));
+
+            viewerImages = images.length ? images : [{ src: '/img/work_img.svg', alt: title }];
+            viewerIndex = 0;
+
+            workViewerTitle.textContent = title;
+            workViewerDescription.textContent = description;
+            workViewerStats.innerHTML = statItems.map((stat) => `<span>${stat}</span>`).join('');
+            workViewerTrack.innerHTML = viewerImages.map((image) => `
+                <div class="work-viewer-image">
+                    <img src="${image.src}" alt="${image.alt}">
+                </div>
+            `).join('');
+            workViewerDots.innerHTML = viewerImages.map((_image, index) => `
+                <button type="button" class="dot ${index === 0 ? 'active' : ''}" aria-label="Перейти к изображению ${index + 1}"></button>
+            `).join('');
+
+            Array.from(workViewerDots.children).forEach((dot, index) => {
+                dot.addEventListener('click', () => {
+                    viewerIndex = index;
+                    updateViewer();
+                });
+            });
+
+            updateViewer();
+            workViewerModal.classList.add('is-open');
+            workViewerModal.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('modal-open');
+        };
+
+        const closeWorkViewer = () => {
+            workViewerModal.classList.remove('is-open');
+            workViewerModal.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('modal-open');
+        };
+
+        const openDeleteWorkModal = (workId, card, btn) => {
+            pendingDelete = { workId, card, btn };
+            deleteWorkValidationError.style.display = 'none';
+            deleteWorkValidationError.textContent = '';
+            if (deleteWorkForm) deleteWorkForm.style.display = 'flex';
+            if (deleteWorkSuccessState) deleteWorkSuccessState.classList.remove('is-visible');
+            deleteWorkModal.classList.add('is-open');
+            deleteWorkModal.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('modal-open');
+        };
+
+        const closeDeleteWorkModal = () => {
+            deleteWorkModal.classList.remove('is-open');
+            deleteWorkModal.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('modal-open');
+            if (pendingDelete?.btn) {
+                pendingDelete.btn.disabled = false;
+            }
+            pendingDelete = null;
+        };
+        const openCollectionModal = () => {
+            collectionModal?.classList.add('is-open');
+            collectionModal?.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('modal-open');
+        };
+        const closeCollectionModal = () => {
+            collectionModal?.classList.remove('is-open');
+            collectionModal?.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('modal-open');
+            collectionForm?.reset();
+        };
+        const renderCollectionChoices = () => {
+            if (!collectionWorksList) return;
+            const cards = Array.from(document.querySelectorAll('.works-grid .work-card'));
+            collectionWorksList.innerHTML = cards.map((card) => {
+                const id = card.dataset.workId;
+                const title = card.querySelector('.work-info h3')?.textContent?.trim() || `Работа #${id}`;
+                const image = card.querySelector('.work-image img')?.getAttribute('src') || '/img/work_img.svg';
+                return `<label class="collection-work-option"><input class="collection-work-checkbox" type="checkbox" name="workIds" value="${id}"><span class="collection-work-check" aria-hidden="true"></span><img src="${image}" alt="${title}"><span>${title}</span></label>`;
+            }).join('');
+        };
+        const appendCollection = (name, ids) => {
+            if (!portfolioCollections) return;
+            const preview = ids.map((id) => {
+                const card = document.querySelector(`.works-grid .work-card[data-work-id="${id}"]`);
+                const title = card?.querySelector('.work-info h3')?.textContent?.trim() || 'Без названия';
+                const image = card?.querySelector('.work-image img')?.getAttribute('src') || '/img/work_img.svg';
+                return `<div class="collection-preview-item"><img src="${image}" alt="${title}"><p>${title}</p></div>`;
+            }).join('');
+            portfolioCollections.insertAdjacentHTML('beforeend', `<article class="portfolio-collection-card"><h3>${name}</h3><p>${ids.length} работ</p><div class="collection-preview-grid">${preview}</div></article>`);
+        };
+        const loadCollections = async () => {
+            if (!portfolioCollections) return;
+            try {
+                const response = await fetch('/api/collections', {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || 'Не удалось загрузить сборники');
+                }
+                portfolioCollections.innerHTML = '';
+                data.collections.forEach((collection) => {
+                    appendCollection(collection.title, collection.workIds || []);
+                });
+            } catch (_error) {
+                portfolioCollections.innerHTML = '<p class="portfolio-empty">Не удалось загрузить сборники.</p>';
+            }
+        };
+
+        const getSelectedReportReasons = () => Array.from(reportReasonCheckboxes)
+            .filter((checkbox) => checkbox.checked)
+            .map((checkbox) => checkbox.value);
+
+        const hideReportValidationError = () => {
+            if (reportValidationError) reportValidationError.style.display = 'none';
+        };
+
+        const showReportValidationError = () => {
+            if (reportValidationError) reportValidationError.style.display = 'block';
+        };
+
+        const syncReportReasonSelection = (activeCheckbox) => {
+            if (!reportReasonCheckboxes.length) return;
+
+            reportReasonCheckboxes.forEach((checkbox) => {
+                if (checkbox !== activeCheckbox) checkbox.checked = false;
+            });
+
+            const selectedReasons = getSelectedReportReasons();
+            if (reportReasonValue) {
+                reportReasonValue.value = selectedReasons[0] || '';
+            }
+            if (selectedReasons.length > 0) {
+                hideReportValidationError();
+            }
+        };
+
+        const openReportModal = (workId) => {
+            if (!reportModal) return;
+            if (reportForm) {
+                reportForm.action = workId ? `/works/${workId}/report` : '/works/report';
+            }
+            syncReportReasonSelection(null);
+            if (reportFormFields) reportFormFields.style.display = 'flex';
+            if (reportSuccessState) reportSuccessState.classList.remove('is-visible');
+
+            reportModal.classList.add('is-open');
+            reportModal.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('modal-open');
+        };
+
+        const closeReportModal = () => {
+            if (!reportModal) return;
+            reportModal.classList.remove('is-open');
+            reportModal.setAttribute('aria-hidden', 'true');
+
+            if (reportForm) reportForm.reset();
+            syncReportReasonSelection(null);
+            if (reportFormFields) reportFormFields.style.display = 'flex';
+            if (reportSuccessState) reportSuccessState.classList.remove('is-visible');
+
+            document.body.classList.remove('modal-open');
+        };
+
+        document.querySelectorAll('[data-open-work]').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                openWorkViewer(btn.closest('.work-card'));
+            });
+        });
+
+        pendingToggle?.addEventListener('click', () => {
+            const isExpanded = pendingToggle.getAttribute('aria-expanded') === 'true';
+            pendingToggle.setAttribute('aria-expanded', isExpanded ? 'false' : 'true');
+            if (pendingContent) {
+                pendingContent.hidden = isExpanded;
+            }
+        });
+        openCollectionModalBtn?.addEventListener('click', () => {
+            renderCollectionChoices();
+            openCollectionModal();
+        });
+        loadCollections();
+        collectionForm?.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const name = collectionForm.querySelector('#collectionName')?.value?.trim();
+            const selected = Array.from(collectionForm.querySelectorAll('input[name="workIds"]:checked')).map((item) => item.value);
+            if (!name || !selected.length) {
+                showAlert('Укажите название сборника и выберите хотя бы одну работу.');
+                return;
+            }
+            try {
+                const response = await fetch('/api/collections', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title: name,
+                        workIds: selected
+                    })
+                });
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || 'Не удалось создать сборник');
+                }
+                appendCollection(data.collection.title, data.collection.workIds);
+                closeCollectionModal();
+            } catch (error) {
+                showAlert(error.message || 'Не удалось создать сборник. Попробуйте ещё раз.');
+            }
+        });
+        document.querySelectorAll('[data-close-collection-modal]').forEach((node) => node.addEventListener('click', closeCollectionModal));
+
+        document.querySelectorAll('[data-delete-work]').forEach((btn) => {
+            btn.addEventListener('click', async (event) => {
+                event.stopPropagation();
+                const card = btn.closest('.work-card');
+                const workId = card?.dataset?.workId;
+                if (!workId) return;
+                btn.disabled = true;
+                openDeleteWorkModal(workId, card, btn);
+            });
+        });
+
+        complainButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                openReportModal(button.dataset.workId || '');
+            });
+        });
+
+        reportReasonCheckboxes.forEach((checkbox) => {
+            checkbox.addEventListener('change', () => {
+                syncReportReasonSelection(checkbox);
+            });
+        });
+
+        reportForm?.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const selectedReasons = getSelectedReportReasons();
+            if (selectedReasons.length === 0) {
+                showReportValidationError();
+                return;
+            }
+
+            if (reportReasonValue) {
+                reportReasonValue.value = selectedReasons[0];
+            }
+
+            if (!reportForm.checkValidity()) {
+                reportForm.reportValidity();
+                return;
+            }
+
+            const submitButton = reportForm.querySelector('button[type="submit"]');
+
+            try {
+                if (submitButton) submitButton.disabled = true;
+
+                const response = await fetch(reportForm.action, {
+                    method: 'POST',
+                    body: new URLSearchParams(new FormData(reportForm)),
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Ошибка при отправке жалобы');
+                }
+
+                if (reportFormFields) reportFormFields.style.display = 'none';
+                if (reportSuccessState) reportSuccessState.classList.add('is-visible');
+                reportForm.reset();
+                syncReportReasonSelection(null);
+            } catch (_error) {
+                showAlert('Не удалось отправить жалобу. Попробуйте еще раз.');
+            } finally {
+                if (submitButton) submitButton.disabled = false;
+            }
+        });
+
+        deleteWorkForm?.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            if (!pendingDelete?.workId || !pendingDelete?.card) return;
+
+            const { workId, card, btn } = pendingDelete;
+
+            try {
+                const response = await fetch(`/works/${workId}/delete`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-Token': '<%= csrfToken %>'
+                    }
+                });
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || 'Не удалось удалить работу');
+                }
+
+                card.remove();
+                const worksCounter = document.querySelector('.profile-stats .stat:last-child .stat-value');
+                if (worksCounter) {
+                    const currentCount = Number(worksCounter.textContent) || 0;
+                    worksCounter.textContent = Math.max(currentCount - 1, 0);
+                }
+                if (deleteWorkForm) deleteWorkForm.style.display = 'none';
+                if (deleteWorkSuccessState) deleteWorkSuccessState.classList.add('is-visible');
+                setTimeout(() => {
+                    closeDeleteWorkModal();
+                }, 1500);
+            } catch (error) {
+                deleteWorkValidationError.textContent = error.message || 'Не удалось удалить работу';
+                deleteWorkValidationError.style.display = 'block';
+                if (btn) {
+                    btn.disabled = false;
+                }
+            }
+        });
+
+        document.querySelectorAll('[data-close-delete-modal]').forEach((node) => {
+            node.addEventListener('click', closeDeleteWorkModal);
+        });
+        document.querySelectorAll('[data-close-report-modal]').forEach((node) => {
+            node.addEventListener('click', closeReportModal);
+        });
+
+        viewerPrevBtn?.addEventListener('click', () => {
+            if (!viewerImages.length) return;
+            viewerIndex = (viewerIndex - 1 + viewerImages.length) % viewerImages.length;
+            updateViewer();
+        });
+
+        viewerNextBtn?.addEventListener('click', () => {
+            if (!viewerImages.length) return;
+            viewerIndex = (viewerIndex + 1) % viewerImages.length;
+            updateViewer();
+        });
+
+        document.querySelectorAll('[data-close-work-viewer]').forEach((node) => {
+            node.addEventListener('click', closeWorkViewer);
+        });
+
+        window.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                if (workViewerModal.classList.contains('is-open')) closeWorkViewer();
+                if (deleteWorkModal.classList.contains('is-open')) closeDeleteWorkModal();
+                if (reportModal?.classList.contains('is-open')) closeReportModal();
+                if (collectionModal?.classList.contains('is-open')) closeCollectionModal();
+            }
+
+            if (workViewerModal.classList.contains('is-open')) {
+                if (event.key === 'ArrowLeft' && viewerImages.length) {
+                    viewerIndex = (viewerIndex - 1 + viewerImages.length) % viewerImages.length;
+                    updateViewer();
+                }
+                if (event.key === 'ArrowRight' && viewerImages.length) {
+                    viewerIndex = (viewerIndex + 1) % viewerImages.length;
+                    updateViewer();
+                }
+            }
+        });
+
+        document.querySelectorAll('.post-like-btn').forEach((button) => {
+            button.addEventListener('click', async () => {
+                const workId = button.dataset.workId;
+                if (!workId) return;
+
+                try {
+                    const response = await fetch(`/api/works/${workId}/like`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Like request failed');
+                    }
+
+                    const payload = await response.json();
+                    const counter = button.querySelector('.post-like-count');
+                    if (counter) {
+                        counter.textContent = payload.likes;
+                    }
+
+                    button.classList.toggle('is-liked', Boolean(payload.liked));
+                    button.dataset.liked = payload.liked ? 'true' : 'false';
+                    button.setAttribute('aria-pressed', payload.liked ? 'true' : 'false');
+                } catch (error) {
+                    console.error('Не удалось поставить лайк:', error);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

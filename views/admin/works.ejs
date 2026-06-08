@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Работы | Admin</title>
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/header.css">
+  <link rel="stylesheet" href="/css/profile.css">
+  <link rel="stylesheet" href="/css/admin-notification.css">
+</head>
+<body>
+  <main>
+    <%- include('../partials/header-actions') %>
+    <section class="admin-container">
+      <div class="admin-main">
+        <div class="admin-header"><h1>Модерация работ</h1></div>
+        <section class="content-card">
+          <form class="filters" method="get" action="/admin/works">
+            <input type="text" name="search" placeholder="Поиск по работам" value="<%= search || '' %>">
+            <select name="status">
+              <option value="all" <%= status==='all'?'selected':'' %>>Все статусы</option>
+              <option value="pending" <%= status==='pending'?'selected':'' %>>На модерации</option>
+              <option value="active" <%= status==='active'?'selected':'' %>>Опубликована</option>
+              <option value="cancelled" <%= status==='cancelled'?'selected':'' %>>Отклонена</option>
+              <option value="blocked" <%= status==='blocked'?'selected':'' %>>Заблокирована</option>
+            </select>
+            <button type="submit" class="primary-btn">Фильтровать</button>
+          </form>
+          <table class="activity-table">
+            <thead><tr><th>ID</th><th>Работа</th><th>Автор</th><th>Жалобы</th><th>Статус</th><th>Действия</th></tr></thead>
+            <tbody>
+            <% works.forEach(work => { %>
+              <tr>
+                <td><%= work.id %></td>
+                <td><strong><%= work.title %></strong><small><%= (work.description || '').slice(0, 90) %></small></td>
+                <td><%= work.first_name %> <%= work.last_name %></td>
+                <td><%= work.complaints_count %></td>
+                <td><span class="status-badge status-<%= work.status %>"><%= statusLabel(work.status, 'work') %></span></td>
+                <td>
+                  <a href="/works/<%= work.id %>" target="_blank" class="small-btn" style="text-decoration: none; display: inline-block;">Просмотр</a>
+                  <form method="post" action="/admin/works/<%= work.id %>/moderate" class="inline-form"><input type="hidden" name="csrf_token" value="<%= csrfToken %>"><input type="hidden" name="status" value="active"><button class="small-btn">Одобрить</button></form>
+                  <form method="post" action="/admin/works/<%= work.id %>/moderate" class="inline-form"><input type="hidden" name="csrf_token" value="<%= csrfToken %>"><input type="hidden" name="status" value="cancelled"><input type="hidden" name="reason" value="Не прошло модерацию"><button class="small-btn danger-btn">Отменить</button></form>
+                </td>
+              </tr>
+            <% }) %>
+            </tbody>
+          </table>
+        </section>
+      </div>
+      <%- include('admin-sidebar', { currentPath: '/admin/works' }) %>
+    </section>
+  </main>
+  
+  <%- include('../partials/admin-notification-modal') %>
+  <script src="/js/admin-notification.js"></script>
+</body>
+</html>

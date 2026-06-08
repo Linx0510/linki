@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои сделки | Линити</title>
+    <link rel="stylesheet" href="/css/deals.css">
+    <link rel="stylesheet" href="/css/header.css">
+</head>
+<body>
+    <main>
+        <%- include('partials/header-actions') %>
+
+        <% const statusLabels = { all: 'Все', active: 'Открытые', in_progress: 'В работе', completed: 'Завершённые', cancelled: 'Отменённые' }; %>
+        <% const statusTexts = STATUS_LABELS_BY_CONTEXT.deal; %>
+
+        <section class="deals-page">
+            <div class="deals-hero">
+                <div>
+                    <p class="deals-eyebrow">Рабочая зона</p>
+                    <h1>Мои сделки</h1>
+                    <p>Все сделки, где вы являетесь заказчиком или исполнителем. Откройте карточку, чтобы посмотреть детали, этапы и предложить изменение этапов.</p>
+                </div>
+                <a href="/orders/create" class="deals-create-link">+ Создать задачу</a>
+            </div>
+
+            <div class="deals-tabs" aria-label="Фильтр сделок по статусу">
+                <% Object.keys(statusLabels).forEach((status) => { %>
+                    <a class="deals-tab <%= currentStatus === status ? 'active' : '' %>" href="/deals<%= status === 'all' ? '' : ('?status=' + status) %>">
+                        <span><%= statusLabels[status] %></span>
+                        <b><%= statusCounts && typeof statusCounts[status] !== 'undefined' ? statusCounts[status] : 0 %></b>
+                    </a>
+                <% }) %>
+            </div>
+
+            <% if (deals && deals.length) { %>
+                <div class="deals-list">
+                    <% deals.forEach((deal) => { %>
+                        <% const isCustomer = currentUser && currentUser.id === deal.customer_id; %>
+                        <% const otherFirstName = isCustomer ? deal.executor_first_name : deal.customer_first_name; %>
+                        <% const otherLastName = isCustomer ? deal.executor_last_name : deal.customer_last_name; %>
+                        <% const otherAvatar = isCustomer ? deal.executor_avatar : deal.customer_avatar; %>
+                        <% const totalStages = Number(deal.total_stages || 0); %>
+                        <% const completedStages = Number(deal.completed_stages || 0); %>
+                        <% const progress = totalStages ? Math.round((completedStages / totalStages) * 100) : 0; %>
+                        <article class="deal-card">
+                            <div class="deal-card-main">
+                                <div class="deal-card-topline">
+                                    <span class="deal-id">Сделка #<%= deal.id %></span>
+                                    <span class="deal-status status-<%= deal.status %>"><%= statusTexts[deal.status] || statusLabel(deal.status, 'deal') %></span>
+                                </div>
+                                <h2><a href="/deals/<%= deal.id %>"><%= deal.title || 'Сделка без названия' %></a></h2>
+                                <% if (deal.description) { %>
+                                    <p class="deal-description"><%= deal.description %></p>
+                                <% } %>
+
+                                <div class="deal-meta-grid">
+                                    <div>
+                                        <span>Стоимость</span>
+                                        <strong><%= Number(deal.price || 0).toLocaleString('ru-RU') %> ₽</strong>
+                                    </div>
+                                    <div>
+                                        <span>Ваша роль</span>
+                                        <strong><%= isCustomer ? 'Заказчик' : 'Исполнитель' %></strong>
+                                    </div>
+                                    <div>
+                                        <span>Дедлайн</span>
+                                        <strong><%= deal.deadline ? new Date(deal.deadline).toLocaleDateString('ru-RU') : 'Не указан' %></strong>
+                                    </div>
+                                    <div>
+                                        <span>Создана</span>
+                                        <strong><%= deal.created_at ? new Date(deal.created_at).toLocaleDateString('ru-RU') : '—' %></strong>
+                                    </div>
+                                </div>
+
+                                <div class="deal-progress" aria-label="Прогресс этапов">
+                                    <div class="deal-progress-label">
+                                        <span>Этапы: <%= completedStages %>/<%= totalStages %></span>
+                                        <span><%= progress %>%</span>
+                                    </div>
+                                    <div class="deal-progress-track">
+                                        <span style="width:<%= progress %>%"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <aside class="deal-card-side">
+                                <div class="deal-user">
+                                    <img src="<%= otherAvatar || '/img/Group.svg' %>" alt="" class="deal-user-avatar">
+                                    <div>
+                                        <span><%= isCustomer ? 'Исполнитель' : 'Заказчик' %></span>
+                                        <strong><%= (otherFirstName || otherLastName) ? ((otherFirstName || '') + ' ' + (otherLastName || '')) : 'Не назначен' %></strong>
+                                    </div>
+                                </div>
+                                <a class="deal-open-link" href="/deals/<%= deal.id %>">Открыть сделку</a>
+                            </aside>
+                        </article>
+                    <% }) %>
+                </div>
+            <% } else { %>
+                <div class="deals-empty">
+                    <h2>Сделок пока нет</h2>
+                    <p>Когда вы примете заказ или создадите сделку с исполнителем, она появится здесь.</p>
+                    <a href="/birzha" class="deal-open-link">Перейти на биржу</a>
+                </div>
+            <% } %>
+        </section>
+    </main>
+</body>
+</html>

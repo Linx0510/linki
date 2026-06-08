@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Линити</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/textarea-limits.css">
+    <link rel="stylesheet" href="/css/form-validation.css">
+    <link rel="stylesheet" href="/css/responsive-breakpoints.css">
+    <script src="/js/textarea-limits.js" defer></script>
+</head>
+<body class="home-page">
+    <main>
+        <section class="hero" id="hero">
+            <nav>
+                <img src="/img/Logo_nav.svg" alt="Liniti" style="height:36px;width:auto;">
+                <div class="links">
+                    <a href="#hero" class="link"><p>Главная</p></a>
+                    <a href="#contact" class="link"><p>Контакты</p></a>
+                    <a href="#platform" class="link"><p>Развитие платформы</p></a>
+                    <a href="#cta" class="link"><p>Партнерская программа</p></a>
+                    <a href="#footer" class="link"><p>Политика конфиденциальности</p></a>
+                </div>
+                <div class="aut_reg">
+                    <a href="/auth?mode=register" class="reg">
+                        <p>Регистрация</p>
+                        <svg class="svg-rotate" width="9" height="8" viewBox="0 0 9 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M0.329102 7.5L8.3291 0.5M8.3291 0.5V8M8.3291 0.5H0.829102" stroke="#F3F7F6"/>
+                        </svg>
+                    </a>
+                    <p>/</p>
+                    <a href="/auth" class="aut"><p>Вход</p></a>
+                </div>
+                <button class="nav-burger" id="navBurger" aria-label="Открыть меню" aria-expanded="false">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <div class="nav-mobile-menu" id="navMobileMenu" role="dialog" aria-label="Мобильное меню">
+                    <div class="nav-mobile-header">
+                        <img src="/img/Logo_nav.svg" alt="Liniti" class="nav-mobile-logo">
+                        <button class="nav-mobile-close" id="navMobileClose" aria-label="Закрыть меню">&times;</button>
+                    </div>
+                    <a href="#hero" class="link"><p>Главная</p></a>
+                    <a href="#contact" class="link"><p>Контакты</p></a>
+                    <a href="#platform" class="link"><p>Развитие платформы</p></a>
+                    <a href="#cta" class="link"><p>Партнерская программа</p></a>
+                    <a href="#footer" class="link"><p>Политика конфиденциальности</p></a>
+                    <div class="nav-mobile-auth">
+                        <a href="/auth?mode=register" class="reg">
+                            <p>Регистрация</p>
+                            <svg class="svg-rotate" width="9" height="8" viewBox="0 0 9 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M0.329102 7.5L8.3291 0.5M8.3291 0.5V8M8.3291 0.5H0.829102" stroke="#F3F7F6"/>
+                            </svg>
+                        </a>
+                        <a href="/auth" class="aut"><p>Вход</p></a>
+                    </div>
+                </div>
+            </nav>
+            <div class="nav-mobile-overlay" id="navOverlay"></div>
+            <div class="blok_linestok">
+                <svg style="width:clamp(280px,85vw,1003px);height:auto;" viewBox="0 0 1003 193" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M0.000571928 192.193L175.929 0.000125431H186.068V192.193H167.784V29.7749L25.3331 192.193L0.000571928 192.193Z" fill="white"/>
+                    <path d="M1002.66 192.597V82.1934H983.696L921.649 162.966V141.672V82.1934H903.659V192.597H921.649L983.696 115.604V192.597H1002.66Z" fill="white"/>
+                    <path d="M602.062 192.598H584.07V163.4H625.591L602.062 192.598ZM683.072 192.598H664.108V163.4H683.072V192.598ZM602.062 82.1934V113.4H584.07V82.1934H602.062ZM683.072 82.1934V113.4H640.137L664.108 82.1934H683.072Z" fill="white"/>
+                    <path d="M350.07 192.597V82.1934H331.107L269.06 162.966V141.672V82.1934H251.069V192.597H269.06L331.107 115.604V192.597H350.07Z" fill="white"/>
+                    <path d="M803.34 192.597H784.249V163.399H803.34V192.597ZM838.658 102.471H803.34V113.399H784.249V102.471H748.072V82.1934H838.658V102.471Z" fill="white"/>
+                    <path d="M432.137 127.573H424.577V147.193H423.047V127.573H415.487V126.193H432.137V127.573ZM440.282 147.313C438.802 147.313 437.462 146.973 436.262 146.293C435.082 145.613 434.152 144.673 433.472 143.473C432.792 142.253 432.452 140.883 432.452 139.363C432.452 137.843 432.792 136.483 433.472 135.283C434.152 134.063 435.082 133.113 436.262 132.433C437.462 131.753 438.802 131.413 440.282 131.413C441.762 131.413 443.092 131.753 444.272 132.433C445.472 133.113 446.412 134.063 447.092 135.283C447.772 136.483 448.112 137.843 448.112 139.363C448.112 140.883 447.772 142.253 447.092 143.473C446.412 144.673 445.472 145.613 444.272 146.293C443.092 146.973 441.762 147.313 440.282 147.313ZM440.282 145.963C441.482 145.963 442.552 145.683 443.492 145.123C444.452 144.563 445.202 143.783 445.742 142.783C446.302 141.783 446.582 140.643 446.582 139.363C446.582 138.083 446.302 136.943 445.742 135.943C445.202 134.943 444.452 134.163 443.492 133.603C442.552 133.043 441.482 132.763 440.282 132.763C439.082 132.763 438.002 133.043 437.042 133.603C436.102 134.163 435.352 134.943 434.792 135.943C434.252 136.943 433.982 138.083 433.982 139.363C433.982 140.643 434.252 141.783 434.792 142.783C435.352 143.783 436.102 144.563 437.042 145.123C438.002 145.683 439.082 145.963 440.282 145.963ZM464.247 131.533V147.193H462.747V140.443C460.887 141.303 459.027 141.733 457.167 141.733C455.327 141.733 453.877 141.313 452.817 140.473C451.777 139.633 451.257 138.393 451.257 136.753V131.533H452.757V136.663C452.757 137.883 453.167 138.823 453.987 139.483C454.807 140.143 455.937 140.473 457.377 140.473C459.017 140.473 460.807 140.063 462.747 139.243V131.533H464.247ZM476.031 139.933H472.221V147.193H470.721V131.533H472.221V138.643H476.031L481.941 131.533H483.591L477.231 139.123L484.071 147.193H482.271L476.031 139.933ZM492.669 131.413C494.609 131.413 496.099 131.913 497.139 132.913C498.179 133.893 498.699 135.343 498.699 137.263V147.193H497.259V144.403C496.759 145.323 496.029 146.043 495.069 146.563C494.109 147.063 492.959 147.313 491.619 147.313C489.879 147.313 488.499 146.903 487.479 146.083C486.479 145.263 485.979 144.183 485.979 142.843C485.979 141.543 486.439 140.493 487.359 139.693C488.299 138.873 489.789 138.463 491.829 138.463H497.199V137.203C497.199 135.743 496.799 134.633 495.999 133.873C495.219 133.113 494.069 132.733 492.549 132.733C491.509 132.733 490.509 132.913 489.549 133.273C488.609 133.633 487.809 134.113 487.149 134.713L486.399 133.633C487.179 132.933 488.119 132.393 489.219 132.013C490.319 131.613 491.469 131.413 492.669 131.413ZM491.829 146.083C493.129 146.083 494.229 145.783 495.129 145.183C496.049 144.583 496.739 143.713 497.199 142.573V139.633H491.859C490.319 139.633 489.199 139.913 488.499 140.473C487.819 141.033 487.479 141.803 487.479 142.783C487.479 143.803 487.859 144.613 488.619 145.213C489.379 145.793 490.449 146.083 491.829 146.083ZM526.179 131.533V147.193H524.679V132.883H513.999V147.193H512.499V131.533H526.179ZM546.005 139.723H532.535C532.575 140.943 532.885 142.033 533.465 142.993C534.045 143.933 534.825 144.663 535.805 145.183C536.805 145.703 537.925 145.963 539.165 145.963C540.185 145.963 541.125 145.783 541.985 145.423C542.865 145.043 543.595 144.493 544.175 143.773L545.045 144.763C544.365 145.583 543.505 146.213 542.465 146.653C541.445 147.093 540.335 147.313 539.135 147.313C537.575 147.313 536.185 146.973 534.965 146.293C533.745 145.613 532.785 144.673 532.085 143.473C531.405 142.273 531.065 140.903 531.065 139.363C531.065 137.843 531.385 136.483 532.025 135.283C532.685 134.063 533.585 133.113 534.725 132.433C535.865 131.753 537.145 131.413 538.565 131.413C539.985 131.413 541.255 131.753 542.375 132.433C543.515 133.093 544.405 134.023 545.045 135.223C545.705 136.423 546.035 137.783 546.035 139.303L546.005 139.723ZM538.565 132.733C537.465 132.733 536.475 132.983 535.595 133.483C534.715 133.963 534.005 134.653 533.465 135.553C532.945 136.433 532.645 137.433 532.565 138.553H544.565C544.505 137.433 544.205 136.433 543.665 135.553C543.125 134.673 542.415 133.983 541.535 133.483C540.655 132.983 539.665 132.733 538.565 132.733ZM558.826 131.413C560.286 131.413 561.606 131.753 562.786 132.433C563.966 133.113 564.886 134.053 565.546 135.253C566.226 136.453 566.566 137.823 566.566 139.363C566.566 140.903 566.226 142.283 565.546 143.503C564.886 144.703 563.966 145.643 562.786 146.323C561.606 146.983 560.286 147.313 558.826 147.313C557.446 147.313 556.196 146.993 555.076 146.353C553.956 145.693 553.086 144.783 552.466 143.623V153.013H550.966V131.533H552.406V135.223C553.026 134.023 553.896 133.093 555.016 132.433C556.156 131.753 557.426 131.413 558.826 131.413ZM558.736 145.963C559.936 145.963 561.016 145.683 561.976 145.123C562.936 144.563 563.686 143.783 564.226 142.783C564.786 141.783 565.066 140.643 565.066 139.363C565.066 138.083 564.786 136.943 564.226 135.943C563.686 134.943 562.936 134.163 561.976 133.603C561.016 133.043 559.936 132.763 558.736 132.763C557.536 132.763 556.456 133.043 555.496 133.603C554.556 134.163 553.806 134.943 553.246 135.943C552.706 136.943 552.436 138.083 552.436 139.363C552.436 140.643 552.706 141.783 553.246 142.783C553.806 143.783 554.556 144.563 555.496 145.123C556.456 145.683 557.536 145.963 558.736 145.963ZM584.794 139.723H571.324C571.364 140.943 571.674 142.033 572.254 142.993C572.834 143.933 573.614 144.663 574.594 145.183C575.594 145.703 576.714 145.963 577.954 145.963C578.974 145.963 579.914 145.783 580.774 145.423C581.654 145.043 582.384 144.493 582.964 143.773L583.834 144.763C583.154 145.583 582.294 146.213 581.254 146.653C580.234 147.093 579.124 147.313 577.924 147.313C576.364 147.313 574.974 146.973 573.754 146.293C572.534 145.613 571.574 144.673 570.874 143.473C570.194 142.273 569.854 140.903 569.854 139.363C569.854 137.843 570.174 136.483 570.814 135.283C571.474 134.063 572.374 133.113 573.514 132.433C574.654 131.753 575.934 131.413 577.354 131.413C578.774 131.413 580.044 131.753 581.164 132.433C582.304 133.093 583.194 134.023 583.834 135.223C584.494 136.423 584.824 137.783 584.824 139.303L584.794 139.723ZM577.354 132.733C576.254 132.733 575.264 132.983 574.384 133.483C573.504 133.963 572.794 134.653 572.254 135.553C571.734 136.433 571.434 137.433 571.354 138.553H583.354C583.294 137.433 582.994 136.433 582.454 135.553C581.914 134.673 581.204 133.983 580.324 133.483C579.444 132.983 578.454 132.733 577.354 132.733ZM596.055 147.313C594.535 147.313 593.175 146.973 591.975 146.293C590.775 145.613 589.835 144.673 589.155 143.473C588.475 142.253 588.135 140.883 588.135 139.363C588.135 137.823 588.475 136.453 589.155 135.253C589.835 134.033 590.775 133.093 591.975 132.433C593.175 131.753 594.535 131.413 596.055 131.413C597.315 131.413 598.455 131.663 599.475 132.163C600.515 132.643 601.355 133.353 601.995 134.293L600.885 135.103C600.325 134.323 599.625 133.743 598.785 133.363C597.965 132.963 597.055 132.763 596.055 132.763C594.835 132.763 593.735 133.043 592.755 133.603C591.795 134.143 591.035 134.913 590.475 135.913C589.935 136.913 589.665 138.063 589.665 139.363C589.665 140.663 589.935 141.813 590.475 142.813C591.035 143.813 591.795 144.593 592.755 145.153C593.735 145.693 594.835 145.963 596.055 145.963C597.055 145.963 597.965 145.773 598.785 145.393C599.625 144.993 600.325 144.403 600.885 143.623L601.995 144.433C601.355 145.373 600.515 146.093 599.475 146.593C598.455 147.073 597.315 147.313 596.055 147.313ZM619.511 139.723H606.041C606.081 140.943 606.391 142.033 606.971 142.993C607.551 143.933 608.331 144.663 609.311 145.183C610.311 145.703 611.431 145.963 612.671 145.963C613.691 145.963 614.631 145.783 615.491 145.423C616.371 145.043 617.101 144.493 617.681 143.773L618.551 144.763C617.871 145.583 617.011 146.213 615.971 146.653C614.951 147.093 613.841 147.313 612.641 147.313C611.081 147.313 609.691 146.973 608.471 146.293C607.251 145.613 606.291 144.673 605.591 143.473C604.911 142.273 604.571 140.903 604.571 139.363C604.571 137.843 604.891 136.483 605.531 135.283C606.191 134.063 607.091 133.113 608.231 132.433C609.371 131.753 610.651 131.413 612.071 131.413C613.491 131.413 614.761 131.753 615.881 132.433C617.021 133.093 617.911 134.023 618.551 135.223C619.211 136.423 619.541 137.783 619.541 139.303L619.511 139.723ZM612.071 132.733C610.971 132.733 609.981 132.983 609.101 133.483C608.221 133.963 607.511 134.653 606.971 135.553C606.451 136.433 606.151 137.433 606.071 138.553H618.071C618.011 137.433 617.711 136.433 617.171 135.553C616.631 134.673 615.921 133.983 615.041 133.483C614.161 132.983 613.171 132.733 612.071 132.733ZM635.692 131.533V147.193H634.192V140.443C632.332 141.303 630.472 141.733 628.612 141.733C626.772 141.733 625.322 141.313 624.262 140.473C623.222 139.633 622.702 138.393 622.702 136.753V131.533H624.202V136.663C624.202 137.883 624.612 138.823 625.432 139.483C626.252 140.143 627.382 140.473 628.822 140.473C630.462 140.473 632.252 140.063 634.192 139.243V131.533H635.692ZM655.517 139.723H642.047C642.087 140.943 642.397 142.033 642.977 142.993C643.557 143.933 644.337 144.663 645.317 145.183C646.317 145.703 647.437 145.963 648.677 145.963C649.697 145.963 650.637 145.783 651.497 145.423C652.377 145.043 653.107 144.493 653.687 143.773L654.557 144.763C653.877 145.583 653.017 146.213 651.977 146.653C650.957 147.093 649.847 147.313 648.647 147.313C647.087 147.313 645.697 146.973 644.477 146.293C643.257 145.613 642.297 144.673 641.597 143.473C640.917 142.273 640.577 140.903 640.577 139.363C640.577 137.843 640.897 136.483 641.537 135.283C642.197 134.063 643.097 133.113 644.237 132.433C645.377 131.753 646.657 131.413 648.077 131.413C649.497 131.413 650.767 131.753 651.887 132.433C653.027 133.093 653.917 134.023 654.557 135.223C655.217 136.423 655.547 137.783 655.547 139.303L655.517 139.723ZM648.077 132.733C646.977 132.733 645.987 132.983 645.107 133.483C644.227 133.963 643.517 134.653 642.977 135.553C642.457 136.433 642.157 137.433 642.077 138.553H654.077C654.017 137.433 653.717 136.433 653.177 135.553C652.637 134.673 651.927 133.983 651.047 133.483C650.167 132.983 649.177 132.733 648.077 132.733ZM660.448 131.533H661.948V138.673H672.568V131.533H674.068V147.193H672.568V139.993H661.948V147.193H660.448V131.533ZM680.546 131.533H682.046V144.883L693.206 131.533H694.526V147.193H693.026V133.843L681.866 147.193H680.546V131.533ZM712.545 131.533V147.193H711.165V141.793H705.945C705.585 141.793 705.325 141.783 705.165 141.763L701.295 147.193H699.645L703.695 141.583C702.415 141.303 701.435 140.753 700.755 139.933C700.075 139.113 699.735 138.053 699.735 136.753C699.735 135.033 700.305 133.733 701.445 132.853C702.605 131.973 704.185 131.533 706.185 131.533H712.545ZM701.235 136.813C701.235 139.373 702.855 140.653 706.095 140.653H711.165V132.853H706.275C702.915 132.853 701.235 134.173 701.235 136.813ZM726.718 131.533H728.218V144.883L739.378 131.533H740.698V147.193H739.198V133.843L728.038 147.193H726.718V131.533ZM761.897 145.873V151.093H760.487V147.193H745.667V151.093H744.227V145.873H745.157C746.217 145.813 746.937 144.993 747.317 143.413C747.717 141.813 747.997 139.573 748.157 136.693L748.367 131.533H759.377V145.873H761.897ZM749.537 136.783C749.437 139.163 749.237 141.143 748.937 142.723C748.637 144.303 748.097 145.353 747.317 145.873H757.877V132.883H749.717L749.537 136.783ZM779.677 139.723H766.207C766.247 140.943 766.557 142.033 767.137 142.993C767.717 143.933 768.497 144.663 769.477 145.183C770.477 145.703 771.597 145.963 772.837 145.963C773.857 145.963 774.797 145.783 775.657 145.423C776.537 145.043 777.267 144.493 777.847 143.773L778.717 144.763C778.037 145.583 777.177 146.213 776.137 146.653C775.117 147.093 774.007 147.313 772.807 147.313C771.247 147.313 769.857 146.973 768.637 146.293C767.417 145.613 766.457 144.673 765.757 143.473C765.077 142.273 764.737 140.903 764.737 139.363C764.737 137.843 765.057 136.483 765.697 135.283C766.357 134.063 767.257 133.113 768.397 132.433C769.537 131.753 770.817 131.413 772.237 131.413C773.657 131.413 774.927 131.753 776.047 132.433C777.187 133.093 778.077 134.023 778.717 135.223C779.377 136.423 779.707 137.783 779.707 139.303L779.677 139.723ZM772.237 132.733C771.137 132.733 770.147 132.983 769.267 133.483C768.387 133.963 767.677 134.653 767.137 135.553C766.617 136.433 766.317 137.433 766.237 138.553H778.237C778.177 137.433 777.877 136.433 777.337 135.553C776.797 134.673 776.087 133.983 775.207 133.483C774.327 132.983 773.337 132.733 772.237 132.733ZM784.608 131.533H786.108V144.883L797.268 131.533H798.588V147.193H797.088V133.843L785.928 147.193H784.608V131.533ZM791.538 129.133C790.278 129.133 789.258 128.813 788.478 128.173C787.698 127.513 787.298 126.603 787.278 125.443H788.388C788.408 126.263 788.708 126.913 789.288 127.393C789.888 127.873 790.638 128.113 791.538 128.113C792.438 128.113 793.178 127.873 793.758 127.393C794.338 126.913 794.638 126.263 794.658 125.443H795.798C795.778 126.603 795.378 127.513 794.598 128.173C793.818 128.813 792.798 129.133 791.538 129.133Z" fill="white"/>
+                    <rect x="415.07" y="82.1934" width="20" height="31" fill="#FA51A2"/>
+                    <rect x="499.07" y="82.1934" width="20" height="31" fill="#A609F0"/>
+                    <rect x="499.07" y="161.193" width="20" height="31" fill="#BDF522"/>
+                    <rect x="415.07" y="161.193" width="20" height="31" fill="#7B46F8"/>
+                </svg>
+
+
+            </div>
+            <div class="foot_hero">
+                <p> — платформа, где творчество находит своего заказчика. Выставляйте портфолио, принимайте задачи. Мы создаём пространство, где линии вашего таланта ведут прямиком к новым задачам и сотрудничеству.</p>
+                <div class="hero_role">
+                    <div class="h_role1 h_role">
+                        <p>Найти исполнителя</p>
+                    </div>
+                    <div class="h_role2 h_role">
+                        <p>Предложить свои услуги</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="Linestok" id="platform">
+            <div class="line">
+                <h1>Что такое
+                    <br>Линити?
+                </h1>
+                <a href="/auth?mode=register" class="btn1">
+                    <svg width="12" height="11" viewBox="0 0 12 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M0.323242 9.83333L11.3232 0.5M11.3232 0.5V10.5M11.3232 0.5H1.01074" stroke="#535D5A"/>
+                    </svg>
+                    <p>Зарегистрироваться</p>
+                </a>
+            </div>
+            <div class="line">
+                <h2 class="h2-pink">вдохновение, <br>качество <br>и результат.</h2>
+                <p>Это свободная платформа. Здесь фрилансеры выстраивают карьеру, а заказчики находят идеальное решение для своих целей.</p>
+            </div>
+        </section>
+        <section class="role">
+            <div class="role_content">
+                <div class="role_text">
+                    <h3>Идеально для
+                        <br>заказчиков
+                        <br>и исполнителей</h3>
+                    <p>На одной платформе мы объединили удобный сервис для постановки задач и мощный инструментарий для заработка. Каждая роль получает свои преимущества без компромиссов.</p>
+                </div>
+                <a href="/auth?mode=register" style="text-decoration: none;" class="btn2">
+                    <svg class="svg-rotate" width="9" height="8" viewBox="0 0 9 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M0.329102 7.5L8.3291 0.5M8.3291 0.5V8M8.3291 0.5H0.829102" stroke="#F3F7F6"/>
+                    </svg>
+                    <p>Начать работу</p>
+                </a>
+                <div class="categores">
+                    <div class="categry">
+                        <p>Логотип и брендинг </p>
+                    </div>
+                    <div class="plus">
+                        <p>+</p>
+                    </div>
+                    <div class="categry">
+                        <p>Презентации и инфографика </p>
+                    </div>
+                    <div class="plus">
+                        <p>+</p>
+                    </div>
+                    <div class="categry">
+                        <p>Арт и иллюстрации</p>
+                    </div>
+                    <div class="plus">
+                        <p>+</p>
+                    </div>
+                    <div class="categry">
+                        <p>Веб и мобильный дизайн</p>
+                    </div>
+                    <div class="plus">
+                        <p>+</p>
+                    </div>
+                    <div class="categry">
+                        <p>Маркетплейсы и соцсети</p>
+                    </div>
+                    <div class="plus">
+                        <p>+</p>
+                    </div>
+                    <div class="categry">
+                        <p>Обработка и редактирование</p>
+                    </div>
+                    <div class="plus">
+                        <p>+</p>
+                    </div>
+                    <div class="categry">
+                        <p>Полиграфия</p>
+                    </div>
+                    <div class="plus">
+                        <p>+</p>
+                    </div>
+                    <div class="categry">
+                        <p>Промышленный дизайн</p>
+                    </div>
+                    <div class="plus">
+                        <p>+</p>
+                    </div>
+                    <div class="categry">
+                        <p>Наружная реклама</p>
+                    </div>
+                    <div class="plus">
+                        <p>+</p>
+                    </div>
+                    <div class="categry">
+                        <p>ИИ-генерация изображений</p>
+                    </div>
+                </div>
+            </div>
+            <div class="linestok2026">
+                <svg width="147" height="83" viewBox="0 0 147 83" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M-0.000221252 82.9994L76.745 -0.000167847H81.168V82.9994H68.2512V29.5108L22.133 82.9994H-0.000221252Z" fill="white"/>
+                    <rect x="96.8418" y="16.5996" width="13.8344" height="19.3666" fill="#FA51A2"/>
+                    <rect x="132.801" y="16.5996" width="13.8344" height="19.3666" fill="#A609F0"/>
+                    <rect x="96.8398" y="63.6328" width="13.8344" height="19.3666" fill="#7B46F8"/>
+                    <rect x="132.811" y="63.6328" width="13.8344" height="19.3666" fill="#BDF522"/>
+                </svg>
+                <p>2026</p>
+            </div>
+        </section>
+        <section class="intelligence" aria-labelledby="intelligence-title">
+            <div class="intelligence__intro">
+                <p class="eyebrow">Простой путь от идеи до реализации</p>
+                <h3 id="intelligence-title">Всего три шага отделяют вас от сотрудничества</h3>
+                <p> Начните первый шаг прямо сейчас, и мы сделаем так, чтобы сотрудничество приносило удовольствие и пользу.</p>
+            </div>
+
+            <ul class="intelligence_list">
+                <li class="intelligence_card is-active">
+                    <span class="number">01</span>
+                    <h3>Создайте линию</h3>
+                    <p>Фрилансеры создают яркое портфолио. Заказчики — выбирают подходящего и договоравиваются о сотрудничестве.</p>
+                </li>
+                <li class="intelligence_card">
+                    <span class="number">02</span>
+                    <h3>Найдите пересечение</h3>
+                    <p>Система рекомендаций соединяет спрос и предложение на основе стиля, специализации и рейтинга.</p>
+                </li>
+                <li class="intelligence_card">
+                    <span class="number">03</span>
+                    <h3>Реализуйте проект</h3>
+                    <p>Безопасная сделка, удобный чат и контроль этапов — всё для комфортного и результативного сотрудничества.</p>
+                </li>
+            </ul>
+        </section>
+        <section class="CTA" id="cta">
+            <div class="CTA_content">
+                <h4>Готовы начать?</h4>
+                <p>Присоединяйтесь к тысячам профессионалов <br>и заказчиков уже сегодня. Это бесплатно!</p>
+
+                <a href="/auth?mode=register" class="btn3">
+                    <svg width="12" height="11" viewBox="0 0 12 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M0.323242 9.83333L11.3232 0.5M11.3232 0.5V10.5M11.3232 0.5H1.01074" stroke="#2D3231"/>
+                    </svg>
+                    <p>Зарегистрироваться</p>
+                </a>
+            </div>
+            <svg width="545" height="126" viewBox="0 0 545 126" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <g filter="url(#filter0_d_419_3985)">
+                    <path d="M3.9991 117.55L111.6 0.00021679H117.801V117.55H106.618V18.2112L19.4928 117.55L3.9991 117.55Z" fill="white"/>
+                    <path d="M540.996 117.551V50.0249H529.398L491.449 99.4277V86.4033V50.0249H480.445V117.551H491.449L529.398 70.4597V117.551H540.996Z" fill="white"/>
+                    <path d="M381.25 117.55V50.0239H369.652L331.703 99.4267V86.4023V50.0239H320.699V117.55H331.703L369.652 70.4587V117.55H381.25Z" fill="white"/>
+                    <path d="M204.65 117.55V50.0239H193.052L155.103 99.4267V86.4023V50.0239H144.1V117.55H155.103L193.052 70.4587V117.55H204.65Z" fill="white"/>
+                    <path d="M429.675 117.55V62.4266H407.549V50.0239H462.952V62.4266H441.351V117.55H429.675Z" fill="white"/>
+                    <rect x="230.902" y="50.1499" width="12.2323" height="18.9604" fill="#FA51A2"/>
+                    <rect x="282.279" y="50.1499" width="12.2323" height="18.9604" fill="#A609F0"/>
+                    <rect x="282.279" y="98.4697" width="12.2323" height="18.9604" fill="#BDF522"/>
+                    <rect x="230.902" y="98.4697" width="12.2323" height="18.9604" fill="#7B46F8"/>
+                </g>
+                <defs>
+                    <filter id="filter0_d_419_3985" x="0" y="0" width="544.996" height="125.551" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+                        <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+                        <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+                        <feOffset dy="4"/>
+                        <feGaussianBlur stdDeviation="2"/>
+                        <feComposite in2="hardAlpha" operator="out"/>
+                        <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+                        <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_419_3985"/>
+                        <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_419_3985" result="shape"/>
+                    </filter>
+                </defs>
+            </svg>
+        </section>
+        <section class="contact" id="contact">
+            <h1>Напишите нам</h1>
+            <div class="contact-content">
+                <div class="project" id="contactProject" data-works='<%- JSON.stringify(recentWorks || []) %>'>
+                    <% const initialWork = recentWorks && recentWorks.length ? recentWorks[0] : null; %>
+                    <div class="project-img">
+                        <img id="contactProjectImage" src="<%= initialWork ? initialWork.preview_image : '/img/ab934e72b62ae5df2cfc9b2102b0e228.jpg' %>" alt="<%= initialWork ? initialWork.title : 'Превью работы' %>">
+                    </div>
+                    <div class="project-text">
+                        <h2 id="contactProjectTitle"><%= initialWork ? initialWork.title : 'Работы скоро появятся' %></h2>
+                        <a id="contactProjectLink" class="project-btn" href="<%= initialWork ? ('/profile/' + initialWork.user_id) : '/lenta' %>">
+                            <svg width="8" height="7" viewBox="0 0 12 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M0.323242 9.83333L11.3232 0.5M11.3232 0.5V10.5M11.3232 0.5H1.01074" stroke="#535D5A"/>
+                            </svg>
+                            <p>Просмотреть работу</p>
+                        </a>
+                    </div>
+                </div>
+                <form action="/feedback" method="post" novalidate>
+                    <input type="hidden" name="csrf_token" value="<%= csrfToken %>">
+                    <div class="form-group">
+                        <label for="password">Имя</label>
+                        <input type="text" id="named" name="name" minlength="2" maxlength="100" required placeholder="Ваше имя">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Почта</label>
+                        <input type="email" id="email" name="email" maxlength="100" required placeholder="example@gmail.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="text">Сообщение</label>
+                        <textarea id="additional-info" name="message" rows="5" minlength="10" maxlength="2000" required placeholder="Ваше сообщение" autocomplete="off"></textarea>
+                    </div>
+                    <label class="custom-checkbox">
+                        <input type="checkbox" name="updates" required>
+                        <span class="checkmark"></span>
+                        <span class="label-text">Я согласен на <a class="link_check">обработку персональных данных</a> в соответсвии с <a class="link_check">политикой конфиденциальности</a> персональных данных платформы</span>
+                    </label>
+                    <button class="btn_form">
+                        <p>Отправить</p>
+                    </button>
+                </form>
+                <div id="successMessage" class="success-message" style="display: none;">
+                    <div class="success-content">
+                        <svg class="success-icon" width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="30" cy="30" r="28" stroke="#8CBA0B" stroke-width="2" fill="white"/>
+                            <path d="M18 30L26 38L42 22" stroke="#8CBA0B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <h3>Сообщение отправлено!</h3>
+                        <p>Спасибо за обращение. Мы свяжемся с вами в ближайшее время.</p>
+                        <button class="btn_reset" id="resetFormBtn">Отправить еще одно сообщение</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <%- include('partials/footer') %>
+    </main>
+    <div class="cookie-modal" id="cookieModal" role="dialog" aria-modal="true" aria-labelledby="cookieTitle">
+        <div class="cookie-modal__content">
+            <p class="cookie-modal__label">Мы используем cookie</p>
+            <h5 id="cookieTitle">Чтобы сайт работал быстро <br>и удобно для вас</h5>
+            <p class="cookie-modal__text">Продолжая пользоваться платформой, вы соглашаетесь с использованием cookie и обработкой данных согласно нашей политике конфиденциальности.</p>
+            <div class="cookie-modal__actions">
+                <a href="/legal/privacy" class="cookie-modal__link">Подробнее</a>
+                <button type="button" class="cookie-modal__button" id="cookieAccept">Принять</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/intelligence-demo.js"></script>
+    <script id="contact-works-data" type="application/json"><%- JSON.stringify(recentWorks || []).replace(/</g, '\\u003c') %></script>
+    <script>
+
+        (function() {
+            const burger = document.getElementById('navBurger');
+            const menu = document.getElementById('navMobileMenu');
+            const overlay = document.getElementById('navOverlay');
+            const closeBtn = document.getElementById('navMobileClose');
+            if (!burger || !menu) return;
+
+            const openMenu = () => {
+                burger.classList.add('is-open');
+                menu.classList.add('is-open');
+                if (overlay) overlay.classList.add('is-open');
+                burger.setAttribute('aria-expanded', 'true');
+                document.body.style.overflow = 'hidden';
+            };
+
+            const closeMenu = () => {
+                burger.classList.remove('is-open');
+                menu.classList.remove('is-open');
+                if (overlay) overlay.classList.remove('is-open');
+                burger.setAttribute('aria-expanded', 'false');
+                document.body.style.overflow = '';
+            };
+
+            burger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                burger.classList.contains('is-open') ? closeMenu() : openMenu();
+            });
+
+
+            if (closeBtn) closeBtn.addEventListener('click', closeMenu);
+
+
+            if (overlay) overlay.addEventListener('click', closeMenu);
+
+
+            menu.querySelectorAll('a[href^="#"]').forEach(link => {
+                link.addEventListener('click', () => closeMenu());
+            });
+
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && burger.classList.contains('is-open')) closeMenu();
+            });
+
+
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 900) closeMenu();
+            });
+        })();
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const currentYear = new Date().getFullYear();
+            const copyrightYear = document.getElementById('copyright-year');
+            const linestokYear = document.getElementById('linestok-year');
+            if (copyrightYear) copyrightYear.textContent = currentYear;
+            if (linestokYear) linestokYear.textContent = currentYear;
+
+            const links = document.querySelectorAll('a[href^="#"]');
+            links.forEach((link) => {
+                link.addEventListener('click', (event) => {
+                    const targetId = link.getAttribute('href');
+                    const target = targetId ? document.querySelector(targetId) : null;
+                    if (!target) return;
+                    event.preventDefault();
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                });
+            });
+
+            const sections = document.querySelectorAll('main > section');
+            sections.forEach((section) => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(28px)';
+                section.style.transition = 'opacity 0.7s ease, transform 0.7s ease';
+            });
+
+            const sectionObserver = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                        sectionObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.2 });
+            sections.forEach((section) => sectionObserver.observe(section));
+
+            const projectContainer = document.getElementById('contactProject');
+            const projectImage = document.getElementById('contactProjectImage');
+            const projectTitle = document.getElementById('contactProjectTitle');
+            const projectLink = document.getElementById('contactProjectLink');
+
+            if (projectContainer && projectImage && projectTitle && projectLink) {
+                let works = [];
+
+                try {
+                    works = JSON.parse(projectContainer.dataset.works || '[]');
+                } catch (error) {
+                    works = [];
+                }
+
+                if (works.length > 0) {
+                    const renderWork = (work) => {
+                        const fallbackImage = '/img/ab934e72b62ae5df2cfc9b2102b0e228.jpg';
+                        projectImage.src = work.preview_image || fallbackImage;
+                        projectImage.alt = work.title || 'Превью работы';
+                        projectTitle.textContent = work.title || 'Без названия';
+                        projectLink.href = work.user_id ? `/profile/${work.user_id}` : '/lenta';
+                    };
+
+                    const getRandomIndex = (excludeIndex) => {
+                        if (works.length === 1) {
+                            return 0;
+                        }
+
+                        let index = Math.floor(Math.random() * works.length);
+                        while (index === excludeIndex) {
+                            index = Math.floor(Math.random() * works.length);
+                        }
+                        return index;
+                    };
+
+                    let currentIndex = getRandomIndex(-1);
+                    renderWork(works[currentIndex]);
+
+                    setInterval(() => {
+                        currentIndex = getRandomIndex(currentIndex);
+                        renderWork(works[currentIndex]);
+                    }, 5000);
+                }
+            }
+        });
+    </script>
+    <script>
+
+    document.addEventListener('DOMContentLoaded', function() {
+    const cookieModal = document.getElementById('cookieModal');
+    const cookieAccept = document.getElementById('cookieAccept');
+    const cookieStorageKey = 'linitiCookieAccepted';
+
+    if (cookieModal && cookieAccept) {
+        const isAccepted = localStorage.getItem(cookieStorageKey) === 'true';
+        if (!isAccepted) {
+            cookieModal.classList.add('is-visible');
+        }
+
+        cookieAccept.addEventListener('click', () => {
+            localStorage.setItem(cookieStorageKey, 'true');
+            cookieModal.classList.remove('is-visible');
+        });
+    }
+
+        const form = document.querySelector('.contact form');
+        const successMessage = document.getElementById('successMessage');
+        const resetBtn = document.getElementById('resetFormBtn');
+
+        if (form && successMessage) {
+
+
+            form.setAttribute('novalidate', 'novalidate');
+
+
+            function showError(input, message) {
+                const formGroup = input.closest('.form-group');
+                if (formGroup) {
+                    formGroup.classList.add('error');
+                    let errorDiv = formGroup.querySelector('.error-message');
+                    if (!errorDiv) {
+                        errorDiv = document.createElement('div');
+                        errorDiv.className = 'error-message';
+                        formGroup.appendChild(errorDiv);
+                    }
+                    errorDiv.textContent = message;
+                    input.style.borderBottomColor = '#ff6b6b';
+                }
+            }
+
+
+            function clearErrors() {
+                document.querySelectorAll('.form-group').forEach(group => {
+                    group.classList.remove('error');
+                    const errorDiv = group.querySelector('.error-message');
+                    if (errorDiv) {
+                        errorDiv.remove();
+                    }
+                    const input = group.querySelector('input, textarea');
+                    if (input) {
+                        input.style.borderBottomColor = '';
+                    }
+                });
+
+
+                const checkboxLabel = document.querySelector('.custom-checkbox');
+                if (checkboxLabel) {
+                    checkboxLabel.style.border = '';
+                    checkboxLabel.style.padding = '';
+                    checkboxLabel.style.backgroundColor = '';
+                }
+            }
+
+
+            function validateForm() {
+                let isValid = true;
+                clearErrors();
+
+                const nameInput = document.getElementById('named');
+                const emailInput = document.getElementById('email');
+                const messageInput = document.getElementById('additional-info');
+                const checkbox = document.querySelector('.custom-checkbox input');
+
+
+                if (!nameInput.value.trim()) {
+                    showError(nameInput, 'Пожалуйста, введите ваше имя');
+                    isValid = false;
+                } else if (nameInput.value.trim().length < 2) {
+                    showError(nameInput, 'Имя должно содержать не менее 2 символов');
+                    isValid = false;
+                }
+
+
+                const emailRegex = /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/;
+                if (!emailInput.value.trim()) {
+                    showError(emailInput, 'Пожалуйста, введите email');
+                    isValid = false;
+                } else if (!emailRegex.test(emailInput.value.trim())) {
+                    showError(emailInput, 'Введите корректный email (example@domain.com)');
+                    isValid = false;
+                }
+
+
+                if (!messageInput.value.trim()) {
+                    showError(messageInput, 'Пожалуйста, введите ваше сообщение');
+                    isValid = false;
+                } else if (messageInput.value.trim().length < 10) {
+                    showError(messageInput, 'Сообщение должно содержать не менее 10 символов');
+                    isValid = false;
+                }
+
+
+                if (checkbox && !checkbox.checked) {
+                    const checkboxLabel = document.querySelector('.custom-checkbox');
+                    checkboxLabel.style.border = '1px solid #ff6b6b';
+                    checkboxLabel.style.borderRadius = '8px';
+                    checkboxLabel.style.padding = '8px 12px';
+                    checkboxLabel.style.backgroundColor = 'rgba(255, 107, 107, 0.05)';
+                    isValid = false;
+                }
+
+                return isValid;
+            }
+
+
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                if (!validateForm()) {
+
+                    form.style.animation = 'shake 0.3s ease-in-out';
+                    setTimeout(() => {
+                        form.style.animation = '';
+                    }, 300);
+                    return;
+                }
+
+                const submitButton = form.querySelector('.btn_form');
+                const originalButtonText = submitButton.innerHTML;
+                submitButton.innerHTML = '<p>Отправка...</p>';
+                submitButton.disabled = true;
+
+                try {
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-Token': form.querySelector('[name="csrf_token"]')?.value || '',
+                        },
+                        body: JSON.stringify({
+                            name: document.getElementById('named').value,
+                            email: document.getElementById('email').value,
+                            message: document.getElementById('additional-info').value,
+                        }),
+                    });
+
+                    const result = await response.json().catch(() => ({}));
+
+                    if (!response.ok || !result.success) {
+                        const serverErrors = result.errors || {};
+                        const firstError = serverErrors.name || serverErrors.email || serverErrors.message || result.error || 'Не удалось отправить сообщение. Попробуйте позже.';
+
+                        if (serverErrors.name) showError(document.getElementById('named'), serverErrors.name);
+                        if (serverErrors.email) showError(document.getElementById('email'), serverErrors.email);
+                        if (serverErrors.message) showError(document.getElementById('additional-info'), serverErrors.message);
+                        if (!Object.keys(serverErrors).length) showError(document.getElementById('additional-info'), firstError);
+
+                        return;
+                    }
+
+                    form.style.display = 'none';
+                    successMessage.style.display = 'block';
+                    form.reset();
+                    clearErrors();
+                } catch (error) {
+                    console.error('Feedback submit error:', error);
+                    showError(document.getElementById('additional-info'), 'Не удалось отправить сообщение. Проверьте подключение и попробуйте снова.');
+                } finally {
+                    submitButton.innerHTML = originalButtonText;
+                    submitButton.disabled = false;
+                }
+            });
+
+
+            if (resetBtn) {
+                resetBtn.addEventListener('click', function() {
+                    successMessage.style.display = 'none';
+                    form.style.display = 'flex';
+                    form.reset();
+                    clearErrors();
+                    form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                });
+            }
+
+
+            const inputs = ['named', 'email', 'additional-info'];
+            inputs.forEach(id => {
+                const input = document.getElementById(id);
+                if (input) {
+                    input.addEventListener('input', function() {
+                        const formGroup = this.closest('.form-group');
+                        if (formGroup && formGroup.classList.contains('error')) {
+                            formGroup.classList.remove('error');
+                            const errorDiv = formGroup.querySelector('.error-message');
+                            if (errorDiv) errorDiv.remove();
+                            this.style.borderBottomColor = '';
+                        }
+                    });
+                }
+            });
+
+
+            const checkbox = document.querySelector('.custom-checkbox input');
+            if (checkbox) {
+                checkbox.addEventListener('change', function() {
+                    const checkboxLabel = document.querySelector('.custom-checkbox');
+                    if (checkboxLabel) {
+                        checkboxLabel.style.border = '';
+                        checkboxLabel.style.padding = '';
+                        checkboxLabel.style.backgroundColor = '';
+                    }
+                });
+            }
+        }
+    });
+</script>
+    <script src="/js/form-validation.js" defer></script>
+</body>
+</html>

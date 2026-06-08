@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добавить задачу | Линити</title>
+    <link rel="stylesheet" href="/css/create-work.css">
+    <link rel="stylesheet" href="/css/services.css">
+    <link rel="stylesheet" href="/css/orders.css">
+    <link rel="stylesheet" href="/css/confirm-modal.css">
+    <link rel="stylesheet" href="/css/header.css">
+</head>
+<body>
+  <main>
+    <%- include('partials/header-actions') %>
+    <div class="created-page">
+      <div class="create-work-container">
+        <div class="create-work-header">
+          <a class="back-btn" href="/orders">
+            <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M16.8454 8.62438L1.34021 8.62406M1.34021 8.62406L8.20943 0.652978M1.34021 8.62406L8.21046 16.0587" stroke="#CF4386" stroke-width="1.5"/>
+            </svg>
+            Назад
+          </a>
+        </div>
+
+        <div class="create-order-layout">
+          <aside class="create-order-info settings-section" style="width: 600px;">
+            <h2 class="create-order-title">Добавление задачи</h2>
+            <p class="create-order-subtitle">Разместите задачу на бирже и выберите лучшего исполнителя.</p>
+            <div class="step-progress" aria-label="Прогресс формы">
+              <button type="button" class="step-dot is-active" data-step-dot="1">1</button>
+              <button type="button" class="step-dot" data-step-dot="2">2</button>
+              <button type="button" class="step-dot" data-step-dot="3">3</button>
+            </div>
+          </aside>
+
+          <form id="createOrderForm" class="create-order-form settings-section" enctype="multipart/form-data" novalidate>
+            <input type="hidden" name="csrf_token" value="<%= csrfToken %>">
+
+            <section class="order-step is-active" data-step="1">
+              <h2>1. О задаче</h2>
+              <div class="order-info-text">
+                <p>Разместите свою задачу на бирже. Ваш проект станет видимым для тысяч фрилансеров, и некоторые из них сделают вам предложения. Изучите их рейтинг, портфолио и выберите лучших из них. Подтвердите заказ, когда будете удовлетворены результатом на 100%. Только после этого оплата спишется в пользу продавца.</p>
+                <p><a href="/legal/offer" target="_blank">Подробнее о Программе защиты покупателей</a></p>
+              </div>
+              <label>Название задачи *<input type="text" name="title" id="title" required maxlength="150" placeholder="Например, дизайн лендинга"></label>
+            </section>
+
+            <section class="order-step" data-step="2" hidden>
+              <h2>2. Описание и категории</h2>
+              <label>Детальное описание задачи *<textarea name="description" id="description" rows="8" maxlength="2000" required placeholder="Опишите детали задачи, дедлайн и ожидания"></textarea></label>
+
+              <div style="margin-top: 20px;" class="form-group">
+                <label>Категории</label>
+                <div class="categories-select" id="categoriesSelect">
+                  <div class="category-subcategory-row" style="margin-bottom: 25px;">
+                    <select id="categorySelect" class="category-dropdown">
+                      <option value="">Категория</option>
+                    </select>
+                    <select id="subcategorySelect" class="subcategory-dropdown" disabled>
+                      <option value="">Подкатегория</option>
+                    </select>
+                    <button type="button" id="addSubcategoryBtn" class="add-subcategory-btn" disabled>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12.75 7C12.75 6.58579 12.4142 6.25 12 6.25C11.5858 6.25 11.25 6.58579 11.25 7V11.25H7C6.58579 11.25 6.25 11.5858 6.25 12C6.25 12.4142 6.58579 12.75 7 12.75H11.25V17C11.25 17.4142 11.5858 17.75 12 17.75C12.4142 17.75 12.75 17.4142 12.75 17V12.75H17C17.4142 12.75 17.75 12.4142 17.75 12C17.75 11.5858 17.4142 11.25 17 11.25H12.75V7Z" fill="white"/>
+                      </svg>
+                    </button>
+                  </div>
+                  <div class="selected-subcategories" id="selectedSubcategories"></div>
+                  <small class="categories-hint">Можно выбрать до 8 подкатегорий</small>
+                  <div class="error-message" data-error-for="categories"></div>
+                </div>
+              </div>
+            </section>
+
+            <section class="order-step" data-step="3" hidden>
+              <h2>3. Файл и бюджет</h2>
+              <label id="attachmentField">Прикрепить файлы
+                <div class="attachment-preview-compact" id="attachmentPreview"></div>
+                <input type="file" id="attachmentInput" multiple style="display: none;">
+              </label>
+              <p class="file-hint">Можно прикрепить до 10 файлов любого типа, до 50 МБ каждый</p>
+              <div class="order-row">
+                <label>Бюджет, ₽ (не более) *<input type="number" name="price" id="price" min="1" max="500000" step="1" required placeholder="15000"></label>
+                <label>Дедлайн<input type="date" name="deadline" id="deadline"></label>
+              </div>
+            </section>
+
+            <div class="create-order-actions">
+              <button type="button" class="secondary-btn" id="prevStepBtn" hidden>Назад</button>
+              <button type="button" class="primary-btn" id="nextStepBtn">Далее</button>
+              <button type="submit" class="primary-btn" id="submitBtn" hidden>Создать задачу</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+  <%- include('partials/confirm-modal') %>
+  <script>
+    function showConfirm(message, onConfirm, options = {}) {
+      const modal = document.getElementById('confirmModal');
+      const titleEl = document.getElementById('confirmModalTitle');
+      const msgEl = document.getElementById('confirmModalMessage');
+      const okBtn = document.getElementById('confirmModalOk');
+      const cancelBtn = document.getElementById('confirmModalCancel');
+      titleEl.textContent = options.title || 'Подтвердите действие';
+      msgEl.textContent = message;
+      okBtn.textContent = options.confirmText || 'Подтвердить';
+      cancelBtn.style.display = options.hideCancel ? 'none' : 'inline-block';
+      modal.style.display = 'flex';
+      const cleanup = () => { modal.style.display = 'none'; okBtn.onclick = null; };
+      okBtn.onclick = () => { cleanup(); onConfirm(); };
+      cancelBtn.onclick = cleanup;
+    }
+    function closeConfirm() {
+      document.getElementById('confirmModal').style.display = 'none';
+    }
+    function showAlert(message) {
+      showConfirm(message, () => {}, { title: 'Внимание', confirmText: 'OK', hideCancel: true });
+    }
+
+    const categories = <%- JSON.stringify(categories || []) %>;
+    const subcategories = <%- JSON.stringify(subcategories || []) %>;
+
+    const form = document.getElementById('createOrderForm');
+    const steps = Array.from(document.querySelectorAll('.order-step'));
+    const stepDots = Array.from(document.querySelectorAll('[data-step-dot]'));
+    const nextBtn = document.getElementById('nextStepBtn');
+    const prevBtn = document.getElementById('prevStepBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const csrfToken = '<%= csrfToken %>';
+
+    const categorySelect = document.getElementById('categorySelect');
+    const subcategorySelect = document.getElementById('subcategorySelect');
+    const addSubcategoryBtn = document.getElementById('addSubcategoryBtn');
+    const selectedSubcategoriesContainer = document.getElementById('selectedSubcategories');
+    const categoriesSelectContainer = document.getElementById('categoriesSelect');
+    const categoriesErrorNode = form.querySelector('[data-error-for="categories"]');
+
+    const attachmentField = document.getElementById('attachmentField');
+    const attachmentInput = document.getElementById('attachmentInput');
+    const attachmentPreview = document.getElementById('attachmentPreview');
+
+    const maxSubcategories = 8;
+    const selectedSubcategories = new Map();
+    const maxAttachments = 10;
+    let selectedAttachmentFiles = [];
+    let currentStep = 1;
+
+
+    const setCategoriesError = (msg = '') => {
+      if (!categoriesErrorNode) return;
+      categoriesErrorNode.textContent = msg;
+      if (msg) categoriesSelectContainer?.classList.add('error');
+      else categoriesSelectContainer?.classList.remove('error');
+    };
+
+    const validateCategories = () => {
+      if (!selectedSubcategories.size) {
+        setCategoriesError('Выберите минимум одну подкатегорию');
+        return false;
+      }
+      setCategoriesError('');
+      return true;
+    };
+
+    const validateSubcategoryLimit = () => {
+      if (selectedSubcategories.size >= maxSubcategories) {
+        setCategoriesError(`Можно выбрать не более ${maxSubcategories} подкатегорий`);
+        return false;
+      }
+      return true;
+    };
+
+    const fillCategorySelect = () => {
+      categories.forEach((cat) => {
+        const option = document.createElement('option');
+        option.value = cat.id;
+        option.textContent = cat.name;
+        categorySelect.appendChild(option);
+      });
+    };
+
+    const renderSubcategories = () => {
+      const parentId = Number(categorySelect.value);
+      const options = subcategories
+        .filter((item) => Number(item.parent_id) === parentId)
+        .filter((item) => !selectedSubcategories.has(Number(item.id)));
+      subcategorySelect.innerHTML = '<option value="">Выберите подкатегорию</option>';
+      options.forEach((item) => {
+        const option = document.createElement('option');
+        option.value = item.id;
+        option.textContent = item.name;
+        subcategorySelect.appendChild(option);
+      });
+      subcategorySelect.disabled = !options.length;
+      addSubcategoryBtn.disabled = !options.length;
+    };
+
+    const renderSelectedSubcategories = () => {
+      selectedSubcategoriesContainer.innerHTML = '';
+      selectedSubcategories.forEach((sub) => {
+        const tag = document.createElement('div');
+        tag.className = 'selected-subcategory-tag';
+        tag.innerHTML = `
+          <span>${sub.name}</span>
+          <button type="button" data-subcategory-id="${sub.id}">&times;</button>
+        `;
+        selectedSubcategoriesContainer.appendChild(tag);
+      });
+      if (selectedSubcategories.size < maxSubcategories && categoriesErrorNode?.textContent.includes('не более')) {
+        setCategoriesError('');
+      }
+    };
+
+    categorySelect.addEventListener('change', renderSubcategories);
+    addSubcategoryBtn.addEventListener('click', () => {
+      if (!validateSubcategoryLimit()) return;
+      const parentId = Number(categorySelect.value);
+      const subcategoryId = Number(subcategorySelect.value);
+      if (!parentId || !subcategoryId) return;
+      const subcategory = subcategories.find(
+        (item) => Number(item.parent_id) === parentId && Number(item.id) === subcategoryId
+      );
+      if (!subcategory) return;
+      selectedSubcategories.set(subcategoryId, { id: subcategoryId, name: subcategory.name });
+      renderSubcategories();
+      renderSelectedSubcategories();
+      validateCategories();
+    });
+    selectedSubcategoriesContainer.addEventListener('click', (event) => {
+      const removeBtn = event.target.closest('button[data-subcategory-id]');
+      if (!removeBtn) return;
+      const subcategoryId = Number(removeBtn.dataset.subcategoryId);
+      selectedSubcategories.delete(subcategoryId);
+      renderSubcategories();
+      renderSelectedSubcategories();
+      validateCategories();
+    });
+
+
+    const initAttachmentUploader = () => {
+      if (!attachmentInput || !attachmentPreview) return;
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'attachment-upload-wrapper';
+      const button = document.createElement('div');
+      button.className = 'attachment-upload-btn';
+      button.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>';
+      wrapper.appendChild(button);
+      wrapper.appendChild(attachmentInput);
+      attachmentPreview.appendChild(wrapper);
+
+      const countLabel = document.createElement('span');
+      countLabel.className = 'attachment-count';
+      attachmentPreview.appendChild(countLabel);
+
+      button.addEventListener('click', (event) => {
+        event.stopPropagation();
+        attachmentInput.click();
+      });
+
+      const updateCountLabel = () => {
+        countLabel.textContent = selectedAttachmentFiles.length
+          ? `${selectedAttachmentFiles.length} из ${maxAttachments}`
+          : '';
+        countLabel.classList.toggle('is-error', selectedAttachmentFiles.length >= maxAttachments);
+      };
+
+      const renderAttachmentPreview = () => {
+        Array.from(attachmentPreview.querySelectorAll('.attachment-file-item')).forEach((el) => el.remove());
+        updateCountLabel();
+
+        selectedAttachmentFiles.forEach((file, index) => {
+          const fileItem = document.createElement('div');
+          fileItem.className = 'attachment-file-item';
+          const icon = document.createElement('span');
+          icon.className = 'attachment-file-icon';
+          icon.textContent = '📎';
+          const fileName = document.createElement('span');
+          fileName.className = 'attachment-file-name';
+          fileName.textContent = file.name;
+          fileName.title = file.name;
+          const removeButton = document.createElement('button');
+          removeButton.type = 'button';
+          removeButton.className = 'attachment-file-remove';
+          removeButton.setAttribute('aria-label', 'Удалить файл');
+          removeButton.innerHTML = '&times;';
+          removeButton.addEventListener('click', () => {
+            selectedAttachmentFiles.splice(index, 1);
+            renderAttachmentPreview();
+          });
+          fileItem.appendChild(icon);
+          fileItem.appendChild(fileName);
+          fileItem.appendChild(removeButton);
+          attachmentPreview.appendChild(fileItem);
+        });
+      };
+
+      attachmentInput.addEventListener('change', (event) => {
+        const newFiles = Array.from(event.target.files || []);
+        if (!newFiles.length) return;
+
+        const remainingSlots = maxAttachments - selectedAttachmentFiles.length;
+        if (remainingSlots <= 0) {
+          showAlert(`Можно прикрепить не более ${maxAttachments} файлов`);
+          attachmentInput.value = '';
+          return;
+        }
+
+        const filesToAdd = newFiles.slice(0, remainingSlots);
+        if (newFiles.length > remainingSlots) {
+          showAlert(`Добавлено только ${filesToAdd.length} файлов. Лимит: ${maxAttachments}`);
+        }
+
+        selectedAttachmentFiles.push(...filesToAdd);
+        attachmentInput.value = '';
+        renderAttachmentPreview();
+      });
+    };
+
+
+    const validateStep = (step) => {
+      const section = steps[step - 1];
+      if (!section) return false;
+      const fields = Array.from(section.querySelectorAll('input, textarea, select'))
+        .filter((field) => field.willValidate || field.hasAttribute('required'));
+      const invalidFields = fields.filter((field) => {
+        if (window.LineStokFormValidation) {
+          return !window.LineStokFormValidation.validateField(field);
+        }
+        return !field.checkValidity();
+      });
+      if (invalidFields.length) {
+        const firstInvalidField = invalidFields[0];
+        firstInvalidField.focus?.({ preventScroll: true });
+        firstInvalidField.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
+        return false;
+      }
+      if (step === 2 && !validateCategories()) {
+        return false;
+      }
+      return true;
+    };
+
+    const updateStepUI = () => {
+      steps.forEach((stepNode, index) => {
+        const isActive = index + 1 === currentStep;
+        stepNode.hidden = !isActive;
+        stepNode.classList.toggle('is-active', isActive);
+        stepNode.setAttribute('aria-hidden', String(!isActive));
+      });
+      stepDots.forEach((dot, index) => {
+        const stepNumber = index + 1;
+        dot.classList.toggle('is-active', stepNumber <= currentStep);
+        dot.classList.toggle('is-current', stepNumber === currentStep);
+        dot.disabled = stepNumber > currentStep;
+      });
+      prevBtn.hidden = currentStep === 1;
+      nextBtn.hidden = currentStep === steps.length;
+      submitBtn.hidden = currentStep !== steps.length;
+    };
+
+    nextBtn.addEventListener('click', () => {
+      if (!validateStep(currentStep)) return;
+      currentStep += 1;
+      updateStepUI();
+    });
+
+    prevBtn.addEventListener('click', () => {
+      currentStep -= 1;
+      updateStepUI();
+    });
+
+    stepDots.forEach((dot) => {
+      dot.addEventListener('click', () => {
+        const targetStep = Number(dot.dataset.stepDot);
+        if (!targetStep || targetStep === currentStep || targetStep > currentStep) return;
+        currentStep = targetStep;
+        updateStepUI();
+      });
+    });
+
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!validateStep(currentStep)) return;
+
+      const formData = new FormData(form);
+
+
+      form.querySelectorAll('input[name="categories"]').forEach((input) => input.remove());
+      selectedSubcategories.forEach((sub) => {
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'categories';
+        hiddenInput.value = String(sub.id);
+        form.appendChild(hiddenInput);
+        formData.append('categories', String(sub.id));
+      });
+
+
+      selectedAttachmentFiles.forEach((file) => {
+        formData.append('attachment', file);
+      });
+
+      try {
+        const response = await fetch('/api/orders/create', {
+          method: 'POST',
+          headers: {
+            'X-CSRF-Token': csrfToken
+          },
+          body: formData
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || 'Не удалось создать задачу');
+        }
+
+        window.location.href = '/orders?order_created=1';
+      } catch (error) {
+        showAlert(error.message || 'Ошибка при создании задачи');
+      }
+    });
+
+    fillCategorySelect();
+    renderSubcategories();
+    initAttachmentUploader();
+    updateStepUI();
+  </script>
+</body>
+</html>

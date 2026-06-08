@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= order.title || 'Сделка' %> | Линити</title>
+    <link rel="stylesheet" href="/css/services.css">
+    <link rel="stylesheet" href="/css/confirm-modal.css">
+    <link rel="stylesheet" href="/css/header.css">
+    <link rel="stylesheet" href="/css/report-modal.css">
+</head>
+<body class="order-detail-page">
+    <main>
+        <%- include('partials/header-actions') %>
+        <div class="orders-layout order-detail-layout">
+                <div class="service-main">
+                    <div class="service-details">
+                        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+                            <h1 class="service-title"><%= order.title || 'Без названия' %></h1>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                                <button class="report-page-btn" type="button" data-report-type="order" data-report-id="<%= order.id %>" data-report-title="<%= order.title || 'Задача' %>">Пожаловаться</button>
+                                <% if (isAdmin) { %>
+                                    <button class="report-page-btn danger-btn" type="button" data-admin-delete-path="/admin/orders" data-admin-delete-id="<%= order.id %>">Удалить</button>
+                                <% } %>
+                            </div>
+                        </div>
+
+                        <% if (order.description) { %>
+                            <p class="service-lead"><%= order.description %></p>
+                        <% } %>
+
+                        <% if (typeof subcategories !== 'undefined' && subcategories.length) { %>
+                            <div class="service-categories" aria-label="Подкатегории заказа">
+                                <% subcategories.forEach((subcategory) => { %>
+                                    <span class="service-category-tag">
+                                        <% if (subcategory.parent_name) { %>
+                                            <span class="service-category-parent"><%= subcategory.parent_name %></span>
+                                        <% } %>
+                                        <%= subcategory.name %>
+                                    </span>
+                                <% }) %>
+                            </div>
+                        <% } %>
+
+                        <% if (files && files.length) { %>
+                            <div class="order-files" style="margin-top: 18px;">
+                                <h3 style="font-size: 15px; margin-bottom: 10px; color: #333;">Прикреплённые файлы</h3>
+                                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                                    <% files.forEach(file => { %>
+                                        <a href="<%= file.file_url %>" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 6px; background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 8px; padding: 8px 12px; font-size: 13px; color: #333; text-decoration: none;">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14.25 2.5C14.25 2.36193 14.1381 2.25 14 2.25H7C5.48122 2.25 4.25 3.48122 4.25 5V19C4.25 20.5188 5.48122 21.75 7 21.75H17C18.5188 21.75 19.75 20.5188 19.75 19V9.14706C19.75 9.00899 19.6381 8.89706 19.5 8.89706H15C14.5858 8.89706 14.25 8.56127 14.25 8.14706V2.5Z" stroke="#666" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                            <%= file.original_name || 'Файл' %>
+                                        </a>
+                                    <% }) %>
+                                </div>
+                            </div>
+                        <% } %>
+
+                        <div class="service-meta">
+                            <div class="service-meta-item">
+                                <span class="service-meta-label">Стоимость</span>
+                                <span class="service-meta-value"><%= Number(order.price || 0).toLocaleString('ru-RU') %> ₽</span>
+                            </div>
+                            <div class="service-meta-item">
+                                <span class="service-meta-label">Статус</span>
+                                <span class="service-meta-value">
+                                    <span class="order-status status-<%= order.status %>">
+                                        <%= statusLabel(order.status, 'order') %>
+                                    </span>
+                                </span>
+                            </div>
+                            <% if (order.payment_status) { %>
+                                <div class="service-meta-item">
+                                    <span class="service-meta-label">Оплата</span>
+                                    <span class="service-meta-value">
+                                        <% if (order.payment_status === 'held') { %>
+                                            <span style="color:#2e7d32;">Оплачено и заморожено</span>
+                                        <% } else if (order.payment_status === 'released') { %>
+                                            <span style="color:#2e7d32;">Выплачено исполнителю</span>
+                                        <% } else if (order.payment_status === 'cancelled') { %>
+                                            <span style="color:#c62828;">Возвращено заказчику</span>
+                                        <% } else { %>
+                                            <span style="color:#888;">Ожидает оплаты</span>
+                                        <% } %>
+                                    </span>
+                                </div>
+                            <% } %>
+                            <% if (order.deadline) { %>
+                                <div class="service-meta-item">
+                                    <span class="service-meta-label">Дедлайн</span>
+                                    <span class="service-meta-value"><%= new Date(order.deadline).toLocaleDateString('ru-RU') %></span>
+                                </div>
+                            <% } %>
+                            <div class="service-meta-item">
+                                <span class="service-meta-label">Создана</span>
+                                <span class="service-meta-value"><%= new Date(order.created_at).toLocaleDateString('ru-RU') %></span>
+                            </div>
+                            <% if (order.completed_at) { %>
+                                <div class="service-meta-item">
+                                    <span class="service-meta-label">Завершена</span>
+                                    <span class="service-meta-value"><%= new Date(order.completed_at).toLocaleDateString('ru-RU') %></span>
+                                </div>
+                            <% } %>
+                        </div>
+
+                        <div class="deal-summary-card" style="margin-top:18px;padding:16px;border:1px solid #eee;border-radius:14px;background:#fff;">
+                            <h3 style="margin:0 0 12px;font-size:18px;">Основная информация сделки</h3>
+                            <div class="service-meta" style="margin-top:0;">
+                                <div class="service-meta-item">
+                                    <span class="service-meta-label">ID сделки</span>
+                                    <span class="service-meta-value">#<%= order.id %></span>
+                                </div>
+                                <div class="service-meta-item">
+                                    <span class="service-meta-label">Заказчик</span>
+                                    <span class="service-meta-value"><%= order.customer_first_name || '' %> <%= order.customer_last_name || '' %></span>
+                                </div>
+                                <div class="service-meta-item">
+                                    <span class="service-meta-label">Исполнитель</span>
+                                    <span class="service-meta-value"><%= order.executor_id ? ((order.executor_first_name || '') + ' ' + (order.executor_last_name || '')) : 'Не назначен' %></span>
+                                </div>
+                                <div class="service-meta-item">
+                                    <span class="service-meta-label">Этапов</span>
+                                    <span class="service-meta-value"><%= stages ? stages.length : 0 %></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="order-stages" style="margin-top:18px;">
+                            <h3>Этапы и дедлайны</h3>
+                            <% if (pendingStageChange) { %>
+                                <div style="margin:10px 0;padding:12px;border-radius:10px;background:#fff7e6;color:#8a5a00;font-size:14px;">
+                                    Изменения этапов ожидают подтверждения заказчика.
+                                </div>
+                            <% } %>
+                            <% if (stages && stages.length) { %>
+                                <div class="stages-list">
+                                    <% stages.forEach(stage => { %>
+                                        <div class="stage-item <%= stage.completed ? 'stage-completed' : '' %>" data-stage-id="<%= stage.id %>">
+                                            <span class="stage-check" style="cursor: <%= isExecutor && order.status === 'in_progress' ? 'pointer' : 'default' %>;"><%= stage.completed ? '✓' : '○' %></span>
+                                            <span class="stage-name"><%= stage.name %></span>
+                                            <% if (stage.deadline) { %>
+                                                <span class="stage-deadline" style="margin-left:auto;color:#777;font-size:13px;">до <%= new Date(stage.deadline).toLocaleDateString('ru-RU') %></span>
+                                            <% } %>
+                                        </div>
+                                    <% }) %>
+                                </div>
+                            <% } else { %>
+                                <p style="color:#777;">Этапы пока не добавлены.</p>
+                            <% } %>
+
+                            <% if (pendingStageChange && isCustomer) { %>
+                                <% const stageSummary = pendingStageChangeSummary || { proposed: [], added: [], changed: [], removed: [], hasDiff: false }; %>
+                                <div style="margin-top:16px;padding:14px;border:1px solid #f0d28a;border-radius:12px;background:#fffaf0;">
+                                    <h4 style="margin:0 0 10px;">Исполнитель просит подтвердить изменения этапов</h4>
+                                    <p style="margin:0 0 12px;color:#8a5a00;font-size:13px;">Проверьте добавленные, изменённые и удалённые этапы перед подтверждением.</p>
+
+                                    <% if (stageSummary.removed.length) { %>
+                                        <div style="margin-bottom:12px;">
+                                            <strong style="display:block;margin-bottom:6px;color:#b00000;">Будут удалены</strong>
+                                            <% stageSummary.removed.forEach(stage => { %>
+                                                <div style="display:flex;gap:10px;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f4e5bf;">
+                                                    <span><%= stage.name %></span>
+                                                    <span style="color:#777;"><%= stage.deadline ? new Date(stage.deadline).toLocaleDateString('ru-RU') : 'Без дедлайна' %></span>
+                                                </div>
+                                            <% }) %>
+                                        </div>
+                                    <% } %>
+
+                                    <% if (stageSummary.changed.length) { %>
+                                        <div style="margin-bottom:12px;">
+                                            <strong style="display:block;margin-bottom:6px;color:#8a5a00;">Будут изменены</strong>
+                                            <% stageSummary.changed.forEach(stage => { %>
+                                                <div style="display:flex;gap:10px;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f4e5bf;">
+                                                    <span><%= stage.name %></span>
+                                                    <span style="color:#777;"><%= stage.deadline ? new Date(stage.deadline).toLocaleDateString('ru-RU') : 'Без дедлайна' %></span>
+                                                </div>
+                                            <% }) %>
+                                        </div>
+                                    <% } %>
+
+                                    <% if (stageSummary.added.length) { %>
+                                        <div style="margin-bottom:12px;">
+                                            <strong style="display:block;margin-bottom:6px;color:#2e7d32;">Будут добавлены</strong>
+                                            <% stageSummary.added.forEach(stage => { %>
+                                                <div style="display:flex;gap:10px;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f4e5bf;">
+                                                    <span><%= stage.name %></span>
+                                                    <span style="color:#777;"><%= stage.deadline ? new Date(stage.deadline).toLocaleDateString('ru-RU') : 'Без дедлайна' %></span>
+                                                </div>
+                                            <% }) %>
+                                        </div>
+                                    <% } %>
+
+                                    <% if (!stageSummary.hasDiff) { %>
+                                        <p style="margin:0 0 12px;color:#777;font-size:13px;">Состав этапов не отличается от текущего, но исполнитель всё равно отправил запрос на подтверждение.</p>
+                                    <% } %>
+
+                                    <details style="margin-top:10px;">
+                                        <summary style="cursor:pointer;color:#555;font-size:13px;">Показать полный список этапов после подтверждения</summary>
+                                        <div style="margin-top:8px;">
+                                            <% stageSummary.proposed.forEach(stage => { %>
+                                                <div style="display:flex;gap:10px;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f4e5bf;">
+                                                    <span><%= stage.name %></span>
+                                                    <span style="color:#777;"><%= stage.deadline ? new Date(stage.deadline).toLocaleDateString('ru-RU') : 'Без дедлайна' %></span>
+                                                </div>
+                                            <% }) %>
+                                        </div>
+                                    </details>
+
+                                    <div style="display:flex;gap:10px;margin-top:12px;">
+                                        <button class="service-order-btn" id="approveStageChangesBtn" data-request-id="<%= pendingStageChange.id %>">Подтвердить изменения</button>
+                                        <button class="cancel-order-btn service-archive-btn" id="rejectStageChangesBtn" data-request-id="<%= pendingStageChange.id %>">Отклонить</button>
+                                    </div>
+                                </div>
+                            <% } %>
+
+                            <% if (isExecutor && order.status === 'in_progress') { %>
+                                <div style="margin-top:16px;padding:14px;border:1px solid #eee;border-radius:12px;background:#fafafa;">
+                                    <h4 style="margin:0 0 8px;">Изменить этапы</h4>
+                                    <p style="margin:0 0 12px;color:#777;font-size:13px;">Изменения вступят в силу только после подтверждения заказчика.</p>
+                                    <div id="stageEditorRows"></div>
+                                    <button type="button" class="service-archive-btn" id="addStageEditorRowBtn" style="margin-top:10px;">+ Добавить этап</button>
+                                    <button type="button" class="service-order-btn" id="sendStageChangesBtn" style="margin-top:10px;">Отправить на подтверждение</button>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="service-sidebar">
+                    <div class="service-provider-card">
+                        <img src="<%= order.customer_avatar || '/img/Group.svg' %>" alt="" class="service-provider-avatar">
+                        <div class="service-provider-info">
+                            <h2><%= order.customer_first_name || '' %> <%= order.customer_last_name || '' %></h2>
+                            <p>Заказчик</p>
+                        </div>
+                        <a href="/profile/<%= order.customer_id %>" class="service-provider-link">Профиль заказчика</a>
+                    </div>
+
+                    <% if (order.executor_id) { %>
+                    <div class="service-provider-card">
+                        <img src="<%= order.executor_avatar || '/img/Group.svg' %>" alt="" class="service-provider-avatar">
+                        <div class="service-provider-info">
+                            <h2><%= order.executor_first_name || '' %> <%= order.executor_last_name || '' %></h2>
+                            <p>Исполнитель</p>
+                        </div>
+                        <a href="/profile/<%= order.executor_id %>" class="service-provider-link">Профиль исполнителя</a>
+                    </div>
+                    <% } %>
+
+                    <div class="service-order-card">
+                        <% if (order.status === 'active') { %>
+                            <% if (isExecutor) { %>
+                                <button class="service-order-btn" id="acceptOrderBtn" data-id="<%= order.id %>">Принять сделку</button>
+                            <% } else if (isCustomer) { %>
+                                <button class="cancel-order-btn service-archive-btn" id="cancelOrderBtn" data-id="<%= order.id %>">Отменить сделку</button>
+                            <% } else { %>
+                                <a href="/deals/propose?targetType=order&targetId=<%= order.id %>" class="service-order-btn">Предложить сделку</a>
+                            <% } %>
+                        <% } else if (order.status === 'in_progress') { %>
+                            <% if (isCustomer) { %>
+                                <% if (order.customer_confirmed) { %>
+                                    <span class="service-order-price-value" style="color:#2e7d32;">✓ Вы подтвердили выполнение</span>
+                                <% } else { %>
+                                    <button class="service-order-btn" id="completeOrderBtn" data-id="<%= order.id %>">Подтвердить выполнение</button>
+                                <% } %>
+                                <button class="cancel-order-btn service-archive-btn" id="cancelOrderBtn" data-id="<%= order.id %>">Отменить</button>
+                            <% } else if (isExecutor) { %>
+                                <% if (order.executor_confirmed) { %>
+                                    <span class="service-order-price-value" style="color:#2e7d32;">✓ Вы подтвердили сдачу</span>
+                                <% } else { %>
+                                    <button class="service-order-btn" id="deliverOrderBtn" data-id="<%= order.id %>">Сдать работу</button>
+                                <% } %>
+                                <button class="cancel-order-btn service-archive-btn" id="cancelOrderBtn" data-id="<%= order.id %>">Отменить</button>
+                            <% } %>
+                            <% if (order.customer_confirmed || order.executor_confirmed) { %>
+                                <div style="margin-top:10px;font-size:13px;color:#666;">
+                                    <% if (order.customer_confirmed) { %><div>Заказчик подтвердил</div><% } %>
+                                    <% if (order.executor_confirmed) { %><div>Исполнитель подтвердил</div><% } %>
+                                </div>
+                            <% } %>
+                        <% } else if (order.status === 'completed') { %>
+                            <span class="service-order-price-value">Сделка завершена</span>
+                            <% if (order.fee_amount > 0) { %>
+                                <div style="font-size:12px;color:#888;margin-top:4px;">Комиссия платформы: <%= Number(order.fee_amount).toLocaleString('ru-RU') %> ₽</div>
+                            <% } %>
+                        <% } else if (order.status === 'cancelled') { %>
+                            <span class="service-order-price-value">Сделка отменена</span>
+                        <% } %>
+                    </div>
+
+                    <div class="service-order-card">
+                        <a href="<%= chatUserId ? '/chat?user=' + chatUserId : '/chat' %>" class="service-order-btn">Перейти в чат</a>
+                    </div>
+                </div>
+        </div>
+        <%- include('partials/report-modal') %>
+    </main>
+    <%- include('partials/confirm-modal') %>
+    <script>
+        function showConfirm(message, onConfirm, options = {}) {
+            const modal = document.getElementById('confirmModal');
+            const titleEl = document.getElementById('confirmModalTitle');
+            const msgEl = document.getElementById('confirmModalMessage');
+            const okBtn = document.getElementById('confirmModalOk');
+            const cancelBtn = document.getElementById('confirmModalCancel');
+            titleEl.textContent = options.title || 'Подтвердите действие';
+            msgEl.textContent = message;
+            okBtn.textContent = options.confirmText || 'Подтвердить';
+            cancelBtn.style.display = options.hideCancel ? 'none' : 'inline-block';
+            modal.style.display = 'flex';
+            const cleanup = () => { modal.style.display = 'none'; okBtn.onclick = null; };
+            okBtn.onclick = () => { cleanup(); onConfirm(); };
+            cancelBtn.onclick = cleanup;
+        }
+        function closeConfirm() {
+            document.getElementById('confirmModal').style.display = 'none';
+        }
+        function showAlert(message) {
+            showConfirm(message, () => {}, { title: 'Внимание', confirmText: 'OK', hideCancel: true });
+        }
+
+        const csrfToken = '<%= csrfToken %>';
+
+        const adminDeleteButtons = document.querySelectorAll('[data-admin-delete-path]');
+        adminDeleteButtons.forEach((button) => {
+            button.addEventListener('click', async () => {
+                const reason = prompt('Укажите причину удаления объекта');
+                if (!reason || !reason.trim()) {
+                    alert('Причина удаления обязательна');
+                    return;
+                }
+
+                if (!confirm('Вы действительно хотите удалить эту задачу?')) {
+                    return;
+                }
+
+                const path = `${button.dataset.adminDeletePath}/${button.dataset.adminDeleteId}/delete`;
+                try {
+                    const response = await fetch(path, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            reason: reason.trim(),
+                            csrf_token: csrfToken
+                        })
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        window.location.href = '/admin';
+                    } else {
+                        alert(result.error || 'Ошибка при удалении задачи');
+                    }
+                } catch (error) {
+                    console.error(error);
+                    alert('Ошибка при отправке запроса');
+                }
+            });
+        });
+
+        const initialStages = <%- JSON.stringify((stages || []).map(stage => ({
+            id: stage.id,
+            name: stage.name,
+            deadline: stage.deadline ? new Date(stage.deadline).toISOString().slice(0, 10) : '',
+            completed: !!stage.completed
+        }))) %>;
+
+        function createStageEditorRow(stage = {}) {
+            const row = document.createElement('div');
+            row.className = 'stage-editor-row';
+            row.style.cssText = 'display:grid;grid-template-columns:1fr 160px auto;gap:10px;margin-bottom:10px;align-items:center;';
+            row.innerHTML = `
+                <input type="hidden" class="stage-editor-id" value="${stage.id || ''}">
+                <input type="hidden" class="stage-editor-completed" value="${stage.completed ? 'true' : 'false'}">
+                <input type="text" class="stage-editor-name" value="${escapeHtml(stage.name || '')}" placeholder="Название этапа" style="padding:10px;border:1px solid #ddd;border-radius:8px;">
+                <input type="date" class="stage-editor-deadline" value="${stage.deadline || ''}" style="padding:10px;border:1px solid #ddd;border-radius:8px;">
+                <button type="button" class="remove-stage-editor-row" style="padding:10px;border:1px solid #ffd0d0;border-radius:8px;background:#fff0f0;color:#b00000;">Удалить</button>
+            `;
+            row.querySelector('.remove-stage-editor-row').addEventListener('click', () => {
+                showConfirm('Удалить этап из предложения для заказчика?', () => row.remove(), { title: 'Удаление этапа', confirmText: 'Удалить' });
+            });
+            return row;
+        }
+
+        function escapeHtml(value) {
+            return String(value).replace(/[&<>'"]/g, char => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                "'": '&#39;',
+                '"': '&quot;'
+            }[char]));
+        }
+
+        async function apiPost(url) {
+            try {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'X-CSRF-Token': csrfToken }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    showAlert(data.error || 'Ошибка');
+                }
+            } catch (err) {
+                showAlert('Ошибка сети');
+            }
+        }
+
+        document.getElementById('acceptOrderBtn')?.addEventListener('click', function() {
+            apiPost(`/api/orders/${this.dataset.id}/accept`);
+        });
+        document.getElementById('completeOrderBtn')?.addEventListener('click', function() {
+            showConfirm('Подтвердить выполнение сделки?', () => apiPost(`/api/orders/${this.dataset.id}/complete`));
+        });
+        document.getElementById('deliverOrderBtn')?.addEventListener('click', function() {
+            showConfirm('Подтвердить сдачу работы?', () => apiPost(`/api/orders/${this.dataset.id}/deliver`));
+        });
+        document.getElementById('cancelOrderBtn')?.addEventListener('click', function() {
+            showConfirm('Отменить сделку?', () => apiPost(`/api/orders/${this.dataset.id}/cancel`));
+        });
+
+
+        async function respondStageChanges(requestId, action) {
+            try {
+                const res = await fetch(`/api/orders/<%= order.id %>/stage-changes/${requestId}/respond`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
+                    },
+                    body: JSON.stringify({ action })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    showAlert(data.error || 'Ошибка');
+                }
+            } catch (err) {
+                showAlert('Ошибка сети');
+            }
+        }
+
+        document.getElementById('approveStageChangesBtn')?.addEventListener('click', function() {
+            showConfirm('Подтвердить новые этапы и дедлайны?', () => respondStageChanges(this.dataset.requestId, 'approve'));
+        });
+        document.getElementById('rejectStageChangesBtn')?.addEventListener('click', function() {
+            showConfirm('Отклонить предложенные изменения?', () => respondStageChanges(this.dataset.requestId, 'reject'));
+        });
+
+        <% if (isExecutor && order.status === 'in_progress') { %>
+
+        const stageEditorRows = document.getElementById('stageEditorRows');
+        if (stageEditorRows) {
+            (initialStages.length ? initialStages : [{ name: '', deadline: '', completed: false }]).forEach(stage => {
+                stageEditorRows.appendChild(createStageEditorRow(stage));
+            });
+        }
+
+        document.getElementById('addStageEditorRowBtn')?.addEventListener('click', () => {
+            stageEditorRows.appendChild(createStageEditorRow());
+        });
+
+        document.getElementById('sendStageChangesBtn')?.addEventListener('click', async () => {
+            const rows = [...document.querySelectorAll('.stage-editor-row')];
+            const stages = rows.map(row => ({
+                id: row.querySelector('.stage-editor-id').value || null,
+                name: row.querySelector('.stage-editor-name').value.trim(),
+                deadline: row.querySelector('.stage-editor-deadline').value || null,
+                completed: row.querySelector('.stage-editor-completed').value === 'true'
+            })).filter(stage => stage.name);
+
+            if (!stages.length) {
+                showAlert('Добавьте хотя бы один этап');
+                return;
+            }
+
+            showConfirm('Отправить изменения этапов заказчику на подтверждение?', async () => {
+                try {
+                    const res = await fetch(`/api/orders/<%= order.id %>/stages/propose`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-Token': csrfToken
+                        },
+                        body: JSON.stringify({ stages })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        showAlert(data.error || 'Ошибка');
+                    }
+                } catch (err) {
+                    showAlert('Ошибка сети');
+                }
+            });
+        });
+
+        document.querySelectorAll('.stage-check').forEach(el => {
+            el.addEventListener('click', async function() {
+                const stageItem = this.closest('.stage-item');
+                const stageId = stageItem?.dataset.stageId;
+                if (!stageId) return;
+                try {
+                    const res = await fetch(`/api/orders/<%= order.id %>/stages/${stageId}/toggle`, {
+                        method: 'POST',
+                        headers: { 'X-CSRF-Token': csrfToken }
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        stageItem.classList.toggle('stage-completed', data.stage.completed);
+                        this.textContent = data.stage.completed ? '✓' : '○';
+                    } else {
+                        showAlert(data.error || 'Ошибка');
+                    }
+                } catch (err) {
+                    showAlert('Ошибка сети');
+                }
+            });
+        });
+        <% } %>
+    </script>
+    <%- include('partials/report-modal-script') %>
+</body>
+</html>

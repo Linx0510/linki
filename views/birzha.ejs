@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Биржа | Линити</title>
+    <link rel="stylesheet" href="/css/header.css">
+    <link rel="stylesheet" href="/css/birzha.css">
+</head>
+<body>
+    <main>
+        <%- include('partials/header-actions') %>
+        <section class="main-birzha">
+            <div class="swith-blok">
+                <div class="text-blok-swt">
+                    <h2 id="switch-title">Ищите исполнителя <br> для своей задачи?</h2>
+                    <p id="switch-description">Воспользуйтесь готовыми услугами</p>
+                </div>
+                <div class="logo-swith">
+                    <img src="/img/swith-logo.svg" alt="">
+                    <div class="hero_role">
+                        <div class="h_role1 h_role active" data-role="find">
+                            <p>Найти исполнителя</p>
+                        </div>
+                        <div class="h_role2 h_role" data-role="offer">
+                            <p>Предложить свои услуги</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="birzha-layout">
+                <div class="content">
+                <div class="content1 content-panel active" data-panel="find">
+                    <% if (!services || services.length === 0) { %>
+                        <div class="empty-state">Пока нет опубликованных услуг.</div>
+                    <% } else { %>
+                        <div class="cards-grid">
+                            <% services.forEach(service => { %>
+                                <% const serviceImage = service.cover_image || service.cover || service.preview_image || service.image_url || '/img/ab934e72b62ae5df2cfc9b2102b0e228.jpg'; %>
+                                <% const serviceCategoryIds = Array.isArray(service.category_ids) ? service.category_ids : []; %>
+                                <a href="/services/<%= service.id %>" class="card" data-filter-card data-title="<%= service.title || '' %>" data-price="<%= Number(service.price_from || 0) %>" data-category-ids="<%= serviceCategoryIds.join(',') %>">
+                                    <div class="card-image-wrap">
+                                        <img class="card-image" src="<%= serviceImage %>" alt="<%= service.title || 'Услуга' %>" onerror="this.onerror=null;this.src='/img/ab934e72b62ae5df2cfc9b2102b0e228.jpg';">
+                                    </div>
+                                    <div class="card-body">
+                                        <h3 class="card-title"><%= service.title || 'Без названия' %></h3>
+                                        <p class="card-price">ОТ <%= Number(service.price_from || 0).toLocaleString('ru-RU') %> ₽</p>
+                                        <div class="card-meta">
+                                            <span class="card-author"><%= service.provider_name %></span>
+                                            <% if (Number(service.avg_rating) > 0) { %>
+                                                <span class="card-rating">⭐ <%= service.avg_rating %></span>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                </a>
+                            <% }) %>
+                        </div>
+                    <% } %>
+                </div>
+                <div class="content2 content-panel" data-panel="offer">
+                    <% if (!orders || orders.length === 0) { %>
+                        <div class="empty-state">Пока нет опубликованных задач.</div>
+                    <% } else { %>
+                        <div class="cards-grid">
+                            <% orders.forEach(order => { %>
+                                <% const orderCategoryIds = Array.isArray(order.category_ids) ? order.category_ids : []; %>
+                                <a href="/orders/<%= order.id %>" class="card order-card" data-filter-card data-title="<%= order.title || '' %>" data-price="<%= Number(order.price || 0) %>" data-category-ids="<%= orderCategoryIds.join(',') %>">
+                                    <div class="card-body">
+                                        <h3 class="card-title"><%= order.title || 'Без названия' %></h3>
+                                        <p class="card-desc"><%= order.description || 'Без описания' %></p>
+                                        <p class="card-price"><%= Number(order.price || 0).toLocaleString('ru-RU') %> ₽</p>
+                                        <div class="card-meta">
+                                            <span class="card-status status-<%= order.status %>"><%= statusLabel(order.status, 'order') %></span>
+                                            <span class="card-author">Заказчик: <%= order.customer_name %></span>
+                                        </div>
+                                    </div>
+                                </a>
+                            <% }) %>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+
+                <aside class="filter-container" id="birzhaFilterWidget">
+                    <div class="filter-header">
+                        <h2>Фильтр</h2>
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M11.5651 7.29199H3.33337C2.9882 7.29199 2.70837 7.01217 2.70837 6.66699C2.70837 6.32181 2.9882 6.04199 3.33337 6.04199H11.5651C11.8225 5.31375 12.517 4.79199 13.3334 4.79199C14.1498 4.79199 14.8443 5.31375 15.1017 6.04199H16.6667C17.0119 6.04199 17.2917 6.32181 17.2917 6.66699C17.2917 7.01217 17.0119 7.29199 16.6667 7.29199H15.1017C14.8443 8.02024 14.1498 8.54199 13.3334 8.54199C12.517 8.54199 11.8225 8.02024 11.5651 7.29199Z" fill="#535D5A"/>
+                            <path d="M16.6667 13.9587C17.0119 13.9587 17.2917 13.6788 17.2917 13.3337C17.2917 12.9885 17.0119 12.7087 16.6667 12.7087H8.43502C8.17762 11.9804 7.48309 11.4587 6.66671 11.4587C5.85032 11.4587 5.1558 11.9804 4.8984 12.7087H3.33337C2.9882 12.7087 2.70837 12.9885 2.70837 13.3337C2.70837 13.6788 2.9882 13.9587 3.33337 13.9587H4.8984C5.1558 14.6869 5.85032 15.2087 6.66671 15.2087C7.48309 15.2087 8.17762 14.6869 8.43502 13.9587H16.6667Z" fill="#535D5A"/>
+                        </svg>
+                    </div>
+
+                    <div class="filter-list" id="filterCategories"></div>
+
+                    <div class="filter-extra">
+                        <div class="filter-group">
+                            <label for="searchInput">Поиск по названию</label>
+                            <input id="searchInput" type="text" placeholder="Введите название">
+                        </div>
+                        <div class="filter-price-row">
+                            <div class="filter-group">
+                                <label for="priceFromInput">Цена от</label>
+                                <input id="priceFromInput" type="number" min="0" step="1" placeholder="0">
+                            </div>
+                            <div class="filter-group">
+                                <label for="priceToInput">Цена до</label>
+                                <input id="priceToInput" type="number" min="0" step="1" placeholder="100000">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filter-footer">
+                        <div class="selected-items-list" id="selectedItemsList"></div>
+                        <div class="selected-header">
+                            <span class="selected-counter">Выбрано: <span id="selectedCount">0</span></span>
+                            <button class="reset-btn-bottom" id="resetAllBtn" type="button">Сбросить всё</button>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const roleButtons = document.querySelectorAll('.h_role');
+        const contentPanels = document.querySelectorAll('.content-panel');
+        const title = document.getElementById('switch-title');
+        const description = document.getElementById('switch-description');
+
+        const switchText = {
+            find: {
+                title: 'Ищите исполнителя <br> для своей задачи?',
+                description: 'Воспользуйтесь готовыми услугами'
+            },
+            offer: {
+                title: 'Хотите предложить <br> свои услуги?',
+                description: 'Выбирайте задачу и начинайте сделку'
+            }
+        };
+
+        roleButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const { role } = button.dataset;
+
+                roleButtons.forEach((item) => item.classList.remove('active'));
+                button.classList.add('active');
+
+                contentPanels.forEach((panel) => {
+                    const shouldShow = panel.dataset.panel === role;
+                    panel.classList.toggle('active', shouldShow);
+                });
+
+                title.innerHTML = switchText[role].title;
+                description.textContent = switchText[role].description;
+                applyFilters();
+            });
+        });
+
+        const parentCategories = <%- JSON.stringify(typeof categories !== 'undefined' ? categories : []) %>;
+        const childCategories = <%- JSON.stringify(typeof subcategories !== 'undefined' ? subcategories : []) %>;
+        const filterCategoriesEl = document.getElementById('filterCategories');
+        const searchInput = document.getElementById('searchInput');
+        const priceFromInput = document.getElementById('priceFromInput');
+        const priceToInput = document.getElementById('priceToInput');
+        const selectedItemsList = document.getElementById('selectedItemsList');
+        const selectedCount = document.getElementById('selectedCount');
+        const resetAllBtn = document.getElementById('resetAllBtn');
+
+        const filterData = parentCategories.map((category) => ({
+            id: String(category.id),
+            name: category.name,
+            selected: false,
+            indeterminate: false,
+            open: false,
+            subcategories: childCategories
+                .filter((sub) => sub.parent_id === category.id)
+                .map((sub) => ({
+                    id: String(sub.id),
+                    name: sub.name,
+                    categoryId: String(category.id),
+                    selected: false,
+                })),
+        }));
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text == null ? '' : String(text);
+            return div.innerHTML;
+        }
+
+        function recalcAllParents() {
+            filterData.forEach((cat) => {
+                if (!cat.subcategories.length) {
+                    cat.indeterminate = false;
+                    return;
+                }
+                const selectedCount = cat.subcategories.filter((sub) => sub.selected).length;
+                cat.selected = selectedCount === cat.subcategories.length;
+                cat.indeterminate = selectedCount > 0 && selectedCount < cat.subcategories.length;
+            });
+        }
+
+        function getSelectedItems() {
+            return filterData.flatMap((cat) => {
+                if (!cat.subcategories.length) {
+                    return cat.selected ? [{ id: cat.id, name: cat.name }] : [];
+                }
+                return cat.subcategories
+                    .filter((sub) => sub.selected)
+                    .map((sub) => ({ id: sub.id, name: sub.name, categoryId: cat.id }));
+            });
+        }
+
+        function renderFilter() {
+            if (!filterCategoriesEl) return;
+            filterCategoriesEl.innerHTML = '';
+
+            filterData.forEach((cat) => {
+                const hasSubcategories = cat.subcategories.length > 0;
+                const catDiv = document.createElement('div');
+                catDiv.className = 'category-item';
+                if (cat.open) catDiv.classList.add('open');
+
+                const mainRow = document.createElement('div');
+                mainRow.className = 'category-main';
+
+                const leftDiv = document.createElement('div');
+                leftDiv.className = 'category-left';
+
+                const checkSpan = document.createElement('span');
+                checkSpan.className = 'custom-check';
+                if (cat.selected) checkSpan.classList.add('checked');
+                if (cat.indeterminate) checkSpan.classList.add('indeterminate');
+
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'category-name';
+                nameSpan.textContent = cat.name;
+
+                leftDiv.appendChild(checkSpan);
+                leftDiv.appendChild(nameSpan);
+                mainRow.appendChild(leftDiv);
+
+                if (hasSubcategories) {
+                    const chevronSpan = document.createElement('span');
+                    chevronSpan.className = 'chevron';
+                    chevronSpan.textContent = '⌄';
+                    mainRow.appendChild(chevronSpan);
+
+                    mainRow.addEventListener('click', (event) => {
+                        if (event.target === checkSpan || event.target === nameSpan || checkSpan.contains(event.target) || nameSpan.contains(event.target)) return;
+                        filterData.forEach((otherCat) => {
+                            if (otherCat !== cat) otherCat.open = false;
+                        });
+                        cat.open = !cat.open;
+                        renderFilter();
+                    });
+
+                    const toggleCategory = (event) => {
+                        event.stopPropagation();
+                        const newState = !cat.selected;
+                        cat.subcategories.forEach((sub) => { sub.selected = newState; });
+                        recalcAllParents();
+                        renderFilter();
+                        updateSelectedDisplay();
+                    };
+                    checkSpan.addEventListener('click', toggleCategory);
+                    nameSpan.addEventListener('click', toggleCategory);
+                } else {
+                    mainRow.addEventListener('click', () => {
+                        cat.selected = !cat.selected;
+                        recalcAllParents();
+                        renderFilter();
+                        updateSelectedDisplay();
+                    });
+                }
+
+                catDiv.appendChild(mainRow);
+
+                if (hasSubcategories) {
+                    const subList = document.createElement('div');
+                    subList.className = 'subcategory-list';
+
+                    cat.subcategories.forEach((sub) => {
+                        const subItem = document.createElement('div');
+                        subItem.className = 'sub-item';
+                        if (sub.selected) subItem.classList.add('selected');
+
+                        const subCheck = document.createElement('span');
+                        subCheck.className = 'sub-check';
+                        if (sub.selected) subCheck.classList.add('checked');
+
+                        const subLabel = document.createElement('span');
+                        subLabel.className = 'sub-label';
+                        subLabel.textContent = sub.name;
+
+                        subItem.appendChild(subCheck);
+                        subItem.appendChild(subLabel);
+                        subItem.addEventListener('click', (event) => {
+                            event.stopPropagation();
+                            sub.selected = !sub.selected;
+                            recalcAllParents();
+                            renderFilter();
+                            updateSelectedDisplay();
+                        });
+                        subList.appendChild(subItem);
+                    });
+                    catDiv.appendChild(subList);
+                }
+
+                filterCategoriesEl.appendChild(catDiv);
+            });
+        }
+
+        function updateSelectedDisplay() {
+            const tags = getSelectedItems().map((item) => ({
+                type: 'category',
+                id: item.id,
+                label: item.name,
+                categoryId: item.categoryId || '',
+            }));
+            const search = searchInput.value.trim();
+            const priceFrom = priceFromInput.value;
+            const priceTo = priceToInput.value;
+
+            if (search) tags.push({ type: 'search', label: `Поиск: ${search}` });
+            if (priceFrom) tags.push({ type: 'priceFrom', label: `От ${priceFrom} ₽` });
+            if (priceTo) tags.push({ type: 'priceTo', label: `До ${priceTo} ₽` });
+
+            selectedCount.textContent = tags.length;
+            selectedItemsList.innerHTML = tags.length
+                ? tags.map((tag) => {
+                    const attrs = tag.type === 'category'
+                        ? `data-type="category" data-id="${tag.id}" data-category-id="${tag.categoryId}"`
+                        : `data-type="${tag.type}"`;
+                    return `<span class="selected-tag">${escapeHtml(tag.label)}<span class="remove-tag" ${attrs}>✕</span></span>`;
+                }).join('')
+                : '<div class="empty-selected">Ничего не выбрано</div>';
+
+            document.querySelectorAll('.remove-tag').forEach((button) => {
+                button.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    const type = button.dataset.type;
+                    if (type === 'category') {
+                        const cat = filterData.find((item) => item.id === button.dataset.categoryId || item.id === button.dataset.id);
+                        if (cat?.subcategories?.length && button.dataset.categoryId) {
+                            const sub = cat.subcategories.find((item) => item.id === button.dataset.id);
+                            if (sub) sub.selected = false;
+                        } else if (cat) {
+                            cat.selected = false;
+                        }
+                        recalcAllParents();
+                        renderFilter();
+                    } else if (type === 'search') {
+                        searchInput.value = '';
+                    } else if (type === 'priceFrom') {
+                        priceFromInput.value = '';
+                    } else if (type === 'priceTo') {
+                        priceToInput.value = '';
+                    }
+                    updateSelectedDisplay();
+                });
+            });
+
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const activePanel = document.querySelector('.content-panel.active');
+            if (!activePanel) return;
+
+            const search = searchInput.value.trim().toLowerCase();
+            const priceFrom = parseFloat(priceFromInput.value) || 0;
+            const priceTo = parseFloat(priceToInput.value) || Infinity;
+            const selectedIds = new Set(getSelectedItems().map((item) => String(item.id)));
+            const cards = Array.from(activePanel.querySelectorAll('[data-filter-card]'));
+            let visibleCount = 0;
+
+            cards.forEach((card) => {
+                const title = (card.dataset.title || '').toLowerCase();
+                const price = parseFloat(card.dataset.price) || 0;
+                const cardCategoryIds = (card.dataset.categoryIds || '').split(',').filter(Boolean);
+                const matchesSearch = !search || title.includes(search);
+                const matchesPrice = price >= priceFrom && price <= priceTo;
+                const matchesCategory = selectedIds.size === 0 || cardCategoryIds.some((id) => selectedIds.has(id));
+                const isVisible = matchesSearch && matchesPrice && matchesCategory;
+
+                card.hidden = !isVisible;
+                if (isVisible) visibleCount += 1;
+            });
+
+            let emptyMessage = activePanel.querySelector('.filter-empty-state');
+            if (cards.length > 0 && visibleCount === 0) {
+                if (!emptyMessage) {
+                    emptyMessage = document.createElement('div');
+                    emptyMessage.className = 'empty-state filter-empty-state';
+                    emptyMessage.textContent = 'По выбранным фильтрам ничего не найдено.';
+                    activePanel.appendChild(emptyMessage);
+                }
+            } else if (emptyMessage) {
+                emptyMessage.remove();
+            }
+        }
+
+        [searchInput, priceFromInput, priceToInput].forEach((input) => {
+            input.addEventListener('input', updateSelectedDisplay);
+        });
+
+        resetAllBtn.addEventListener('click', () => {
+            filterData.forEach((cat) => {
+                cat.selected = false;
+                cat.indeterminate = false;
+                cat.subcategories.forEach((sub) => { sub.selected = false; });
+            });
+            searchInput.value = '';
+            priceFromInput.value = '';
+            priceToInput.value = '';
+            renderFilter();
+            updateSelectedDisplay();
+        });
+
+        renderFilter();
+        updateSelectedDisplay();
+    </script>
+</body>
+</html>

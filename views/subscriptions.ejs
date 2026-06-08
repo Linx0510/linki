@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Подписки | Линити</title>
+    <link rel="stylesheet" href="/css/header.css">
+    <link rel="stylesheet" href="/css/subscriptions.css">
+</head>
+<body>
+<main>
+    <%- include('partials/header-actions') %>
+
+    <section class="subscriptions-page">
+        <div class="subscriptions-container">
+            <h1>Подписки</h1>
+
+            <form method="GET" action="/subscriptions" class="subscriptions-search">
+                <input type="hidden" name="tab" value="<%= activeTab %>">
+                <input type="text" name="q" placeholder="Поиск пользователей" value="<%= searchQuery %>">
+                <button type="submit">Найти
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M11.9873 12.8717C9.77878 14.6406 6.54592 14.5014 4.4986 12.454C2.3019 10.2573 2.3019 6.69579 4.4986 4.49909C6.6953 2.30239 10.2569 2.30239 12.4535 4.49909C14.5009 6.5464 14.6401 9.77926 12.8712 11.9878L17.1676 16.2842C17.4117 16.5283 17.4117 16.924 17.1676 17.1681C16.9235 17.4121 16.5278 17.4121 16.2837 17.1681L11.9873 12.8717ZM5.38248 11.5702C3.67394 9.86161 3.67394 7.09151 5.38248 5.38297C7.09103 3.67443 9.86112 3.67443 11.5697 5.38297C13.277 7.09026 13.2782 9.85754 11.5734 11.5664C11.5722 11.5676 11.5709 11.5689 11.5697 11.5701C11.5684 11.5714 11.5672 11.5726 11.5659 11.5739C9.85706 13.2787 7.08977 13.2774 5.38248 11.5702Z" fill="#fff" stroke="#fff" stroke-width="0.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </form>
+
+            <div class="tabs">
+                <a href="/subscriptions?tab=following<%= searchQuery ? '&q=' + encodeURIComponent(searchQuery) : '' %>" class="tab <%= activeTab === 'following' ? 'active' : '' %>">
+                    Подписки (<%= followingUsers.length %>)
+                </a>
+                <a href="/subscriptions?tab=followers<%= searchQuery ? '&q=' + encodeURIComponent(searchQuery) : '' %>" class="tab <%= activeTab === 'followers' ? 'active' : '' %>">
+                    Подписчики (<%= followerUsers.length %>)
+                </a>
+            </div>
+
+            <% const users = activeTab === 'followers' ? followerUsers : followingUsers; %>
+            <div class="users-list">
+                <% if (users.length === 0) { %>
+                    <p class="empty">Пользователи не найдены.</p>
+                <% } else { %>
+                    <% users.forEach((user) => { %>
+                        <article class="user-card">
+                            <a class="user-main" href="/profile/<%= user.id %>">
+                                <img src="<%= user.avatar || '/img/Group.svg' %>" alt="Аватар пользователя">
+                                <div>
+                                    <h3><%= [user.first_name, user.last_name].filter(Boolean).join(' ') || 'Без имени' %></h3>
+                                </div>
+                            </a>
+                            <div class="user-actions">
+                                <a class="action-chip" href="/chat?userId=<%= user.id %>">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M7.28924 4.90761C10.4239 4.63513 13.5763 4.63512 16.7109 4.90761L18.2211 5.03889C19.2265 5.12629 20.0876 5.72596 20.5337 6.58374C20.5908 6.69347 20.548 6.82633 20.4428 6.89144L14.1769 10.7704C12.833 11.6023 11.1385 11.6197 9.77778 10.8157L3.46995 7.08833C3.36804 7.02811 3.32126 6.90415 3.36719 6.79505C3.77535 5.82548 4.69298 5.1333 5.77901 5.0389L7.28924 4.90761Z" fill="#5a2fd8"/>
+                                        <path d="M3.36206 8.76688C3.20609 8.67472 3.00709 8.7739 2.98891 8.95414C2.73518 11.4698 2.79659 14.0092 3.17314 16.5133C3.37166 17.8334 4.44907 18.8455 5.77901 18.9611L7.28924 19.0924C10.4239 19.3649 13.5763 19.3649 16.7109 19.0924L18.2211 18.9611C19.5511 18.8455 20.6285 17.8334 20.827 16.5133C21.2145 13.9363 21.2683 11.3217 20.9882 8.73428C20.9686 8.55276 20.7662 8.45541 20.611 8.55151L14.9664 12.0458C13.1482 13.1713 10.8557 13.1949 9.01468 12.1071L3.36206 8.76688Z" fill="#5a2fd8"/>
+                                    </svg>
+
+                                    <span>Написать сообщение</span>
+                                </a>
+                                <% if (activeTab === 'followers') { %>
+                                    <a class="action-chip action-chip_secondary" href="/profile/<%= user.id %>">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M11 3.75C8.92893 3.75 7.25 5.42893 7.25 7.5C7.25 9.57107 8.92893 11.25 11 11.25C13.0711 11.25 14.75 9.57107 14.75 7.5C14.75 5.42893 13.0711 3.75 11 3.75Z" fill="#CF4386"/>
+                                            <path d="M7 13.25C4.92893 13.25 3.25 14.9289 3.25 17V18.1883C3.25 18.9415 3.79588 19.5837 4.53927 19.7051C8.8181 20.4037 13.1819 20.4037 17.4607 19.7051C18.2041 19.5837 18.75 18.9415 18.75 18.1883V17C18.75 14.9289 17.0711 13.25 15 13.25H14.6591C14.4746 13.25 14.2913 13.2792 14.1159 13.3364L13.2504 13.6191C11.7881 14.0965 10.2119 14.0965 8.74959 13.6191L7.88407 13.3364C7.70869 13.2792 7.52536 13.25 7.34087 13.25H7Z" fill="#CF4386"/>
+                                            <path d="M19.5 6.25C19.9142 6.25 20.25 6.58579 20.25 7V8.75H22C22.4142 8.75 22.75 9.08579 22.75 9.5C22.75 9.91421 22.4142 10.25 22 10.25H20.25V12C20.25 12.4142 19.9142 12.75 19.5 12.75C19.0858 12.75 18.75 12.4142 18.75 12V10.25H17C16.5858 10.25 16.25 9.91421 16.25 9.5C16.25 9.08579 16.5858 8.75 17 8.75H18.75V7C18.75 6.58579 19.0858 6.25 19.5 6.25Z" fill="#CF4386"/>
+                                        </svg>
+
+                                        <span>Подписаться в ответ</span>
+                                    </a>
+                                <% } %>
+                            </div>
+                        </article>
+                    <% }) %>
+                <% } %>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

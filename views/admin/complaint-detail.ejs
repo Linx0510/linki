@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Жалоба #<%= complaint.id %> | Admin</title>
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/header.css">
+  <link rel="stylesheet" href="/css/profile.css">
+  <link rel="stylesheet" href="/css/admin-notification.css">
+  <style>
+    .complaint-detail {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+    .complaint-section {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid #eee;
+    }
+    .complaint-section h3 {
+      margin-top: 0;
+      margin-bottom: 20px;
+      font-size: 18px;
+      color: #333;
+      border-bottom: 2px solid #f0f0f0;
+      padding-bottom: 10px;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #f5f5f5;
+    }
+    .info-row:last-child {
+      border-bottom: none;
+    }
+    .info-label {
+      font-weight: 600;
+      color: #666;
+      flex: 0 0 150px;
+    }
+    .info-value {
+      color: #333;
+      flex: 1;
+      word-break: break-word;
+    }
+    .user-card {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+    .user-card img {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .user-info h4 {
+      margin: 0 0 5px 0;
+      font-size: 14px;
+    }
+    .user-info p {
+      margin: 0;
+      font-size: 12px;
+      color: #999;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .status-pending {
+      background: #fff3e0;
+      color: #f57c00;
+    }
+    .status-resolved {
+      background: #e8f5e9;
+      color: #00b341;
+    }
+    .status-rejected {
+      background: #ffebee;
+      color: #d32f2f;
+    }
+    .complaint-text {
+      background: #f9f9f9;
+      padding: 15px;
+      border-radius: 8px;
+      line-height: 1.6;
+      color: #333;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    .action-buttons .primary-btn,
+    .action-buttons .danger-btn {
+      flex: 1;
+      min-width: 150px;
+    }
+    .target-link {
+      color: #1976d2;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .target-link:hover {
+      text-decoration: underline;
+    }
+    .back-link {
+      display: inline-block;
+      margin-bottom: 20px;
+      color: #1976d2;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    @media (max-width: 900px) {
+      .complaint-detail {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <%- include('../partials/header-actions') %>
+    <section class="admin-container">
+      <div class="admin-main">
+        <a href="/admin/complaints" class="back-link">← Вернуться к жалобам</a>
+        
+        <div class="complaint-detail">
+          <!-- Основная информация -->
+          <div>
+            <div class="complaint-section">
+              <h3>Жалоба #<%= complaint.id %></h3>
+              <div class="info-row">
+                <span class="info-label">Статус:</span>
+                <span class="info-value">
+                  <span class="status-badge status-<%= complaint.status %>">
+                    <% 
+                      const statusMap = {
+                        'pending': 'На рассмотрении',
+                        'resolved': 'Решена',
+                        'rejected': 'Отклонена',
+                        'approved': 'Одобрена'
+                      };
+                    %>
+                    <%= statusMap[complaint.status] || complaint.status %>
+                  </span>
+                </span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Дата:</span>
+                <span class="info-value"><%= new Date(complaint.created_at).toLocaleDateString('ru-RU', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %></span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Причина:</span>
+                <span class="info-value"><strong><%= complaint.reason_name %></strong></span>
+              </div>
+              <% if (complaint.reason_description) { %>
+                <div class="info-row">
+                  <span class="info-label">Описание:</span>
+                  <span class="info-value"><%= complaint.reason_description %></span>
+                </div>
+              <% } %>
+            </div>
+
+            <!-- Текст жалобы -->
+            <div class="complaint-section">
+              <h3>Описание жалобы</h3>
+              <% if (complaint.description) { %>
+                <div class="complaint-text"><%= complaint.description %></div>
+              <% } else { %>
+                <p style="color: #999;">Описание не предоставлено</p>
+              <% } %>
+            </div>
+
+            <!-- Объект жалобы -->
+            <div class="complaint-section">
+              <h3>Объект жалобы</h3>
+              <div class="info-row">
+                <span class="info-label">Тип:</span>
+                <span class="info-value">
+                  <% 
+                    const typeMap = {
+                      'work': 'Проект',
+                      'service': 'Услуга',
+                      'order': 'Задача'
+                    };
+                  %>
+                  <%= typeMap[complaint.target_type] || complaint.target_type %>
+                </span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Название:</span>
+                <span class="info-value">
+                  <% if (complaint.target_type === 'work' && complaint.work_id) { %>
+                    <a href="/work/<%= complaint.work_id %>" target="_blank" class="target-link">
+                      <%= complaint.target_title %> ↗
+                    </a>
+                  <% } else if (complaint.target_type === 'service' && complaint.service_id) { %>
+                    <a href="/service/<%= complaint.service_id %>" target="_blank" class="target-link">
+                      <%= complaint.target_title %> ↗
+                    </a>
+                  <% } else if (complaint.target_type === 'order' && complaint.order_id) { %>
+                    <a href="/order/<%= complaint.order_id %>" target="_blank" class="target-link">
+                      <%= complaint.target_title %> ↗
+                    </a>
+                  <% } else { %>
+                    <%= complaint.target_title %>
+                  <% } %>
+                </span>
+              </div>
+              <% if (complaint.author_first_name) { %>
+                <div class="info-row">
+                  <span class="info-label">Автор:</span>
+                  <span class="info-value"><%= complaint.author_first_name %> <%= complaint.author_last_name %></span>
+                </div>
+              <% } %>
+            </div>
+          </div>
+
+          <!-- Боковая панель -->
+          <div>
+            <!-- Отправитель жалобы -->
+            <div class="complaint-section">
+              <h3>Отправитель</h3>
+              <div class="user-card">
+                <img src="<%= complaint.sender_avatar || '/img/ab934e72b62ae5df2cfc9b2102b0e228.jpg' %>" alt="<%= complaint.sender_first_name %>">
+                <div class="user-info">
+                  <h4><%= complaint.sender_first_name %> <%= complaint.sender_last_name %></h4>
+                  <p><%= complaint.sender_email %></p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Действия -->
+            <div class="complaint-section">
+              <h3>Действия</h3>
+              <form method="post" action="/admin/complaints/<%= complaint.id %>/resolve">
+                <input type="hidden" name="csrf_token" value="<%= csrfToken %>">
+                <div class="action-buttons">
+                  <% if (complaint.status !== 'resolved') { %>
+                    <button type="submit" name="status" value="resolved" class="primary-btn" onclick="this.form.submit()">
+                      ✓ Решено
+                    </button>
+                  <% } %>
+                  <% if (complaint.status !== 'rejected') { %>
+                    <button type="submit" name="status" value="rejected" class="danger-btn" onclick="this.form.submit()">
+                      ✗ Отклонить
+                    </button>
+                  <% } %>
+                  <% if (complaint.target_type === 'work' && complaint.status !== 'resolved') { %>
+                    <button type="submit" name="status" value="resolved" name="action" value="block_work" class="danger-btn" onclick="if(confirm('Вы уверены? Это заблокирует проект.')) { this.form.submit(); } else { return false; }">
+                      🔒 Блокировать проект
+                    </button>
+                  <% } %>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      <%- include('admin-sidebar', { currentPath: '/admin/complaints' }) %>
+    </section>
+  </main>
+  
+  <%- include('../partials/admin-notification-modal') %>
+  <script src="/js/admin-notification.js"></script>
+</body>
+</html>

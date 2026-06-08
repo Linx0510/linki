@@ -1,0 +1,152 @@
+@import url('/css/profile.css');
+
+.legal-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  max-width: none;
+  margin-left: 130px;
+  padding: 10px 40px 0 40px;
+}
+
+.legal-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: 40px;
+}
+
+.legal-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  padding: 32px 0 24px;
+}
+
+.legal-type {
+  margin: 0 0 10px;
+  color: #8907C5;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+.legal-sidebar h1 {
+  margin: 0 0 12px;
+  font-size: 22px;
+  line-height: 1.3;
+  color: #222;
+  font-weight: 700;
+}
+
+.legal-sidebar .lead {
+  margin: 0 0 20px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #666;
+}
+
+.legal-doc-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.legal-doc-links a {
+  text-decoration: none;
+  color: #8907C5;
+  border: 1px solid #e2d4f0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  background: #fff;
+  transition: all 0.15s ease;
+}
+
+.legal-doc-links a:hover {
+  background: #faf5ff;
+  border-color: #8907C5;
+}
+
+.legal-doc-links a.is-active {
+  background: #8907C5;
+  color: #fff;
+  border-color: #8907C5;
+}
+
+.legal-container {
+  flex: 1;
+  min-width: 0;
+  background: #fff;
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 2px 3px 15px 0 rgba(0,0,0,0.08);
+}
+
+.legal-section {
+  margin-bottom: 28px;
+}
+
+.legal-section h2 {
+  margin: 0 0 12px;
+  font-size: 20px;
+  color: #222;
+  font-weight: 700;
+}
+
+.legal-section p {
+  margin: 0 0 10px;
+  line-height: 1.7;
+  color: #444;
+  font-size: 15px;
+}
+
+.legal-contacts a {
+  color: #8907C5;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.legal-contacts a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  .legal-layout {
+    flex-direction: column;
+  }
+
+  .legal-sidebar {
+    width: 100%;
+    padding: 24px 0 0;
+    text-align: center;
+  }
+
+  .legal-sidebar h1 {
+    font-size: 24px;
+  }
+
+  .legal-doc-links {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .legal-doc-links a {
+    width: auto;
+  }
+
+  .legal-container {
+    padding: 24px 18px;
+    border-radius: 16px;
+  }
+
+  .legal-section h2 {
+    font-size: 18px;
+  }
+}

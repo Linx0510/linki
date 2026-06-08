@@ -1,0 +1,112 @@
+<script>
+(function () {
+    const reportModal = document.getElementById('reportModal');
+    const reportForm = document.getElementById('reportForm');
+    const reportFormFields = document.getElementById('reportFormFields');
+    const reportSuccessState = document.getElementById('reportSuccessState');
+    const reportTitle = document.getElementById('reportModalTitle');
+    const reportSubtitle = document.getElementById('reportModalSubtitle');
+    const reportValidationError = document.getElementById('reportValidationError');
+
+    const targetLabels = {
+        work: 'проект',
+        service: 'услугу',
+        order: 'задачу',
+    };
+
+    function updateBodyState() {
+        const hasOpenModal = Boolean(document.querySelector('.report-modal.is-open, .image-viewer-modal.is-open'));
+        document.body.classList.toggle('modal-open', hasOpenModal);
+        if (typeof window.updateModalBodyState === 'function') {
+            window.updateModalBodyState();
+        }
+    }
+
+    window.showReportModal = function showReportModal(targetType, targetId, targetTitle) {
+        if (!reportModal || !reportForm || !targetType || !targetId) return;
+
+        const label = targetLabels[targetType] || 'материал';
+        reportForm.action = `/reports/${encodeURIComponent(targetType)}/${encodeURIComponent(targetId)}`;
+        reportForm.reset();
+        if (reportTitle) reportTitle.textContent = `Пожаловаться на ${label}`;
+        if (reportSubtitle) {
+            reportSubtitle.textContent = targetTitle
+                ? `Выберите причину жалобы на «${targetTitle}». Комментарий оставлять не нужно.`
+                : 'Выберите причину жалобы. Комментарий оставлять не нужно.';
+        }
+        if (reportValidationError) reportValidationError.style.display = 'none';
+        if (reportFormFields) reportFormFields.style.display = 'flex';
+        if (reportSuccessState) reportSuccessState.classList.remove('is-visible');
+
+        reportModal.classList.add('is-open');
+        reportModal.setAttribute('aria-hidden', 'false');
+        updateBodyState();
+    };
+
+    window.hideReportModal = function hideReportModal() {
+        if (!reportModal) return;
+        reportModal.classList.remove('is-open');
+        reportModal.setAttribute('aria-hidden', 'true');
+        if (reportForm) reportForm.reset();
+        if (reportFormFields) reportFormFields.style.display = 'flex';
+        if (reportSuccessState) reportSuccessState.classList.remove('is-visible');
+        if (reportValidationError) reportValidationError.style.display = 'none';
+        updateBodyState();
+    };
+
+    document.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-report-type][data-report-id]');
+        if (button) {
+            event.preventDefault();
+            event.stopPropagation();
+            window.showReportModal(button.dataset.reportType, button.dataset.reportId, button.dataset.reportTitle || '');
+            return;
+        }
+
+        if (event.target.closest('[data-close-report-modal]')) {
+            window.hideReportModal();
+        }
+    });
+
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && reportModal?.classList.contains('is-open')) {
+            window.hideReportModal();
+        }
+    });
+
+    reportForm?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const checkedReasons = reportForm.querySelectorAll('input[name="reason_codes"]:checked');
+        if (checkedReasons.length === 0) {
+            if (reportValidationError) reportValidationError.style.display = 'block';
+            return;
+        }
+
+        const submitButton = reportForm.querySelector('button[type="submit"]');
+        if (submitButton) submitButton.disabled = true;
+
+        try {
+            const response = await fetch(reportForm.action, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json' },
+                body: new URLSearchParams(new FormData(reportForm)),
+            });
+            if (response.redirected) {
+                window.location.href = response.url;
+                return;
+            }
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok || !data.success || data.error) {
+                throw new Error(data.error || 'Не удалось отправить жалобу');
+            }
+            if (reportFormFields) reportFormFields.style.display = 'none';
+            if (reportSuccessState) reportSuccessState.classList.add('is-visible');
+            reportForm.reset();
+        } catch (error) {
+            alert(error.message || 'Ошибка при отправке жалобы');
+        } finally {
+            if (submitButton) submitButton.disabled = false;
+        }
+    });
+}());
+</script>

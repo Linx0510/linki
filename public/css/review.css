@@ -1,0 +1,429 @@
+.review-container {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    padding: 20px 20px 40px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+
+.profile-header {
+    display: flex;
+    flex-direction: column;
+    background: url(/img/bg_grafit.svg);
+    align-items: center;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    position: sticky;
+    top: 20px;
+    width: 300px;
+    flex-shrink: 0;
+    height: 100%;
+    max-height: calc(100vh - 40px);
+}
+
+.profile-avatar img {
+    width: 120px;
+    height: 120px;
+    border-radius: 60px;
+    object-fit: cover;
+}
+
+.profile-info h1 {
+    font-size: 28px;
+    margin-bottom: 10px;
+    margin-top: 10px;
+    color: #FFFFFF;
+    text-align: center;
+    font-family: 'Montserrat';
+}
+
+.profile-email {
+    color: #DDD7D7;
+    text-align: center;
+    margin-bottom: 10px;
+    font-family: 'Montserrat';
+    font-size: 14px;
+}
+
+.profile-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.profile-stats {
+    display: flex;
+    flex-direction: column;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 20px;
+    gap: 12px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stat-value {
+    font-family: 'Montserrat';
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.stat-label {
+    font-family: 'Montserrat';
+    font-size: 14px;
+    color: #DDD7D7;
+}
+
+.subscribe-btn {
+    padding: 10px 20px;
+    border-radius: 20px;
+    border: none;
+    background: #CF4386;
+    color: #fff;
+    font-family: 'Montserrat';
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+}
+
+.subscribe-btn:hover {
+    opacity: 0.9;
+}
+
+
+.review-card {
+    flex: 1;
+    background: #fff;
+    border-radius: 24px;
+    padding: 32px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: calc(100vh - 40px);
+    scrollbar-width: thin;
+    scrollbar-color: #ccc transparent;
+}
+
+.review-card::-webkit-scrollbar {
+    width: 6px;
+}
+
+.review-card::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 3px;
+}
+
+.review-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 28px;
+}
+
+.review-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #f5f5f5;
+}
+
+.review-user-info h1 {
+    font-family: 'Montserrat';
+    font-size: 20px;
+    font-weight: 700;
+    color: #292929;
+    margin: 0 0 4px;
+}
+
+.review-subtitle {
+    font-family: 'Montserrat';
+    font-size: 14px;
+    color: #798783;
+    margin: 0;
+}
+
+.review-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.review-label {
+    display: block;
+    font-family: 'Montserrat';
+    font-size: 14px;
+    font-weight: 600;
+    color: #292929;
+    margin-bottom: 10px;
+}
+
+.review-optional {
+    font-weight: 400;
+    color: #798783;
+}
+
+.review-stars {
+    display: flex;
+    gap: 8px;
+}
+
+.star-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: #d0d0d0;
+    transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.star-btn:hover {
+    transform: scale(1.15);
+}
+
+.star-btn.is-active {
+    color: #FFD700;
+}
+
+.star-btn svg {
+    display: block;
+}
+
+.review-rating-text {
+    font-family: 'Montserrat';
+    font-size: 14px;
+    font-weight: 600;
+    color: #798783;
+    margin-top: 8px;
+    min-height: 20px;
+}
+
+.review-comment-block textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px 16px;
+    border: 1px solid #e3e3e3;
+    border-radius: 16px;
+    font-family: 'Montserrat';
+    font-size: 14px;
+    color: #292929;
+    resize: vertical;
+    min-height: 120px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.review-comment-block textarea:focus {
+    border-color: #663ACD;
+    box-shadow: 0 0 0 3px rgba(102, 58, 205, 0.08);
+}
+
+.review-char-count {
+    display: block;
+    text-align: right;
+    font-family: 'Montserrat';
+    font-size: 12px;
+    color: #798783;
+    margin-top: 6px;
+}
+
+.review-error {
+    color: #cf2f2f;
+    font-family: 'Montserrat';
+    font-size: 13px;
+    margin: 0;
+}
+
+.review-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.review-cancel-btn {
+    padding: 12px 20px;
+    border-radius: 20px;
+    border: 1px solid #e3e3e3;
+    background: #fff;
+    color: #292929;
+    font-family: 'Montserrat';
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.review-cancel-btn:hover {
+    background: #f8f8ff;
+}
+
+.review-submit-btn {
+    padding: 12px 24px;
+    border-radius: 20px;
+    border: none;
+    background: #663ACD;
+    color: #fff;
+    font-family: 'Montserrat';
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.review-submit-btn:hover {
+    opacity: 0.9;
+}
+
+.review-submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+
+.review-existing {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 0;
+    text-align: center;
+}
+
+.review-existing-title {
+    font-family: 'Montserrat';
+    font-size: 16px;
+    font-weight: 600;
+    color: #292929;
+    margin: 0;
+}
+
+.review-existing-stars {
+    display: flex;
+    gap: 4px;
+    font-size: 28px;
+    color: #d0d0d0;
+}
+
+.star-display.is-active {
+    color: #FFD700;
+}
+
+.review-existing-comment {
+    font-family: 'Montserrat';
+    font-size: 14px;
+    color: #555;
+    background: #f8f8ff;
+    padding: 14px 18px;
+    border-radius: 16px;
+    margin: 0;
+    max-width: 100%;
+    word-break: break-word;
+}
+
+.review-existing-date {
+    font-family: 'Montserrat';
+    font-size: 12px;
+    color: #798783;
+    margin: 0;
+}
+
+
+.review-list-section {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.review-list-title {
+    font-family: 'Montserrat';
+    font-size: 18px;
+    font-weight: 700;
+    color: #292929;
+    margin: 0 0 20px;
+}
+
+.review-count {
+    color: #798783;
+    font-weight: 500;
+}
+
+.review-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.review-item {
+    background: #fafafa;
+    border-radius: 16px;
+    padding: 16px 20px;
+}
+
+.review-item-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.review-item-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #f0f0f0;
+    flex-shrink: 0;
+}
+
+.review-item-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.review-item-name {
+    font-family: 'Montserrat';
+    font-size: 14px;
+    font-weight: 600;
+    color: #292929;
+}
+
+.review-item-stars {
+    display: flex;
+    gap: 2px;
+    font-size: 16px;
+    color: #d0d0d0;
+}
+
+.review-item-date {
+    font-family: 'Montserrat';
+    font-size: 12px;
+    color: #a0a0a0;
+    flex-shrink: 0;
+}
+
+.review-item-text {
+    font-family: 'Montserrat';
+    font-size: 14px;
+    color: #444;
+    margin: 0;
+    line-height: 1.5;
+}

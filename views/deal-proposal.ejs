@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Предложение сделки #<%= proposal.id %> | Линити</title>
+    <link rel="stylesheet" href="/css/header.css">
+    <link rel="stylesheet" href="/css/deals.css">
+    <style>
+        .proposal-page { max-width: 860px; margin: 40px auto; padding: 0 20px; }
+        .proposal-card { background: #fff; border-radius: 18px; padding: 28px; box-shadow: 0 2px 16px rgba(0,0,0,0.07); }
+        .proposal-topline { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+        .proposal-eyebrow { color: #8907C5; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+        .proposal-card h1 { margin: 0; font-size: 28px; line-height: 1.2; }
+        .proposal-status { border-radius: 999px; padding: 8px 14px; font-size: 13px; font-weight: 700; white-space: nowrap; }
+        .proposal-status.status-pending { background: #f4e8ff; color: #8907C5; }
+        .proposal-status.status-accepted { background: #e8f5e9; color: #2e7d32; }
+        .proposal-status.status-rejected { background: #ffebee; color: #c62828; }
+        .proposal-status.status-cancelled { background: #fff3e0; color: #ef6c00; }
+        .proposal-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 22px 0; }
+        .proposal-info { border: 1px solid #eee; border-radius: 14px; padding: 16px; }
+        .proposal-info span { display: block; color: #777; font-size: 13px; margin-bottom: 6px; }
+        .proposal-info strong { color: #222; font-size: 16px; }
+        .proposal-participants { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 18px 0; }
+        .proposal-user { display: flex; align-items: center; gap: 12px; border: 1px solid #eee; border-radius: 14px; padding: 14px; }
+        .proposal-user img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; background: #f3f3f3; }
+        .proposal-user span { display: block; color: #777; font-size: 12px; margin-bottom: 2px; }
+        .proposal-user strong { color: #222; font-size: 15px; }
+        .proposal-section { margin-top: 24px; }
+        .proposal-section h2 { font-size: 18px; margin: 0 0 12px; }
+        .proposal-target { border: 1px solid #eadcf4; background: #fbf7ff; border-radius: 14px; padding: 16px; }
+        .proposal-target p { margin: 6px 0 0; color: #666; }
+        .proposal-target a { color: #8907C5; text-decoration: none; font-weight: 600; }
+        .proposal-stages { display: grid; gap: 10px; }
+        .proposal-stage { display: flex; justify-content: space-between; gap: 16px; border: 1px solid #eee; border-radius: 12px; padding: 13px 14px; }
+        .proposal-stage span { color: #777; font-size: 13px; white-space: nowrap; }
+        .proposal-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+        .proposal-btn { border: none; border-radius: 10px; padding: 12px 18px; font-size: 15px; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+        .proposal-btn.primary { background: #8907C5; color: #fff; }
+        .proposal-btn.secondary { background: #f5f5f5; color: #333; border: 1px solid #ddd; }
+        .proposal-btn.danger { background: #fff0f0; color: #b00000; border: 1px solid #ffcfcf; }
+        .proposal-btn:disabled { opacity: .6; cursor: default; }
+        @media (max-width: 700px) {
+            .proposal-topline, .proposal-participants, .proposal-grid { grid-template-columns: 1fr; display: grid; }
+            .proposal-card { padding: 22px; }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <%- include('partials/header-actions') %>
+        <% const statusLabels = STATUS_LABELS_BY_CONTEXT.proposal; %>
+        <% const senderName = `${proposal.sender_first_name || ''} ${proposal.sender_last_name || ''}`.trim() || 'Пользователь'; %>
+        <% const recipientName = `${proposal.recipient_first_name || ''} ${proposal.recipient_last_name || ''}`.trim() || 'Пользователь'; %>
+        <% const isRecipient = currentUser && currentUser.id === proposal.recipient_id; %>
+        <% const isSender = currentUser && currentUser.id === proposal.sender_id; %>
+
+        <section class="proposal-page">
+            <article class="proposal-card">
+                <div class="proposal-topline">
+                    <div>
+                        <div class="proposal-eyebrow">Предложение сделки #<%= proposal.id %></div>
+                        <h1><%= proposal.target_type === 'service' && target ? target.title : (proposal.target_type === 'order' && target ? target.title : 'Прямая сделка') %></h1>
+                    </div>
+                    <span class="proposal-status status-<%= proposal.status %>"><%= statusLabels[proposal.status] || statusLabel(proposal.status, 'proposal') %></span>
+                </div>
+
+                <div class="proposal-grid">
+                    <div class="proposal-info">
+                        <span>Стоимость</span>
+                        <strong><%= Number(proposal.price || 0).toLocaleString('ru-RU') %> ₽</strong>
+                    </div>
+                    <div class="proposal-info">
+                        <span>Дедлайн</span>
+                        <strong><%= proposal.deadline ? new Date(proposal.deadline).toLocaleDateString('ru-RU') : 'Не указан' %></strong>
+                    </div>
+                    <div class="proposal-info">
+                        <span>Создано</span>
+                        <strong><%= proposal.created_at ? new Date(proposal.created_at).toLocaleDateString('ru-RU') : '—' %></strong>
+                    </div>
+                    <div class="proposal-info">
+                        <span>Ответ</span>
+                        <strong><%= proposal.responded_at ? new Date(proposal.responded_at).toLocaleDateString('ru-RU') : 'Пока нет' %></strong>
+                    </div>
+                </div>
+
+                <div class="proposal-participants">
+                    <div class="proposal-user">
+                        <img src="<%= proposal.sender_avatar || '/img/Group.svg' %>" alt="">
+                        <div><span>Отправитель</span><strong><%= senderName %></strong></div>
+                    </div>
+                    <div class="proposal-user">
+                        <img src="<%= proposal.recipient_avatar || '/img/Group.svg' %>" alt="">
+                        <div><span>Получатель</span><strong><%= recipientName %></strong></div>
+                    </div>
+                </div>
+
+                <% if (target) { %>
+                    <div class="proposal-section">
+                        <h2>Основание сделки</h2>
+                        <div class="proposal-target">
+                            <a href="/<%= proposal.target_type === 'service' ? 'services' : 'orders' %>/<%= proposal.target_id %>"><%= proposal.target_type === 'service' ? 'Услуга' : 'Заказ' %>: <%= target.title || 'Без названия' %> →</a>
+                            <% if (target.description) { %><p><%= target.description %></p><% } %>
+                        </div>
+                    </div>
+                <% } %>
+
+                <div class="proposal-section">
+                    <h2>Этапы</h2>
+                    <% if (stages && stages.length) { %>
+                        <div class="proposal-stages">
+                            <% stages.forEach((stage, index) => { %>
+                                <div class="proposal-stage">
+                                    <strong><%= index + 1 %>. <%= stage.title %></strong>
+                                    <span><%= stage.deadline ? new Date(stage.deadline).toLocaleDateString('ru-RU') : 'Без дедлайна' %></span>
+                                </div>
+                            <% }) %>
+                        </div>
+                    <% } else { %>
+                        <p>Этапы не указаны.</p>
+                    <% } %>
+                </div>
+
+                <div class="proposal-actions">
+                    <% if (proposal.status === 'pending' && isRecipient) { %>
+                        <button class="proposal-btn primary" type="button" data-deal-action="accept" data-proposal-id="<%= proposal.id %>">Принять сделку</button>
+                        <button class="proposal-btn secondary" type="button" data-deal-action="reject" data-proposal-id="<%= proposal.id %>">Отклонить</button>
+                    <% } else if (proposal.status === 'pending' && isSender) { %>
+                        <button class="proposal-btn danger" type="button" data-deal-action="cancel" data-proposal-id="<%= proposal.id %>">Отменить предложение</button>
+                    <% } %>
+                    <% if (acceptedOrderId) { %>
+                        <a class="proposal-btn primary" href="/deals/<%= acceptedOrderId %>">Перейти на страницу сделки</a>
+                    <% } %>
+                    <a class="proposal-btn secondary" href="/chat?user=<%= isSender ? proposal.recipient_id : proposal.sender_id %>">Вернуться в чат</a>
+                </div>
+            </article>
+        </section>
+    </main>
+
+    <script>
+        const csrfToken = '<%= csrfToken %>';
+        document.querySelectorAll('[data-deal-action]').forEach((button) => {
+            button.addEventListener('click', async () => {
+                const action = button.dataset.dealAction;
+                const proposalId = button.dataset.proposalId;
+                if (!action || !proposalId || button.disabled) return;
+
+                button.disabled = true;
+                try {
+                    const res = await fetch(`/api/deals/${proposalId}/${action}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-csrf-token': csrfToken,
+                        },
+                    });
+                    const data = await res.json();
+                    if (!data.success) {
+                        alert(data.error || 'Ошибка');
+                        button.disabled = false;
+                        return;
+                    }
+
+                    if (data.orderId) {
+                        window.location.href = `/deals/${data.orderId}`;
+                        return;
+                    }
+                    window.location.reload();
+                } catch (error) {
+                    alert('Ошибка сети');
+                    button.disabled = false;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

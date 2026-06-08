@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вывод средств | Линити</title>
+    <link rel="stylesheet" href="/css/services.css">
+    <link rel="stylesheet" href="/css/confirm-modal.css">
+    <link rel="stylesheet" href="/css/header.css">
+    <style>
+        .withdraw-page {     max-width: 100%;
+    margin: 40px ; 
+    padding: 0 20px; }
+        .withdraw-page h1 { font-size: 24px; margin-bottom: 8px; }
+        .withdraw-form { background: #fff; border-radius: 16px; padding: 28px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 24px; }
+        .withdraw-form label { display: block; margin-bottom: 16px; font-weight: 500; }
+        .withdraw-form input, .withdraw-form select {
+            width: 100%; padding: 12px 14px; border: 1px solid #ddd; border-radius: 10px;
+            font-size: 15px; margin-top: 6px; font-family: inherit;
+        }
+        .withdraw-form .hint { font-size: 13px; color: #888; margin-top: 4px; font-weight: 400; }
+        .primary-btn {
+            background: #8907C5; color: #fff; border: none; border-radius: 10px;
+            padding: 12px 24px; font-size: 15px; cursor: pointer; font-weight: 500;
+        }
+        .primary-btn:hover { background: #6b0599; }
+        .primary-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .withdraw-history { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        .withdraw-history h2 { font-size: 18px; margin-bottom: 16px; }
+        .withdraw-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
+        .withdraw-item:last-child { border-bottom: none; }
+        .withdraw-info { display: flex; flex-direction: column; gap: 2px; }
+        .withdraw-title { font-size: 14px; font-weight: 500; }
+        .withdraw-date { font-size: 12px; color: #888; }
+        .withdraw-amount { font-size: 15px; font-weight: 600; }
+        .withdraw-status { font-size: 12px; padding: 2px 8px; border-radius: 6px; background: #f0f0f0; color: #555; }
+        .withdraw-status.is-approved { background: #e8f5e9; color: #2e7d32; }
+        .withdraw-status.is-rejected { background: #ffebee; color: #c62828; }
+        .empty-state { text-align: center; color: #888; padding: 24px 0; }
+        @media (max-width: 600px) {
+            .withdraw-form .form-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <%- include('partials/header-actions') %>
+        <div class="withdraw-page">
+            <h1>Вывод средств</h1>
+            <p style="color:#666;margin-bottom:20px;">Минимальная сумма — 1 000 ₽. Заявки работают в демо-режиме и меняют только виртуальные цифры баланса.</p>
+
+            <form id="withdrawForm" class="withdraw-form" novalidate>
+                <input type="hidden" name="csrf_token" value="<%= csrfToken %>">
+                <label>Сумма, ₽ *
+                    <input type="number" id="amount" min="1000" max="500000" step="1" required placeholder="10000">
+                </label>
+                <label>Способ вывода *
+                    <select id="paymentMethod" required>
+                        <option value="card">Банковская карта (демо)</option>
+                        <option value="sbp">СБП (демо)</option>
+                    </select>
+                </label>
+                <div id="sbpBankField" style="display:none;">
+                    <label>Банк для СБП *
+                        <select id="bankId">
+                            <option value="">Выберите банк</option>
+                            <option value="100000000004">Т-Банк (Тинькофф)</option>
+                            <option value="100000000111">Сбербанк</option>
+                            <option value="100000000005">ВТБ</option>
+                            <option value="100000000008">Альфа-Банк</option>
+                            <option value="100000000007">Райффайзен Банк</option>
+                            <option value="100000000015">Газпромбанк</option>
+                            <option value="100000000003">Открытие</option>
+                            <option value="100000000009">Росбанк</option>
+                            <option value="100000000016">Промсвязьбанк</option>
+                            <option value="100000000002">МТС Банк</option>
+                        </select>
+                    </label>
+                </div>
+                <label>Реквизиты *
+                    <input type="text" id="details" required minlength="5" maxlength="100" placeholder="Номер карты или телефона">
+                    <div class="hint" id="detailsHint">Укажите точные реквизиты для перевода</div>
+                </label>
+                <button type="submit" class="primary-btn" id="submitBtn">Создать заявку</button>
+            </form>
+
+            <div class="withdraw-history">
+                <h2>История заявок</h2>
+                <div id="withdrawList">
+                    <div class="empty-state">Загрузка...</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <%- include('partials/confirm-modal') %>
+    <script>
+        function showConfirm(message, onConfirm, options = {}) {
+            const modal = document.getElementById('confirmModal');
+            const titleEl = document.getElementById('confirmModalTitle');
+            const msgEl = document.getElementById('confirmModalMessage');
+            const okBtn = document.getElementById('confirmModalOk');
+            const cancelBtn = document.getElementById('confirmModalCancel');
+            titleEl.textContent = options.title || 'Подтвердите действие';
+            msgEl.textContent = message;
+            okBtn.textContent = options.confirmText || 'Подтвердить';
+            cancelBtn.style.display = options.hideCancel ? 'none' : 'inline-block';
+            modal.style.display = 'flex';
+            const cleanup = () => { modal.style.display = 'none'; okBtn.onclick = null; };
+            okBtn.onclick = () => { cleanup(); onConfirm(); };
+            cancelBtn.onclick = cleanup;
+        }
+        function showAlert(message) {
+            showConfirm(message, () => {}, { title: 'Внимание', confirmText: 'OK', hideCancel: true });
+        }
+
+        const csrfToken = '<%= csrfToken %>';
+        const withdrawalStatusLabels = <%- JSON.stringify(STATUS_LABELS_BY_CONTEXT.withdrawal) %>;
+
+        async function loadWithdrawals() {
+            try {
+                const res = await fetch('/api/withdrawals');
+                const data = await res.json();
+                const list = document.getElementById('withdrawList');
+                if (!data.withdrawals || data.withdrawals.length === 0) {
+                    list.innerHTML = '<div class="empty-state">Пока нет заявок</div>';
+                    return;
+                }
+                list.innerHTML = data.withdrawals.map(w => {
+                    const statusClass = w.status === 'approved' ? 'is-approved' : (w.status === 'rejected' ? 'is-rejected' : '');
+                    const statusText = withdrawalStatusLabels[w.status] || 'Не указан';
+                    const methodText = w.payment_method === 'card' ? 'Карта (демо)' : (w.payment_method === 'sbp' ? 'СБП (демо)' : 'Демо-реквизиты');
+                    const errorHtml = w.payout_error ? `<span style="font-size:12px;color:#c62828;">Комментарий: ${w.payout_error}</span>` : '';
+                    return `
+                        <div class="withdraw-item">
+                            <div class="withdraw-info">
+                                <span class="withdraw-title">${methodText} — ${w.details}</span>
+                                <span class="withdraw-date">${new Date(w.created_at).toLocaleDateString('ru-RU')}</span>
+                                ${w.rejection_reason ? `<span style="font-size:12px;color:#c62828;">Причина: ${w.rejection_reason}</span>` : ''}
+                                ${errorHtml}
+                            </div>
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <span class="withdraw-amount">−${Number(w.amount).toLocaleString('ru-RU')} ₽</span>
+                                <span class="withdraw-status ${statusClass}">${statusText}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (err) {
+                document.getElementById('withdrawList').innerHTML = '<div class="empty-state">Ошибка загрузки</div>';
+            }
+        }
+
+        const paymentMethod = document.getElementById('paymentMethod');
+        const sbpBankField = document.getElementById('sbpBankField');
+        const detailsHint = document.getElementById('detailsHint');
+        const detailsInput = document.getElementById('details');
+
+        paymentMethod.addEventListener('change', () => {
+            const method = paymentMethod.value;
+            sbpBankField.style.display = method === 'sbp' ? 'block' : 'none';
+            const bankSelect = document.getElementById('bankId');
+            if (method === 'sbp') {
+                if (bankSelect) bankSelect.required = true;
+                detailsHint.textContent = 'Укажите номер телефона для демо-заявки (пример: 79111234567)';
+                detailsInput.placeholder = '79111234567';
+            } else {
+                if (bankSelect) bankSelect.required = false;
+                detailsHint.textContent = 'Укажите номер карты для демо-заявки';
+                detailsInput.placeholder = 'Номер карты';
+            }
+            detailsInput.required = true;
+        });
+        paymentMethod.dispatchEvent(new Event('change'));
+
+        document.getElementById('withdrawForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const amount = parseFloat(document.getElementById('amount').value);
+            const paymentMethod = document.getElementById('paymentMethod').value;
+            const details = document.getElementById('details').value.trim();
+            const bankId = paymentMethod === 'sbp' ? (document.getElementById('bankId').value || '') : '';
+            if (!amount || amount < 1000) {
+                showAlert('Минимальная сумма — 1 000 ₽');
+                return;
+            }
+            if (!details) {
+                showAlert('Укажите реквизиты');
+                return;
+            }
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.textContent = 'Создание...';
+            try {
+                const res = await fetch('/api/withdrawals', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken,
+                    },
+                    body: JSON.stringify({ amount, paymentMethod, details, bankId }),
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showAlert('Заявка создана! Она будет обработана в ближайшее время.');
+                    document.getElementById('withdrawForm').reset();
+                    loadWithdrawals();
+                } else {
+                    showAlert(data.error || 'Ошибка');
+                }
+            } catch (err) {
+                showAlert('Ошибка сети');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Создать заявку';
+            }
+        });
+
+        loadWithdrawals();
+    </script>
+</body>
+</html>

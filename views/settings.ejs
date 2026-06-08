@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Настройки профиля | Линити</title>
+    <link rel="stylesheet" href="/css/settings.css">
+    <link rel="stylesheet" href="/css/header.css">
+</head>
+<body>
+    <main>
+        <%- include('partials/header-actions') %>
+
+        <div class="settings-page">
+            <div class="settings-container">
+                <div class="settings-head">
+                    <h1 class="settings-title">Настройки профиля</h1>
+                    <a class="back-btn" href="/profile">
+                        <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M16.8454 8.62438L1.34021 8.62406M1.34021 8.62406L8.20943 0.652978M1.34021 8.62406L8.21046 16.0587" stroke="#6B069B" stroke-width="1.5"/>
+                        </svg>
+                        Назад
+                    </a>
+                </div>
+
+                <form id="settingsForm" method="POST" action="/api/profile/update" enctype="multipart/form-data" novalidate>
+                    <input type="hidden" name="csrf_token" value="<%= csrfToken %>">
+
+                    <div class="stroke">
+                        <div class="settings-section">
+
+                            <div class="ava-name">
+                                <div style="width: 150px;" class=" form-group">
+                                    <label for="avatar">Аватар</label>
+                                    <input type="file" id="avatar" name="avatar" accept="image/*">
+                                    <div class="avatar-preview">
+                                        <img src="<%= currentUser.avatar || '/img/Group.svg' %>" alt="Текущий аватар">
+                                    </div>
+                                </div>
+                                <div class="name-email">
+                                    <div class="form-group">
+                                        <label for="firstName">Имя</label>
+                                        <input type="text" id="firstName" name="first_name" maxlength="100" value="<%= currentUser.first_name %>" required>
+                                        <div class="error-message" data-error-for="firstName"></div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="lastName">Фамилия</label>
+                                        <input type="text" id="lastName" name="last_name" maxlength="100" value="<%= currentUser.last_name %>" required>
+                                        <div class="error-message" data-error-for="lastName"></div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="email">Email</label>
+                                        <input type="email" id="email" name="email" maxlength="100" value="<%= currentUser.email %>" required>
+                                        <div class="error-message" data-error-for="email"></div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+
+                            <div class="form-group">
+                                <label for="bio">О себе</label>
+                                <textarea id="bio" name="bio" rows="2"  maxlength="2000"><%= currentUser.bio || '' %></textarea>
+                                <small class="char-counter">0 / 2000 символов</small>
+                                <div class="error-message" data-error-for="bio"></div>
+                            </div>
+
+
+                        </div>
+
+                        <div class="settings-section">
+                            <h2>Смена пароля</h2>
+
+                            <div class="form-group">
+                                <label for="currentPassword">Текущий пароль</label>
+                                <input type="password" id="currentPassword" name="current_password" maxlength="64" placeholder="*********">
+                                <div class="error-message" data-error-for="currentPassword"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="newPassword">Новый пароль</label>
+                                <input type="password" id="newPassword" maxlength="64" name="new_password" placeholder="*********">
+                                <div class="error-message" data-error-for="newPassword"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="confirmPassword">Подтверждение пароля</label>
+                                <input type="password" id="confirmPassword" maxlength="64" name="confirm_password" placeholder="*********">
+                                <div class="error-message" data-error-for="confirmPassword"></div>
+                            </div>
+                            <div class="error-message form-error-message" data-error-for="form"></div>
+                             <button type="submit" class="save-btn">
+                                <svg width="20" height="20" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4.0109 5.49982C4.0109 4.67714 4.67781 4.01023 5.50048 4.01023C6.32316 4.01023 6.99007 4.67714 6.99007 5.49982C6.99007 6.32249 6.32316 6.9894 5.50048 6.9894C4.67781 6.9894 4.0109 6.32249 4.0109 5.49982Z" fill="white"/>
+                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M5.25331 0.842468C5.38844 0.702657 5.61253 0.702657 5.74766 0.842468L6.92664 2.06232H8.59424C8.78408 2.06232 8.93799 2.21622 8.93799 2.40607V4.07366L10.1578 5.25264C10.2976 5.38777 10.2976 5.61186 10.1578 5.74699L8.93799 6.92597V8.59357C8.93799 8.78341 8.78408 8.93732 8.59424 8.93732H6.92664L5.74766 10.1572C5.61253 10.297 5.38844 10.297 5.25331 10.1572L4.07433 8.93732H2.40674C2.21689 8.93732 2.06299 8.78341 2.06299 8.59357V6.92597L0.843139 5.74699C0.703329 5.61186 0.703329 5.38777 0.843139 5.25264L2.06299 4.07366V2.40607C2.06299 2.21622 2.21689 2.06232 2.40674 2.06232H4.07433L5.25331 0.842468ZM5.50048 3.32273C4.29811 3.32273 3.3234 4.29745 3.3234 5.49982C3.3234 6.70219 4.29811 7.6769 5.50048 7.6769C6.70285 7.6769 7.67757 6.70219 7.67757 5.49982C7.67757 4.29745 6.70285 3.32273 5.50048 3.32273Z" fill="white"/>
+                                </svg>
+
+                                <p> Сохранить изменения</p>
+                            </button>
+                        </div>
+
+                    </div>
+
+
+
+
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const form = e.target;
+            const firstNameInput = document.getElementById('firstName');
+            const lastNameInput = document.getElementById('lastName');
+            const emailInput = document.getElementById('email');
+            const bioInput = document.getElementById('bio');
+            const avatarInput = document.getElementById('avatar');
+            const currentPasswordInput = document.getElementById('currentPassword');
+            const newPasswordInput = document.getElementById('newPassword');
+            const confirmPasswordInput = document.getElementById('confirmPassword');
+            const errorMap = {
+                firstName: form.querySelector('[data-error-for="firstName"]'),
+                lastName: form.querySelector('[data-error-for="lastName"]'),
+                email: form.querySelector('[data-error-for="email"]'),
+                bio: form.querySelector('[data-error-for="bio"]'),
+                currentPassword: form.querySelector('[data-error-for="currentPassword"]'),
+                newPassword: form.querySelector('[data-error-for="newPassword"]'),
+                confirmPassword: form.querySelector('[data-error-for="confirmPassword"]'),
+                form: form.querySelector('[data-error-for="form"]'),
+            };
+
+            const setFieldError = (fieldName, message, input) => {
+                const errorNode = errorMap[fieldName];
+                if (!errorNode) return;
+                errorNode.textContent = message;
+                const group = input?.closest('.form-group');
+                if (group) {
+                    group.classList.add('error');
+                }
+            };
+
+            const clearFieldError = (fieldName, input) => {
+                const errorNode = errorMap[fieldName];
+                if (!errorNode) return;
+                errorNode.textContent = '';
+                const group = input?.closest('.form-group');
+                if (group) {
+                    group.classList.remove('error');
+                }
+            };
+
+            const clearAllErrors = () => {
+                clearFieldError('firstName', firstNameInput);
+                clearFieldError('lastName', lastNameInput);
+                clearFieldError('email', emailInput);
+                clearFieldError('bio', bioInput);
+                clearFieldError('currentPassword', currentPasswordInput);
+                clearFieldError('newPassword', newPasswordInput);
+                clearFieldError('confirmPassword', confirmPasswordInput);
+                errorMap.form.textContent = '';
+            };
+
+            const firstName = firstNameInput.value.trim();
+            const lastName = lastNameInput.value.trim();
+            const email = emailInput.value.trim();
+            const bio = bioInput.value.trim();
+            const currentPassword = currentPasswordInput.value;
+            const newPassword = newPasswordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+            clearAllErrors();
+
+            if (!firstName || !lastName) {
+                if (!firstName) {
+                    setFieldError('firstName', 'Имя обязательно для заполнения', firstNameInput);
+                    firstNameInput.focus();
+                }
+                if (!lastName) {
+                    setFieldError('lastName', 'Фамилия обязательна для заполнения', lastNameInput);
+                    if (firstName) lastNameInput.focus();
+                }
+                return;
+            }
+
+            if (!email || !emailInput.checkValidity()) {
+                setFieldError('email', 'Введите корректный email', emailInput);
+                emailInput.focus();
+                return;
+            }
+
+            if (bio.length > 2000) {
+                setFieldError('bio', 'Поле "О себе" не должно превышать 2000 символов', bioInput);
+                bioInput.focus();
+                return;
+            }
+
+            const avatarFile = avatarInput.files && avatarInput.files[0];
+            if (avatarFile) {
+                if (!avatarFile.type.startsWith('image/')) {
+                    errorMap.form.textContent = 'Аватар должен быть изображением';
+                    return;
+                }
+
+                const maxAvatarSizeMB = 5;
+                if (avatarFile.size > maxAvatarSizeMB * 1024 * 1024) {
+                    errorMap.form.textContent = `Размер аватара не должен превышать ${maxAvatarSizeMB} МБ`;
+                    return;
+                }
+            }
+
+            const isPasswordChangeRequested = Boolean(currentPassword || newPassword || confirmPassword);
+            if (isPasswordChangeRequested) {
+                if (!currentPassword || !newPassword || !confirmPassword) {
+                    if (!currentPassword) setFieldError('currentPassword', 'Введите текущий пароль', currentPasswordInput);
+                    if (!newPassword) setFieldError('newPassword', 'Введите новый пароль', newPasswordInput);
+                    if (!confirmPassword) setFieldError('confirmPassword', 'Введите подтверждение пароля', confirmPasswordInput);
+                    return;
+                }
+
+                if (newPassword.length < 8) {
+                    setFieldError('newPassword', 'Новый пароль должен содержать минимум 8 символов', newPasswordInput);
+                    newPasswordInput.focus();
+                    return;
+                }
+
+                if (newPassword === currentPassword) {
+                    setFieldError('newPassword', 'Новый пароль должен отличаться от текущего', newPasswordInput);
+                    newPasswordInput.focus();
+                    return;
+                }
+
+                if (newPassword !== confirmPassword) {
+                    setFieldError('confirmPassword', 'Подтверждение пароля не совпадает с новым паролем', confirmPasswordInput);
+                    confirmPasswordInput.focus();
+                    return;
+                }
+            }
+
+            firstNameInput.value = firstName;
+            lastNameInput.value = lastName;
+            emailInput.value = email;
+            bioInput.value = bio;
+
+            const formData = new FormData(form);
+
+            const response = await fetch('/api/profile/update', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                window.location.href = '/profile?profile_updated=1';
+            } else {
+                const error = await response.json();
+                errorMap.form.textContent = 'Ошибка: ' + (error.error || 'Не удалось обновить профиль');
+            }
+        });
+
+
+        const avatarInput = document.getElementById('avatar');
+        if (avatarInput) {
+            avatarInput.addEventListener('change', (e) => {
+                const preview = document.querySelector('.avatar-preview');
+                if (e.target.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        preview.innerHTML = `<img src="${e.target.result}" alt="Новый аватар">`;
+                    };
+                    reader.readAsDataURL(e.target.files[0]);
+                }
+            });
+        }
+    </script>
+    <script>
+
+document.addEventListener('DOMContentLoaded', function() {
+    const avatarInput = document.getElementById('avatar');
+    const avatarPreview = document.querySelector('.avatar-preview');
+
+    if (avatarPreview && avatarInput) {
+
+        avatarPreview.addEventListener('click', function() {
+            avatarInput.click();
+        });
+
+
+        avatarInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+
+                    let img = avatarPreview.querySelector('img');
+                    if (!img) {
+                        img = document.createElement('img');
+                        avatarPreview.appendChild(img);
+                    }
+                    img.src = event.target.result;
+                    img.alt = 'Новый аватар';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+});
+    </script>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const bioTextarea = document.getElementById('bio');
+    const counterSpan = document.querySelector('.char-counter');
+
+    function updateCounter() {
+        const currentLength = bioTextarea.value.length;
+        const maxLength = 2000;
+
+
+        counterSpan.textContent = currentLength + ' / ' + maxLength + ' символов';
+
+
+        counterSpan.classList.remove('warning', 'danger');
+        if (currentLength > maxLength * 0.9) {
+            counterSpan.classList.add('warning');
+        }
+        if (currentLength >= maxLength) {
+            counterSpan.classList.add('danger');
+        }
+
+
+        if (currentLength > maxLength) {
+            bioTextarea.value = bioTextarea.value.substring(0, maxLength);
+            counterSpan.textContent = maxLength + ' / ' + maxLength + ' символов';
+        }
+    }
+
+
+    updateCounter();
+
+
+    bioTextarea.addEventListener('input', updateCounter);
+});
+</script>
+<script>
+
+const textarea = document.getElementById('bio');
+if (textarea) {
+    function autoResize() {
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+    }
+
+    textarea.addEventListener('input', autoResize);
+    autoResize();
+}
+</script>
+
+</body>
+</html>

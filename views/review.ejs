@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Отзывы — <%= reviewedUser.first_name %> <%= reviewedUser.last_name %> | Линити</title>
+    <link rel="stylesheet" href="/css/review.css">
+    <link rel="stylesheet" href="/css/header.css">
+</head>
+<body>
+    <main>
+        <%- include('partials/header-actions') %>
+        <div class="review-container">
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    <img src="<%= reviewedUser.avatar || '/img/Group.svg' %>" alt="Аватар">
+                </div>
+                <div class="profile-info">
+                    <h1><%= reviewedUser.first_name %> <%= reviewedUser.last_name %></h1>
+                    <p class="profile-email"><%= reviewedUser.email %></p>
+                    <% if (!isOwnProfile) { %>
+                        <div class="profile-actions">
+                            <a href="/profile/<%= reviewedUser.id %>" class="subscribe-btn" style="text-decoration:none;color:#fff;display:flex;align-items:center;justify-content:center;">
+                                В профиль
+                            </a>
+                        </div>
+                    <% } %>
+                    <div class="profile-stats">
+                        <div class="stat">
+                            <span class="stat-value"><%= Number(reviewedUser.avg_rating || 0).toFixed(1) %></span>
+                            <span class="stat-label">Рейтинг</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value"><%= followersCount %></span>
+                            <span class="stat-label">Подписчиков</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value"><%= worksCount %></span>
+                            <span class="stat-label">Работ</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-header">
+                    <img src="<%= reviewedUser.avatar || '/img/Group.svg' %>" alt="Аватар" class="review-avatar">
+                    <div class="review-user-info">
+                        <h1><%= reviewedUser.first_name %> <%= reviewedUser.last_name %></h1>
+                        <p class="review-subtitle">Оцените работу пользователя</p>
+                    </div>
+                </div>
+
+                <% if (hasReview && existingReview) { %>
+                <div class="review-existing">
+                    <p class="review-existing-title">Вы уже оставили отзыв этому пользователю</p>
+                    <div class="review-existing-stars">
+                        <% for (let i = 1; i <= 5; i++) { %>
+                            <span class="star-display <%= i <= existingReview.rating ? 'is-active' : '' %>">★</span>
+                        <% } %>
+                    </div>
+                    <% if (existingReview.comment) { %>
+                        <p class="review-existing-comment"><%= existingReview.comment %></p>
+                    <% } %>
+                    <p class="review-existing-date"><%= new Date(existingReview.created_at).toLocaleDateString('ru-RU') %></p>
+                    <div class="review-actions">
+                        <a href="/profile/<%= reviewedUser.id %>" class="review-cancel-btn">Вернуться к профилю</a>
+                    </div>
+                </div>
+                <% } else { %>
+                <form class="review-form" id="reviewForm" action="/api/users/<%= reviewedUser.id %>/review" method="POST">
+                    <input type="hidden" name="csrf_token" value="<%= csrfToken %>">
+                    <input type="hidden" name="rating" id="ratingValue" value="0" required>
+
+                    <div class="review-stars-block">
+                        <label class="review-label">Ваша оценка</label>
+                        <div class="review-stars" id="starContainer" role="radiogroup" aria-label="Выберите оценку от 1 до 5">
+                            <% for (let i = 1; i <= 5; i++) { %>
+                                <button type="button" class="star-btn" data-value="<%= i %>" aria-label="<%= i %> звезда<%= i > 1 ? (i < 5 ? 'ы' : 'д') : '' %>">
+                                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </button>
+                            <% } %>
+                        </div>
+                        <p class="review-rating-text" id="ratingText">Выберите оценку</p>
+                    </div>
+
+                    <div class="review-comment-block">
+                        <label class="review-label" for="comment">Комментарий <span class="review-optional">(необязательно)</span></label>
+                        <textarea id="comment" name="comment" rows="4" maxlength="2000" placeholder="Расскажите о вашем опыте работы с пользователем..."></textarea>
+                        <span class="review-char-count" id="charCount">0 / 2000</span>
+                    </div>
+
+                    <p class="review-error" id="reviewError" role="alert" style="display:none;"></p>
+
+                    <div class="review-actions">
+                        <a href="/profile/<%= reviewedUser.id %>" class="review-cancel-btn">Отмена</a>
+                        <button type="submit" class="review-submit-btn">Оставить отзыв</button>
+                    </div>
+                </form>
+                <% } %>
+
+                <% if (reviews && reviews.length > 0) { %>
+                <div class="review-list-section">
+                    <h2 class="review-list-title">Все отзывы <span class="review-count">(<%= reviews.length %>)</span></h2>
+                    <div class="review-list">
+                        <% reviews.forEach(review => { %>
+                        <div class="review-item">
+                            <div class="review-item-header">
+                                <img src="<%= review.avatar || '/img/Group.svg' %>" alt="" class="review-item-avatar">
+                                <div class="review-item-info">
+                                    <span class="review-item-name"><%= review.first_name %> <%= review.last_name %></span>
+                                    <div class="review-item-stars">
+                                        <% for (let i = 1; i <= 5; i++) { %>
+                                            <span class="star-display <%= i <= review.rating ? 'is-active' : '' %>">★</span>
+                                        <% } %>
+                                    </div>
+                                </div>
+                                <span class="review-item-date"><%= new Date(review.created_at).toLocaleDateString('ru-RU') %></span>
+                            </div>
+                            <% if (review.comment) { %>
+                                <p class="review-item-text"><%= review.comment %></p>
+                            <% } %>
+                        </div>
+                        <% }) %>
+                    </div>
+                </div>
+                <% } %>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const starContainer = document.getElementById('starContainer');
+        const ratingValue = document.getElementById('ratingValue');
+        const ratingText = document.getElementById('ratingText');
+        const reviewForm = document.getElementById('reviewForm');
+        const reviewError = document.getElementById('reviewError');
+        const comment = document.getElementById('comment');
+        const charCount = document.getElementById('charCount');
+
+        const ratingLabels = {
+            1: 'Ужасно',
+            2: 'Плохо',
+            3: 'Нормально',
+            4: 'Хорошо',
+            5: 'Отлично'
+        };
+
+        let currentRating = 0;
+
+        function updateStars(value) {
+            const stars = starContainer.querySelectorAll('.star-btn');
+            stars.forEach((btn, index) => {
+                const starValue = index + 1;
+                if (starValue <= value) {
+                    btn.classList.add('is-active');
+                    btn.querySelector('svg path').setAttribute('fill', '#FFD700');
+                } else {
+                    btn.classList.remove('is-active');
+                    btn.querySelector('svg path').setAttribute('fill', 'none');
+                }
+            });
+        }
+
+        starContainer.querySelectorAll('.star-btn').forEach((btn) => {
+            btn.addEventListener('mouseenter', () => {
+                updateStars(parseInt(btn.dataset.value, 10));
+            });
+
+            btn.addEventListener('mouseleave', () => {
+                updateStars(currentRating);
+            });
+
+            btn.addEventListener('click', () => {
+                currentRating = parseInt(btn.dataset.value, 10);
+                ratingValue.value = currentRating;
+                updateStars(currentRating);
+                ratingText.textContent = ratingLabels[currentRating] || 'Выберите оценку';
+                ratingText.style.color = '#292929';
+            });
+        });
+
+        comment.addEventListener('input', () => {
+            charCount.textContent = `${comment.value.length} / 2000`;
+        });
+
+        reviewForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            reviewError.style.display = 'none';
+            reviewError.textContent = '';
+
+            if (currentRating < 1 || currentRating > 5) {
+                reviewError.textContent = 'Пожалуйста, выберите оценку от 1 до 5';
+                reviewError.style.display = 'block';
+                return;
+            }
+
+            try {
+                const response = await fetch(reviewForm.action, {
+                    method: 'POST',
+                    body: new URLSearchParams(new FormData(reviewForm)),
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (!response.ok) {
+                    const data = await response.json().catch(() => ({}));
+                    throw new Error(data.error || 'Не удалось отправить отзыв');
+                }
+
+                window.location.href = `/profile/<%= reviewedUser.id %>?review_sent=1`;
+            } catch (error) {
+                reviewError.textContent = error.message || 'Ошибка при отправке отзыва';
+                reviewError.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сообщения | Линити</title>
+    <link rel="stylesheet" href="/css/chat.css">
+    <link rel="stylesheet" href="/css/header.css">
+    <style>
+        .message-deal-card {
+            background: #f8f5ff;
+            border: 1px solid #e2d4f0;
+            border-radius: 12px;
+            padding: 14px 16px;
+            max-width: 340px;
+            margin-bottom: 4px;
+        }
+        .message-deal-card[data-deal-href] {
+            cursor: pointer;
+            transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+        }
+        .message-deal-card[data-deal-href]:hover,
+        .message-deal-card[data-deal-href]:focus-visible {
+            border-color: #8907C5;
+            box-shadow: 0 6px 18px rgba(137, 7, 197, 0.14);
+            transform: translateY(-1px);
+            outline: none;
+        }
+        .message-deal-card .deal-title {
+            font-weight: 600;
+            font-size: 14px;
+            color: #8907C5;
+            margin-bottom: 8px;
+        }
+        .message-deal-card .deal-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #444;
+            margin-bottom: 4px;
+        }
+        .message-deal-card .deal-row span:first-child { color: #666; }
+        .message-deal-card .deal-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .message-deal-card .deal-btn {
+            flex: 1;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .deal-btn.accept { background: #8907C5; color: #fff; }
+        .deal-btn.accept:hover { background: #6b0599; }
+        .deal-btn.reject { background: #f5f5f5; color: #333; border: 1px solid #ddd; }
+        .deal-btn.reject:hover { background: #eaeaea; }
+        .deal-btn.cancel { background: #fff0f0; color: #b00000; border: 1px solid #ffcfcf; }
+        .deal-btn.cancel:hover { background: #ffe0e0; }
+        .message-deal-status {
+            background: #f0f0f0;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 13px;
+            color: #555;
+            display: inline-block;
+        }
+        .message-deal-status.is-accepted { background: #e8f5e9; color: #2e7d32; }
+        .message-deal-status.is-rejected { background: #ffebee; color: #c62828; }
+        .message-deal-status.is-cancelled { background: #fff3e0; color: #ef6c00; }
+    </style>
+</head>
+<body>
+    <main>
+        <%- include('partials/header-actions') %>
+
+        <div class="chat-container">
+            <div class="chat-sidebar">
+                <div class="chat-search">
+                    <input type="text" placeholder="Поиск пользователей..." id="searchChats">
+                </div>
+                <div class="chat-list" id="chatList">
+                    <div class="loading">Загрузка...</div>
+                </div>
+            </div>
+
+            <div class="chat-main" id="chatMain" style="display: none;">
+                <div class="chat-header" id="chatHeader"></div>
+
+                <div class="chat-messages" id="chatMessages"></div>
+
+                <div class="chat-input-area">
+                    <button id="attachFileBtn" class="attach-btn" type="button" title="Прикрепить файл">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M14.25 2.5C14.25 2.36193 14.1381 2.25 14 2.25H7C5.48122 2.25 4.25 3.48122 4.25 5V19C4.25 20.5188 5.48122 21.75 7 21.75H17C18.5188 21.75 19.75 20.5188 19.75 19V9.14706C19.75 9.00899 19.6381 8.89706 19.5 8.89706H15C14.5858 8.89706 14.25 8.56127 14.25 8.14706V2.5ZM14.0315 13.3357C14.355 13.5944 14.8269 13.542 15.0857 13.2185C15.3444 12.8951 15.292 12.4231 14.9685 12.1643L12.4746 10.1692C12.3459 10.0639 12.1816 10.0006 12.0025 10L12.0001 10L11.9937 10C11.8177 10.0015 11.6561 10.0636 11.5288 10.1665L9.03151 12.1643C8.70806 12.4231 8.65562 12.8951 8.91438 13.2185C9.17313 13.542 9.6451 13.5944 9.96855 13.3357L11.2501 12.3104V15.75C11.2501 16.1642 11.5858 16.5 12.0001 16.5C12.4143 16.5 12.7501 16.1642 12.7501 15.75V12.3105L14.0315 13.3357Z" fill="#393939"/>
+                            <path d="M15.75 2.82414C15.75 2.63964 15.9426 2.5225 16.0862 2.63839C16.2071 2.736 16.3158 2.85036 16.4085 2.97955L19.4217 7.17745C19.4903 7.27302 19.416 7.39706 19.2983 7.39706H16C15.8619 7.39706 15.75 7.28513 15.75 7.14706V2.82414Z" fill="#393939"/>
+                        </svg>
+
+                    </button>
+                    <input type="file" id="messageFileInput" class="file-hidden-input">
+                    <div class="input-stack">
+                        <textarea id="messageInput" placeholder="Введите сообщение..." rows="3" maxlength="2000"></textarea>
+                        <div id="editModeBar" class="edit-mode-bar" style="display:none;">
+                            <span>Режим редактирования сообщения</span>
+                            <button type="button" id="cancelEditBtn">Отменить</button>
+                        </div>
+                        <div id="selectedFilesList" class="selected-files" style="display:none;"></div>
+                    </div>
+                    <button id="sendMessageBtn" class="send-btn">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M21.2428 12.4371C21.4016 12.3489 21.5 12.1816 21.5 12C21.5 11.8184 21.4016 11.6511 21.2428 11.5629L18.9605 10.295C14.464 7.79689 9.72391 5.76488 4.81421 4.2306L4.14914 4.02276C3.99732 3.97532 3.83198 4.00294 3.70383 4.09716C3.57568 4.19138 3.5 4.34094 3.5 4.5V10.25C3.5 10.5159 3.70816 10.7353 3.97372 10.7493L4.98336 10.8025C7.44497 10.932 9.89156 11.2659 12.2979 11.8006L12.5362 11.8536C12.5892 11.8654 12.6122 11.887 12.625 11.9042C12.6411 11.926 12.6536 11.9594 12.6536 12C12.6536 12.0406 12.6411 12.0741 12.625 12.0958C12.6122 12.113 12.5892 12.1347 12.5362 12.1464L12.2979 12.1994C9.89157 12.7341 7.44496 13.068 4.98334 13.1976L3.97372 13.2507C3.70816 13.2647 3.5 13.4841 3.5 13.75V19.5C3.5 19.6591 3.57568 19.8086 3.70383 19.9029C3.83198 19.9971 3.99732 20.0247 4.14914 19.9772L4.81422 19.7694C9.72391 18.2351 14.464 16.2031 18.9605 13.705L21.2428 12.4371Z" fill="white"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="chat-empty" id="chatEmpty">
+                <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
+                    <circle cx="50" cy="50" r="45" stroke="#ddd" stroke-width="2" fill="none"/>
+                    <path d="M30 35H70M30 50H55M30 65H45" stroke="#ddd" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <p>Выберите чат для начала общения</p>
+            </div>
+        </div>
+
+        <div id="editConfirmModal" class="chat-modal" aria-hidden="true">
+            <div class="chat-modal-overlay" data-close-chat-modal></div>
+            <div class="chat-modal-content" role="dialog" aria-modal="true" aria-labelledby="editConfirmTitle">
+                <button class="chat-modal-close" type="button" data-close-chat-modal aria-label="Закрыть">&times;</button>
+                <h3 id="editConfirmTitle" class="chat-modal-title">Подтвердите редактирование</h3>
+                <p class="chat-modal-text">Сохранить изменения в сообщении?</p>
+                <div class="chat-modal-actions">
+                    <button type="button" class="chat-modal-btn chat-modal-btn-secondary" data-close-chat-modal>Отмена</button>
+                    <button type="button" class="chat-modal-btn chat-modal-btn-primary" id="confirmEditBtn">Сохранить</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="deleteConfirmModal" class="chat-modal" aria-hidden="true">
+            <div class="chat-modal-overlay" data-close-chat-modal></div>
+            <div class="chat-modal-content" role="dialog" aria-modal="true" aria-labelledby="deleteConfirmTitle">
+                <button class="chat-modal-close" type="button" data-close-chat-modal aria-label="Закрыть">&times;</button>
+                <h3 id="deleteConfirmTitle" class="chat-modal-title">Удалить сообщение</h3>
+                <p class="chat-modal-text">Сообщение будет удалено для всех участников чата.</p>
+                <div class="chat-modal-actions">
+                    <button type="button" class="chat-modal-btn chat-modal-btn-secondary" data-close-chat-modal>Отмена</button>
+                    <button type="button" class="chat-modal-btn chat-modal-btn-danger" id="confirmDeleteBtn">Удалить</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const csrfToken = '<%= csrfToken %>';
+        let currentChatId = null;
+        let messagePollingInterval = null;
+        let chatsCache = [];
+        let searchTimeout = null;
+        const MAX_FILES_PER_MESSAGE = 10;
+        let selectedFiles = [];
+        let editingMessageId = null;
+        let pendingDeleteMessageId = null;
+        const ASSISTANT_CHAT_ID = 'ai-assistant';
+        const ASSISTANT_STORAGE_KEY = `linestok-ai-assistant-${Number('<%= currentUser.id %>')}`;
+        const assistantWelcomeMessage = {
+            id: 'assistant-welcome',
+            sender_id: 0,
+            message: 'Привет! Я ИИ-помощник Линити. Помогу составить ТЗ, подготовить сообщение, продумать этапы сделки или улучшить описание услуги.',
+            created_at: new Date().toISOString(),
+            is_ai: true,
+        };
+
+        async function loadChats() {
+            const response = await fetch('/api/chats');
+            const chats = await response.json();
+            chatsCache = Array.isArray(chats) ? chats : [];
+            renderChats(chatsCache);
+        }
+
+        async function openChatByUserId(userId) {
+            const response = await fetch(`/api/chats/user/${userId}`);
+            const data = await response.json();
+            if (!response.ok || !data.chatId) return;
+
+            await loadChats();
+            await openChat(data.chatId);
+        }
+
+        function getAssistantCardHtml() {
+            return `
+                <div class="chat-item ai-assistant-chat" data-chat-id="${ASSISTANT_CHAT_ID}">
+                    <div class="chat-avatar ai-assistant-avatar">ИИ</div>
+                    <div class="chat-info">
+                        <div class="chat-name">ИИ помощник</div>
+                        <div class="chat-last-message">Помощь с ТЗ, сделками и сообщениями</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function bindChatItems() {
+            document.querySelectorAll('.chat-item:not(.chat-user-item)').forEach(item => {
+                item.addEventListener('click', () => {
+                    if (item.dataset.chatId === ASSISTANT_CHAT_ID) {
+                        openAssistantChat();
+                        return;
+                    }
+
+                    const chatId = parseInt(item.dataset.chatId, 10);
+                    if (Number.isInteger(chatId)) {
+                        openChat(chatId);
+                    }
+                });
+            });
+        }
+
+        function renderChats(chats) {
+            const container = document.getElementById('chatList');
+
+            if (chats.length === 0) {
+                container.innerHTML = `${getAssistantCardHtml()}<div class="empty-chats">Нет чатов</div>`;
+                bindChatItems();
+                return;
+            }
+
+            container.innerHTML = getAssistantCardHtml() + chats.map(chat => `
+                <div class="chat-item" data-chat-id="${chat.id}" data-user-id="${chat.otherUser.id}">
+                    <div class="chat-avatar">
+                        ${chat.otherUser.avatar
+                            ? `<img src="${chat.otherUser.avatar}" alt="">`
+                            : `<img src="/img/Group.svg" alt="Аватар">`
+                        }
+                    </div>
+                    <div class="chat-info">
+                        <div class="chat-name">${chat.otherUser.first_name} ${chat.otherUser.last_name}</div>
+                        <div class="chat-last-message">${escapeHtml(chat.lastMessage || 'Нет сообщений')}</div>
+                    </div>
+                    ${chat.unreadCount > 0 ? `<div class="chat-unread">${chat.unreadCount}</div>` : ''}
+                </div>
+            `).join('');
+
+            bindChatItems();
+        }
+
+        async function searchUsers(query) {
+            const response = await fetch(`/api/chats/search/users?q=${encodeURIComponent(query)}`);
+            if (!response.ok) return [];
+            return response.json();
+        }
+
+        function renderUserResults(users) {
+            const container = document.getElementById('chatList');
+
+            if (users.length === 0) {
+                container.innerHTML = `${getAssistantCardHtml()}<div class="empty-chats">Пользователи не найдены</div>`;
+                bindChatItems();
+                return;
+            }
+
+            container.innerHTML = getAssistantCardHtml() + users.map(user => `
+                <div class="chat-item chat-user-item" data-user-id="${user.id}" data-chat-id="${user.chatId || ''}">
+                    <div class="chat-avatar">
+                        ${user.avatar
+                            ? `<img src="${user.avatar}" alt="">`
+                            : `<img src="/img/Group.svg" alt="Аватар">`
+                        }
+                    </div>
+                    <div class="chat-info">
+                        <div class="chat-name">${user.first_name} ${user.last_name}</div>
+                        <div class="chat-last-message">${user.chatId ? 'Открыть чат' : 'Начать диалог'}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            bindChatItems();
+
+            document.querySelectorAll('.chat-user-item').forEach(item => {
+                item.addEventListener('click', async () => {
+                    const userId = parseInt(item.dataset.userId, 10);
+                    const response = await fetch(`/api/chats/user/${userId}`);
+                    const data = await response.json();
+                    if (!response.ok || !data.chatId) return;
+                    await loadChats();
+                    openChat(data.chatId);
+                });
+            });
+        }
+
+        async function openChat(chatId) {
+            currentChatId = chatId;
+
+            if (messagePollingInterval) {
+                clearInterval(messagePollingInterval);
+                messagePollingInterval = null;
+            }
+
+            const messagesResponse = await fetch(`/api/chats/${chatId}/messages`);
+            const messages = await messagesResponse.json();
+
+            const chatItem = document.querySelector(`.chat-item[data-chat-id="${chatId}"]`);
+            const otherUserName = chatItem ? chatItem.querySelector('.chat-name').textContent : 'Пользователь';
+
+            const otherUserId = chatItem ? chatItem.dataset.userId : '';
+
+            document.getElementById('chatHeader').innerHTML = `
+                <div class="chat-user-info">
+                    <div class="chat-avatar">
+                        ${chatItem && chatItem.querySelector('.chat-avatar img')
+                            ? chatItem.querySelector('.chat-avatar').innerHTML
+                            : `<img src="/img/Group.svg" alt="Аватар">`
+                        }
+                    </div>
+                    <div class="chat-user-name">${otherUserName}</div>
+                    ${otherUserId
+                        ? `<a class="chat-profile-btn" href="/profile/${otherUserId}">Перейти в профиль</a>`
+                        : ''
+                    }
+                </div>
+            `;
+
+            displayMessages(messages);
+
+            document.getElementById('chatMain').style.display = 'flex';
+            document.getElementById('chatEmpty').style.display = 'none';
+
+            const draftResponse = await fetch(`/api/chats/${chatId}/draft`);
+            const draft = await draftResponse.json();
+            document.getElementById('messageInput').value = draft.draft_text || '';
+            clearSelectedFile();
+            resetEditMode();
+            setAssistantMode(false);
+
+            if (messagePollingInterval) clearInterval(messagePollingInterval);
+            messagePollingInterval = setInterval(() => {
+                if (currentChatId) refreshMessages(currentChatId);
+            }, 3000);
+        }
+
+        function renderDealProposal(msg) {
+            const currentUserId = Number('<%= currentUser.id %>');
+            const meta = msg.metadata || {};
+            const isRecipient = msg.sender_id !== currentUserId;
+            const isPending = meta.status === 'pending';
+            const price = meta.price != null ? Number(meta.price).toLocaleString('ru-RU') + ' ₽' : '';
+            const deadline = meta.deadline ? new Date(meta.deadline).toLocaleDateString('ru-RU') : '';
+            const proposalHref = meta.proposal_id ? `/deals/proposals/${encodeURIComponent(meta.proposal_id)}` : '';
+            let actionsHtml = '';
+            if (isPending && isRecipient) {
+                actionsHtml = `
+                    <div class="deal-actions">
+                        <button type="button" class="deal-btn accept" data-deal-action="accept" data-proposal-id="${meta.proposal_id}">Принять</button>
+                        <button type="button" class="deal-btn reject" data-deal-action="reject" data-proposal-id="${meta.proposal_id}">Отклонить</button>
+                    </div>
+                `;
+            } else if (isPending && msg.sender_id === currentUserId) {
+                actionsHtml = `
+                    <div class="deal-actions">
+                        <button type="button" class="deal-btn cancel" data-deal-action="cancel" data-proposal-id="${meta.proposal_id}">Отменить</button>
+                    </div>
+                `;
+            } else if (!isPending) {
+                const statusText = meta.status === 'accepted' ? 'Принято' : (meta.status === 'rejected' ? 'Отклонено' : 'Отменено');
+                const statusClass = meta.status === 'accepted' ? 'is-accepted' : (meta.status === 'rejected' ? 'is-rejected' : 'is-cancelled');
+                let orderLinkHtml = '';
+                if (meta.status === 'accepted' && meta.order_id) {
+                    orderLinkHtml = `<a href="/deals/${meta.order_id}" style="display:inline-block;margin-top:8px;font-size:13px;color:#8907C5;text-decoration:none;">Перейти на страницу сделки →</a>`;
+                }
+                actionsHtml = `<div class="message-deal-status ${statusClass}">${statusText}</div>${orderLinkHtml}`;
+            }
+            return `
+                <div class="message-deal-card" ${proposalHref ? `data-deal-href="${proposalHref}" role="link" tabindex="0"` : ''}>
+                    <div class="deal-title">${escapeHtml(msg.message || 'Предложение сделки')}</div>
+                    ${price ? `<div class="deal-row"><span>Цена</span><span>${price}</span></div>` : ''}
+                    ${deadline ? `<div class="deal-row"><span>Дедлайн</span><span>${deadline}</span></div>` : ''}
+                    ${actionsHtml}
+                </div>
+            `;
+        }
+
+        function renderDealStatus(msg) {
+            const meta = msg.metadata || {};
+            const statusText = meta.status === 'accepted' ? 'Сделка принята' : (meta.status === 'rejected' ? 'Сделка отклонена' : 'Предложение отменено');
+            const statusClass = meta.status === 'accepted' ? 'is-accepted' : (meta.status === 'rejected' ? 'is-rejected' : 'is-cancelled');
+            return `<div class="message-deal-status ${statusClass}">${statusText}</div>`;
+        }
+
+        function getAssistantMessages() {
+            try {
+                const storedMessages = JSON.parse(localStorage.getItem(ASSISTANT_STORAGE_KEY) || '[]');
+                return [assistantWelcomeMessage, ...storedMessages];
+            } catch (_error) {
+                return [assistantWelcomeMessage];
+            }
+        }
+
+        function saveAssistantMessages(messages) {
+            const messagesToStore = messages.filter((msg) => msg.id !== assistantWelcomeMessage.id).slice(-30);
+            localStorage.setItem(ASSISTANT_STORAGE_KEY, JSON.stringify(messagesToStore));
+        }
+
+        function setAssistantMode(isAssistant) {
+            const attachButton = document.getElementById('attachFileBtn');
+            const input = document.getElementById('messageInput');
+            attachButton.disabled = isAssistant;
+            attachButton.style.display = isAssistant ? 'none' : 'inline-flex';
+            input.placeholder = isAssistant ? 'Спросите ИИ помощника...' : 'Введите сообщение...';
+            document.querySelectorAll('.chat-item').forEach((item) => {
+                item.classList.toggle('is-active', item.dataset.chatId === String(currentChatId));
+            });
+        }
+
+        function openAssistantChat() {
+            currentChatId = ASSISTANT_CHAT_ID;
+            if (messagePollingInterval) {
+                clearInterval(messagePollingInterval);
+                messagePollingInterval = null;
+            }
+
+            document.getElementById('chatHeader').innerHTML = `
+                <div class="chat-user-info">
+                    <div class="chat-avatar ai-assistant-avatar">ИИ</div>
+                    <div>
+                        <div class="chat-user-name">ИИ помощник</div>
+                        <div class="ai-assistant-status">Онлайн · помогает с задачами Линити</div>
+                    </div>
+                </div>
+            `;
+
+            displayMessages(getAssistantMessages());
+            document.getElementById('chatMain').style.display = 'flex';
+            document.getElementById('chatEmpty').style.display = 'none';
+            document.getElementById('messageInput').value = '';
+            clearSelectedFile();
+            resetEditMode();
+            setAssistantMode(true);
+        }
+
+        function displayMessages(messages) {
+            const container = document.getElementById('chatMessages');
+            const currentUserId = Number('<%= currentUser.id %>');
+            let previousMessageDateKey = null;
+
+            container.innerHTML = messages.map(msg => {
+                const currentMessageDateKey = getMessageDateKey(msg.created_at);
+                const shouldShowDateSeparator = currentMessageDateKey && currentMessageDateKey !== previousMessageDateKey;
+                previousMessageDateKey = currentMessageDateKey;
+
+                let contentHtml = '';
+                if (msg.message_type === 'deal_proposal') {
+                    contentHtml = renderDealProposal(msg);
+                } else if (msg.message_type === 'deal_status') {
+                    contentHtml = renderDealStatus(msg);
+                } else {
+                    const textHtml = msg.message ? `<div class="message-content">${escapeHtml(msg.message)}</div>` : '';
+                    const fileHtml = msg.file_url
+                        ? `<a class="message-file" href="${msg.file_url}" target="_blank" rel="noopener noreferrer"><span class="message-file-icon">
+                            <svg width="50" height="50" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M14.25 2.5C14.25 2.36193 14.1381 2.25 14 2.25H7C5.48122 2.25 4.25 3.48122 4.25 5V19C4.25 20.5188 5.48122 21.75 7 21.75H17C18.5188 21.75 19.75 20.5188 19.75 19V9.14706C19.75 9.00899 19.6381 8.89706 19.5 8.89706H15C14.5858 8.89706 14.25 8.56127 14.25 8.14706V2.5ZM14.0315 13.1643C14.355 12.9056 14.8269 12.958 15.0857 13.2815C15.3444 13.6049 15.292 14.0769 14.9685 14.3357L12.4746 16.3308C12.3459 16.4361 12.1816 16.4994 12.0025 16.5L12.0001 16.5L11.9937 16.5C11.8177 16.4985 11.6561 16.4364 11.5288 16.3335L9.03151 14.3357C8.70806 14.0769 8.65562 13.6049 8.91438 13.2815C9.17313 12.958 9.6451 12.9056 9.96855 13.1643L11.2501 14.1896V10.75C11.2501 10.3358 11.5858 10 12.0001 10C12.4143 10 12.7501 10.3358 12.7501 10.75V14.1895L14.0315 13.1643Z" fill="#393939"/>
+                                <path d="M15.75 2.82414C15.75 2.63964 15.9426 2.5225 16.0862 2.63839C16.2071 2.736 16.3158 2.85036 16.4085 2.97955L19.4217 7.17745C19.4903 7.27302 19.416 7.39706 19.2983 7.39706H16C15.8619 7.39706 15.75 7.28513 15.75 7.14706V2.82414Z" fill="#393939"/>
+                            </svg>
+                            </span><span class="message-file-name">${escapeHtml(msg.file_name || 'Файл')}</span></a>`
+                        : '';
+                    contentHtml = textHtml + fileHtml;
+                }
+
+                const messageHtml = `
+                    <div class="message ${msg.sender_id === currentUserId ? 'message-out' : 'message-in'} ${msg.is_ai ? 'message-ai' : ''}" data-message-id="${msg.id}">
+                        ${contentHtml}
+                        <div class="message-meta">
+                            <div class="message-time">${formatMessageTime(msg.created_at)}</div>
+                            ${msg.sender_id === currentUserId && !msg.is_ai && msg.message_type !== 'deal_proposal' && msg.message_type !== 'deal_status' ? `
+                                <div class="message-actions">
+                                    <button class="message-action-btn" data-action="edit" data-message-id="${msg.id}" type="button">Редактировать</button>
+                                    <button class="message-action-btn" data-action="delete" data-message-id="${msg.id}" type="button">Удалить для всех</button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+
+                if (!shouldShowDateSeparator) {
+                    return messageHtml;
+                }
+
+                return `
+                    <div class="message-date-separator">
+                        <span>${formatMessageDate(msg.created_at)}</span>
+                    </div>
+                    ${messageHtml}
+                `;
+            }).join('');
+
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function getMessageDateKey(dateValue) {
+            const date = new Date(dateValue);
+            if (Number.isNaN(date.getTime())) {
+                return null;
+            }
+
+            return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+        }
+
+        function formatMessageTime(dateValue) {
+            const date = new Date(dateValue);
+
+            if (Number.isNaN(date.getTime())) {
+                return '';
+            }
+
+            return date.toLocaleTimeString('ru-RU', {
+                hour: '2-digit',
+                minute: '2-digit',
+            });
+        }
+
+        function formatMessageDate(dateValue) {
+            const date = new Date(dateValue);
+            if (Number.isNaN(date.getTime())) {
+                return '';
+            }
+
+            const now = new Date();
+            const todayKey = getMessageDateKey(now);
+            const yesterday = new Date(now);
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayKey = getMessageDateKey(yesterday);
+            const messageDateKey = getMessageDateKey(date);
+
+            if (messageDateKey === todayKey) {
+                return 'Сегодня';
+            }
+
+            if (messageDateKey === yesterdayKey) {
+                return 'Вчера';
+            }
+
+            return date.toLocaleDateString('ru-RU', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+            });
+        }
+
+        async function refreshMessages(chatId) {
+            if (chatId === ASSISTANT_CHAT_ID) {
+                displayMessages(getAssistantMessages());
+                return;
+            }
+
+            const response = await fetch(`/api/chats/${chatId}/messages`);
+            const messages = await response.json();
+            displayMessages(messages);
+            loadChats();
+        }
+
+        async function sendMessage() {
+            if (!currentChatId) return;
+
+            const input = document.getElementById('messageInput');
+            const fileInput = document.getElementById('messageFileInput');
+            const message = input.value.trim();
+            const hasFiles = selectedFiles.length > 0;
+
+            if (!message && !hasFiles) return;
+
+            if (currentChatId === ASSISTANT_CHAT_ID) {
+                await sendAssistantMessage(message);
+                return;
+            }
+
+            let response;
+
+            if (editingMessageId) {
+                openModal('editConfirmModal');
+                return;
+            }
+
+            if (hasFiles) {
+                const formData = new FormData();
+                formData.append('message', message);
+                formData.append('csrf_token', csrfToken);
+                selectedFiles.forEach((file) => {
+                    formData.append('files', file);
+                });
+
+                response = await fetch(`/api/chats/${currentChatId}/files`, {
+                    method: 'POST',
+                    body: formData,
+                });
+            } else {
+                response = await fetch(`/api/chats/${currentChatId}/messages`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-csrf-token': csrfToken,
+                    },
+                    body: JSON.stringify({ message }),
+                });
+            }
+
+            if (response.ok) {
+                input.value = '';
+                clearSelectedFile();
+                await refreshMessages(currentChatId);
+
+                await fetch(`/api/chats/${currentChatId}/draft`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-csrf-token': csrfToken,
+                    },
+                    body: JSON.stringify({ draft_text: '' }),
+                });
+            }
+        }
+
+        async function sendAssistantMessage(message) {
+            const input = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendMessageBtn');
+            const messages = getAssistantMessages();
+            const userMessage = {
+                id: `assistant-user-${Date.now()}`,
+                sender_id: Number('<%= currentUser.id %>'),
+                message,
+                created_at: new Date().toISOString(),
+            };
+
+            messages.push(userMessage);
+            saveAssistantMessages(messages);
+            input.value = '';
+            displayMessages(messages);
+            sendButton.disabled = true;
+
+            try {
+                const response = await fetch('/api/ai-assistant/message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-csrf-token': csrfToken,
+                    },
+                    body: JSON.stringify({
+                        message,
+                        history: messages
+                            .filter((msg) => msg.id !== assistantWelcomeMessage.id)
+                            .slice(0, -1)
+                            .slice(-10)
+                            .map((msg) => ({
+                                role: msg.sender_id === Number('<%= currentUser.id %>') ? 'user' : 'assistant',
+                                content: msg.message,
+                            })),
+                    }),
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || 'Ошибка ИИ помощника');
+                }
+
+                const latestMessages = getAssistantMessages();
+                latestMessages.push({
+                    id: `assistant-reply-${Date.now()}`,
+                    sender_id: 0,
+                    message: data.reply || 'Не смог подготовить ответ. Попробуйте переформулировать вопрос.',
+                    created_at: new Date().toISOString(),
+                    is_ai: true,
+                });
+                saveAssistantMessages(latestMessages);
+                displayMessages(latestMessages);
+            } catch (_error) {
+                const latestMessages = getAssistantMessages();
+                latestMessages.push({
+                    id: `assistant-error-${Date.now()}`,
+                    sender_id: 0,
+                    message: 'Не получилось получить ответ. Проверьте соединение и попробуйте ещё раз.',
+                    created_at: new Date().toISOString(),
+                    is_ai: true,
+                });
+                saveAssistantMessages(latestMessages);
+                displayMessages(latestMessages);
+            } finally {
+                sendButton.disabled = false;
+                input.focus();
+            }
+        }
+
+        function startEditMessage(messageId) {
+            if (!currentChatId) return;
+            const messageBlock = document.querySelector(`.message[data-message-id="${messageId}"]`);
+            const currentText = messageBlock?.querySelector('.message-content')?.textContent || '';
+            const input = document.getElementById('messageInput');
+            editingMessageId = messageId;
+            input.value = currentText;
+            input.focus();
+            input.dataset.editing = 'true';
+            input.placeholder = 'Редактирование сообщения...';
+            document.getElementById('editModeBar').style.display = 'flex';
+        }
+
+        async function submitEditMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            if (!message || !editingMessageId || !currentChatId) return;
+
+            const response = await fetch(`/api/chats/${currentChatId}/messages/${editingMessageId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-csrf-token': csrfToken,
+                },
+                body: JSON.stringify({ message }),
+            });
+
+            closeModals();
+            if (response.ok) {
+                resetEditMode();
+                await refreshMessages(currentChatId);
+            }
+        }
+
+        async function confirmDeleteMessage() {
+            if (!currentChatId || !pendingDeleteMessageId) return;
+            const response = await fetch(`/api/chats/${currentChatId}/messages/${pendingDeleteMessageId}`, {
+                method: 'DELETE',
+                headers: {
+                    'x-csrf-token': csrfToken,
+                },
+            });
+            closeModals();
+            if (response.ok) {
+                pendingDeleteMessageId = null;
+                await refreshMessages(currentChatId);
+            }
+        }
+
+        function resetEditMode() {
+            const input = document.getElementById('messageInput');
+            editingMessageId = null;
+            input.dataset.editing = 'false';
+            input.placeholder = currentChatId === ASSISTANT_CHAT_ID ? 'Спросите ИИ помощника...' : 'Введите сообщение...';
+            document.getElementById('editModeBar').style.display = 'none';
+        }
+
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (!modal) return;
+            modal.classList.add('is-open');
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('modal-open');
+        }
+
+        function closeModals() {
+            document.querySelectorAll('.chat-modal').forEach((modal) => {
+                modal.classList.remove('is-open');
+                modal.setAttribute('aria-hidden', 'true');
+            });
+            document.body.classList.remove('modal-open');
+        }
+
+        function clearSelectedFile() {
+            const fileInput = document.getElementById('messageFileInput');
+            const selectedFilesList = document.getElementById('selectedFilesList');
+            fileInput.value = '';
+            selectedFiles = [];
+            selectedFilesList.innerHTML = '';
+            selectedFilesList.style.display = 'none';
+        }
+
+        function decodeFileName(name) {
+            try {
+                return decodeURIComponent(name);
+            } catch (_error) {
+                return name;
+            }
+        }
+
+        function truncateMiddle(name) {
+            const decoded = decodeFileName(name);
+            if (decoded.length <= 12) {
+                return decoded;
+            }
+
+            return `${decoded.slice(0, 6)}...${decoded.slice(-4)}`;
+        }
+
+        function renderSelectedFiles() {
+            const selectedFilesList = document.getElementById('selectedFilesList');
+
+            if (!selectedFiles.length) {
+                selectedFilesList.innerHTML = '';
+                selectedFilesList.style.display = 'none';
+                return;
+            }
+
+            selectedFilesList.innerHTML = selectedFiles.map((file, index) => {
+                const decodedName = decodeFileName(file.name);
+                const shortName = truncateMiddle(decodedName);
+                return `
+                    <div class="selected-file">
+                        <span class="selected-file-name" title="${escapeHtml(decodedName)}">${escapeHtml(shortName)}</span>
+                        <button type="button" class="selected-file-remove" data-file-index="${index}" aria-label="Удалить файл">×</button>
+                    </div>
+                `;
+            }).join('');
+
+            selectedFilesList.style.display = 'flex';
+        }
+
+        let draftTimeout;
+        document.getElementById('messageInput')?.addEventListener('input', () => {
+            if (!currentChatId || currentChatId === ASSISTANT_CHAT_ID) return;
+
+            clearTimeout(draftTimeout);
+            draftTimeout = setTimeout(async () => {
+                const draftText = document.getElementById('messageInput').value;
+                await fetch(`/api/chats/${currentChatId}/draft`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-csrf-token': csrfToken,
+                    },
+                    body: JSON.stringify({ draft_text: draftText }),
+                });
+            }, 1000);
+        });
+
+        document.getElementById('messageInput')?.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.ctrlKey && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        document.getElementById('sendMessageBtn')?.addEventListener('click', sendMessage);
+        document.getElementById('attachFileBtn')?.addEventListener('click', () => {
+            document.getElementById('messageFileInput').click();
+        });
+
+        document.getElementById('messageFileInput')?.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files || []);
+
+            if (!files.length) {
+                renderSelectedFiles();
+                return;
+            }
+
+            const remainingSlots = MAX_FILES_PER_MESSAGE - selectedFiles.length;
+            if (remainingSlots <= 0) {
+                e.target.value = '';
+                return;
+            }
+
+            selectedFiles = selectedFiles.concat(files.slice(0, remainingSlots));
+            e.target.value = '';
+            renderSelectedFiles();
+        });
+
+        document.getElementById('selectedFilesList')?.addEventListener('click', (e) => {
+            const target = e.target.closest('.selected-file-remove');
+            if (!target) return;
+
+            const index = Number(target.dataset.fileIndex);
+            if (!Number.isInteger(index) || index < 0 || index >= selectedFiles.length) return;
+
+            selectedFiles.splice(index, 1);
+            renderSelectedFiles();
+        });
+
+        document.getElementById('chatMessages')?.addEventListener('click', async (e) => {
+            const actionButton = e.target.closest('.message-action-btn');
+            if (actionButton) {
+                const messageId = Number(actionButton.dataset.messageId);
+                if (!Number.isInteger(messageId) || messageId <= 0) return;
+
+                if (actionButton.dataset.action === 'edit') {
+                    startEditMessage(messageId);
+                }
+
+                if (actionButton.dataset.action === 'delete') {
+                    pendingDeleteMessageId = messageId;
+                    openModal('deleteConfirmModal');
+                }
+                return;
+            }
+
+            const dealBtn = e.target.closest('[data-deal-action]');
+            if (dealBtn) {
+                const action = dealBtn.dataset.dealAction;
+                const proposalId = dealBtn.dataset.proposalId;
+                if (!action || !proposalId) return;
+
+                const url = `/api/deals/${proposalId}/${action}`;
+                try {
+                    const res = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-csrf-token': csrfToken,
+                        },
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        await refreshMessages(currentChatId);
+                    } else {
+                        alert(data.error || 'Ошибка');
+                    }
+                } catch (err) {
+                    alert('Ошибка сети');
+                }
+                return;
+            }
+
+            const dealCard = e.target.closest('[data-deal-href]');
+            if (!dealCard || e.target.closest('a, button')) return;
+
+            window.location.href = dealCard.dataset.dealHref;
+        });
+
+        document.getElementById('chatMessages')?.addEventListener('keydown', (e) => {
+            if (e.key !== 'Enter' && e.key !== ' ') return;
+
+            const dealCard = e.target.closest('[data-deal-href]');
+            if (!dealCard) return;
+
+            e.preventDefault();
+            window.location.href = dealCard.dataset.dealHref;
+        });
+
+        document.querySelectorAll('[data-close-chat-modal]').forEach((node) => {
+            node.addEventListener('click', closeModals);
+        });
+
+        document.getElementById('confirmEditBtn')?.addEventListener('click', submitEditMessage);
+        document.getElementById('confirmDeleteBtn')?.addEventListener('click', confirmDeleteMessage);
+        document.getElementById('cancelEditBtn')?.addEventListener('click', resetEditMode);
+
+        document.getElementById('searchChats')?.addEventListener('input', (e) => {
+            const search = e.target.value.trim();
+            clearTimeout(searchTimeout);
+
+            if (search.length < 2) {
+                renderChats(chatsCache);
+                return;
+            }
+
+            searchTimeout = setTimeout(async () => {
+                const users = await searchUsers(search);
+                renderUserResults(users);
+            }, 250);
+        });
+
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>\"]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                if (m === '"') return '&quot;';
+                return m;
+            });
+        }
+
+        async function initializeChatPage() {
+            await loadChats();
+
+            const userIdParam = Number(new URLSearchParams(window.location.search).get('user'));
+            if (Number.isInteger(userIdParam) && userIdParam > 0) {
+                await openChatByUserId(userIdParam);
+            }
+        }
+
+        initializeChatPage();
+
+        window.addEventListener('beforeunload', () => {
+            if (messagePollingInterval) clearInterval(messagePollingInterval);
+        });
+    </script>
+</body>
+</html>
