@@ -1960,6 +1960,9 @@
           s = document.querySelector(".sidebar"),
           o = document.getElementById("sidebarOverlay");
         if (b && s && o) {
+          if (b.dataset.menuBound === "true") return;
+          b.dataset.menuBound = "true";
+          o.dataset.menuBound = "true";
           b.addEventListener("click", () => {
             s.classList.toggle("open");
             o.classList.toggle("active");

@@ -105,6 +105,42 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+function initCodexBrowserCommentCompat() {
+  if (document.getElementById('codex-comment-compat-style')) return;
+
+  const style = document.createElement('style');
+  style.id = 'codex-comment-compat-style';
+  style.textContent = `
+    #codex-browser-sidebar-comments-root {
+      pointer-events: none !important;
+    }
+
+    #codex-browser-sidebar-comments-root > *,
+    #codex-browser-sidebar-comments-root * {
+      pointer-events: auto;
+    }
+
+    @media (max-width: 980px) {
+      .codex-comments-safe .mobile-header {
+        padding-left: 56px !important;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+
+  const syncCommentCompat = () => {
+    const hasCommentsRoot = !!document.getElementById('codex-browser-sidebar-comments-root');
+    document.documentElement.classList.toggle('codex-comments-safe', hasCommentsRoot);
+  };
+
+  syncCommentCompat();
+
+  const observer = new MutationObserver(syncCommentCompat);
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+}
+
+document.addEventListener('DOMContentLoaded', initCodexBrowserCommentCompat);
+
 // ─── Global toast helper (fallback if page doesn't define its own) ─────────────
 if (!window.showToast) {
   window.showToast = function(msg, type = 'success') {
@@ -123,9 +159,15 @@ if (!window.showToast) {
   };
 }
 
+function shouldHideAiAssistantOnPage() {
+  const path = (window.location.pathname || '/').toLowerCase();
+  return path === '/' || path.endsWith('/index.html') || path.endsWith('/auth.html');
+}
+
 // Load AI chat widget for authenticated users
 (function() {
   if (!localStorage.getItem('ludo_token')) return;
+  if (shouldHideAiAssistantOnPage()) return;
   const s = document.createElement('script');
   s.src = 'ai-chat.js';
   s.async = true;
