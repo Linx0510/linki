@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>АКТИВ — Личный кабинет</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Unbounded:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+<style>
+/* == АКТИВ SHARED == */
+/* ======================================
+   АКТИВ-shared.css — единая дизайн-система
+   ====================================== */
+:root {
+  --bg: #0e0e12;
+  --surface: #16161c;
+  --surface2: #1e1e26;
+  --surface3: #26262f;
+  --surface4: #2e2e3a;
+  --pink: #e8a8d8;
+  --pink2: #d488c4;
+  --pink-glow: rgba(232,168,216,0.18);
+  --pink-soft: rgba(232,168,216,0.07);
+  --purple: #b088d0;
+  --text: #f0f0f6;
+  --text2: #8888a0;
+  --text3: #505062;
+  --border: rgba(255,255,255,0.055);
+  --border2: rgba(255,255,255,0.10);
+  --green: #6ee7a0;
+  --red: #f87171;
+  --orange: #ff9b4e;
+  --blue: #7ec8e8;
+  --gold: #fbbf24;
+  --cyan: #5ee0d4;
+  --r: 14px;
+  --r-sm: 10px;
+  --r-xs: 7px;
+  --sidebar: 240px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; overflow-x: hidden; max-width: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+/* NOISE */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.025; pointer-events: none; z-index: 9999;
+}
+
+/* BLOBS */
+.blob { position: fixed; pointer-events: none; z-index: 0; border-radius: 50%; filter: blur(90px); opacity: 0.12; overflow: hidden; }
+.blob-1 { width: 600px; height: 600px; background: radial-gradient(circle, var(--pink), transparent 70%); top: -200px; left: calc(var(--sidebar) - 100px); }
+.blob-2 { width: 500px; height: 500px; background: radial-gradient(circle, var(--purple), transparent 70%); bottom: -100px; right: 100px; }
+.blob-3 { width: 300px; height: 300px; background: radial-gradient(circle, #7ec8e8, transparent 70%); top: 50%; right: 20%; }
+
+/* == SIDEBAR == */
+.sidebar {
+  width: var(--sidebar);
+  min-height: 100vh;
+  background: rgba(16,16,22,0.95);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; bottom: 0;
+  z-index: 200;
+  backdrop-filter: blur(20px);
+  overflow-y: auto;
+  transition: transform .28s cubic-bezier(.4,0,.2,1);
+}
+.sidebar::-webkit-scrollbar { width: 3px; }
+.sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.06); border-radius: 10px; }
+.sidebar-head { padding: 22px 18px 18px; border-bottom: 1px solid var(--border); }
+
+/* LOGO */
+.logo {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 17px; font-weight: 900;
+  color: var(--text); text-decoration: none;
+  letter-spacing: -0.02em;
+  display: flex; align-items: center; gap: 9px;
+  margin-bottom: 18px;
+}
+.logo-gem {
+  width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  filter: drop-shadow(0 0 14px rgba(232,168,216,0.45));
+  flex-shrink: 0;
+}
+.logo-gem svg { width: 34px; height: 34px; }
+.logo-text {
+  background: linear-gradient(135deg, var(--text), var(--pink));
+  -webkit-background-clip: text;
+  background-clip: text; -webkit-text-fill-color: transparent;
+}
+
+/* USER CARD */
+.sidebar-user {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--r-sm); cursor: pointer;
+  transition: border-color .2s;
+}
+.sidebar-user:hover { border-color: rgba(232,168,216,.25); }
+.s-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--pink), var(--purple));
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 13px; color: #fff;
+  border: 2px solid rgba(232,168,216,.35);
+  flex-shrink: 0; position: relative;
+}
+.s-avatar-online {
+  position: absolute; bottom: 0; right: 0;
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--green); border: 2px solid var(--surface2);
+}
+.s-user-info { flex: 1; min-width: 0; }
+.s-user-name { font-size: 13px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.s-user-sub { font-size: 11px; color: var(--text3); font-weight: 600; margin-top: 1px; }
+.s-user-xp {
+  font-size: 11px; font-weight: 800; color: var(--pink);
+  background: var(--pink-soft); border: 1px solid rgba(232,168,216,.15);
+  border-radius: 50px; padding: 2px 8px; white-space: nowrap;
+}
+
+/* NAV */
+.nav-section-lbl {
+  font-size: 10px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .12em; color: var(--text3);
+  padding: 16px 18px 6px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 10px 9px 14px;
+  color: var(--text2); text-decoration: none;
+  font-size: 13px; font-weight: 700;
+  border-radius: var(--r-xs);
+  margin: 1px 8px;
+  transition: color .18s, background .18s;
+  position: relative;
+}
+.nav-item svg { flex-shrink: 0; opacity: .75; width: 15px; height: 15px; }
+.nav-item:hover { color: var(--text); background: var(--surface2); }
+.nav-item.active {
+  color: var(--pink);
+  background: linear-gradient(90deg, rgba(232,168,216,.1), rgba(232,168,216,.04));
+  border: 1px solid rgba(232,168,216,.12);
+}
+.nav-item.active::before {
+  content: '';
+  position: absolute; left: -8px; top: 50%; transform: translateY(-50%);
+  width: 3px; height: 55%;
+  background: linear-gradient(180deg, var(--pink), var(--purple));
+  border-radius: 0 3px 3px 0;
+  box-shadow: 0 0 10px var(--pink);
+}
+.nav-item.active svg { opacity: 1; }
+.nav-badge {
+  margin-left: auto;
+  background: rgba(248,113,113,.15); color: var(--red);
+  font-size: 10px; font-weight: 800;
+  border-radius: 50px; padding: 2px 7px;
+  border: 1px solid rgba(248,113,113,.2);
+}
+.nav-badge.green { background: rgba(110,231,160,.1); color: var(--green); border-color: rgba(110,231,160,.2); }
+.nav-badge.gold  { background: rgba(251,191,36,.1);  color: var(--gold);  border-color: rgba(251,191,36,.2);  }
+.nav-badge.pink  { background: var(--pink-soft); color: var(--pink); border-color: rgba(232,168,216,.15); }
+.nav-divider { height: 1px; background: var(--border); margin: 10px 18px; }
+
+/* SIDEBAR FOOTER */
+.sidebar-footer {
+  margin-top: auto;
+  padding: 12px 18px 18px;
+  border-top: 1px solid var(--border);
+}
+.sidebar-footer-links {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; margin-bottom: 10px;
+}
+.sidebar-footer-links a {
+  font-size: 11px; color: var(--text3); font-weight: 600;
+  text-decoration: none; transition: color .15s;
+}
+.sidebar-footer-links a:hover { color: var(--text2); }
+.sidebar-footer-copy { font-size: 10px; color: var(--text3); font-weight: 500; }
+
+/* MOBILE HEADER */
+.mobile-header {
+  display: none;
+  position: fixed; top: 0; left: 0; right: 0;
+  height: 56px;
+  background: rgba(14,14,18,.97);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+  z-index: 300;
+  padding: 0 16px;
+  align-items: center; gap: 12px;
+}
+.burger-btn {
+  width: 36px; height: 36px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; display: flex;
+  flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; cursor: pointer;
+}
+.burger-line { width: 18px; height: 2px; background: var(--text); border-radius: 2px; }
+.mobile-logo {
+  font-family: 'Unbounded', sans-serif; font-size: 18px; font-weight: 900;
+  text-decoration: none; color: var(--text);
+}
+.mobile-logo-link {
+  display: flex; align-items: center; text-decoration: none;
+}
+.sidebar-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.6);
+  backdrop-filter: blur(4px); z-index: 180;
+}
+.sidebar-overlay.active { display: block; }
+
+/* PAGE WRAP */
+.page-wrap {
+  margin-left: var(--sidebar);
+  flex: 1; min-height: 100vh; min-width: 0;
+  display: flex; flex-direction: column;
+  position: relative; z-index: 1;
+  max-width: calc(100% - var(--sidebar));
+}
+
+/* TOPBAR */
+.topbar {
+  height: 54px;
+  background: rgba(14,14,18,.92);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 14px;
+  padding: 0 24px;
+  position: sticky; top: 0; z-index: 100; flex-shrink: 0;
+}
+.topbar-left { flex: 1; }
+.breadcrumb {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; color: var(--text2);
+}
+.breadcrumb a { color: var(--text2); text-decoration: none; transition: color .2s; }
+.breadcrumb a:hover { color: var(--text); }
+.breadcrumb .sep { color: var(--text3); font-size: 11px; }
+.breadcrumb span { color: var(--text); font-weight: 700; }
+.topbar-search {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 11px; padding: 7px 13px;
+  font-size: 12px; font-weight: 600; color: var(--text3);
+  min-width: 200px; cursor: text;
+  transition: border-color .2s;
+}
+.topbar-search:hover { border-color: var(--border2); }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.notif-btn {
+  width: 34px; height: 34px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  position: relative; cursor: pointer;
+}
+.notif-dot {
+  width: 6px; height: 6px; background: var(--pink);
+  border-radius: 50%; position: absolute;
+  top: 7px; right: 7px; border: 1.5px solid var(--bg);
+}
+
+/* MAIN CONTENT */
+main { padding: 28px 32px 60px; }
+
+.page-hdr {
+  display: flex; align-items: flex-start;
+  justify-content: space-between; margin-bottom: 28px; gap: 16px;
+}
+.page-hdr h1 {
+  font-family: 'Unbounded', sans-serif; font-size: 22px;
+  font-weight: 700; letter-spacing: -.03em; margin-bottom: 4px;
+}
+.page-hdr p { font-size: 13px; color: var(--text2); font-weight: 600; }
+
+/* CARD */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); overflow: hidden; position: relative;
+}
+.card::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.018) 0%, transparent 50%);
+  pointer-events: none;
+}
+.card-p { padding: 20px; }
+.card-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+}
+.card-hdr h3 { font-size: 13px; font-weight: 800; }
+.card-hdr p { font-size: 11px; color: var(--text2); margin-top: 3px; }
+.card-title {
+  font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 700;
+  margin-bottom: 20px; display: flex; align-items: center; gap: 8px;
+}
+.card-title svg { color: var(--purple); width: 16px; height: 16px; }
+.card-sub { font-size: 11px; color: var(--text3); font-weight: 600; margin-top: 2px; }
+
+/* TABLES */
+.table-wrapper {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); overflow-x: auto;
+}
+table { width: 100%; border-collapse: collapse; }
+th {
+  text-align: left; padding: 14px 18px;
+  font-size: 10px; font-weight: 800; color: var(--text3);
+  text-transform: uppercase; letter-spacing: .06em;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255,255,255,.01);
+}
+td {
+  padding: 14px 18px; font-size: 13px; font-weight: 500;
+  border-bottom: 1px solid var(--border);
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,.015); }
+
+/* BUTTONS */
+.btn-primary {
+  background: linear-gradient(135deg, var(--pink), var(--purple));
+  color: #000; border: none;
+  padding: 10px 22px; border-radius: 12px;
+  font-weight: 800; font-size: 13px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  cursor: pointer; transition: transform .2s, opacity .2s;
+  display: inline-flex; align-items: center; gap: 7px;
+}
+.btn-primary:hover { transform: translateY(-1px); opacity: .92; }
+.btn-secondary {
+  background: rgba(255,255,255,.04); border: 1px solid var(--border);
+  padding: 9px 18px; border-radius: 10px;
+  font-weight: 600; font-size: 12px; color: var(--text2);
+  cursor: pointer; transition: all .2s; font-family: inherit;
+}
+.btn-secondary:hover { background: rgba(255,255,255,.08); color: var(--text); }
+.btn-sm {
+  padding: 6px 12px; border-radius: 9px; font-size: 11px; font-weight: 700;
+  border: 1px solid var(--border); background: none; color: var(--text2);
+  cursor: pointer; transition: all .2s; font-family: inherit;
+}
+.btn-sm:hover { color: var(--text); border-color: var(--border2); }
+.btn-danger {
+  background: rgba(248,113,113,.08); color: var(--red);
+  border: 1px solid rgba(248,113,113,.18);
+}
+.btn-danger:hover { background: rgba(248,113,113,.15); }
+.btn-ghost {
+  background: rgba(255,255,255,.04); border: 1px solid var(--border);
+  border-radius: 10px; padding: 8px 14px; font-size: 12px;
+  font-weight: 600; color: var(--text2); cursor: pointer; transition: all .2s; font-family: inherit;
+}
+.btn-ghost:hover { background: rgba(255,255,255,.08); color: var(--text); }
+
+/* BADGES */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 50px;
+  font-size: 10px; font-weight: 800;
+}
+.badge-new    { background: rgba(232,168,216,.1); color: var(--pink);   border: 1px solid rgba(232,168,216,.2); }
+.badge-open   { background: rgba(94,224,212,.08);  color: var(--cyan);   border: 1px solid rgba(94,224,212,.15); }
+.badge-wait   { background: rgba(251,191,36,.08);  color: var(--gold);   border: 1px solid rgba(251,191,36,.15); }
+.badge-closed { background: rgba(110,231,160,.08); color: var(--green);  border: 1px solid rgba(110,231,160,.15); }
+.badge-rejected{ background: rgba(248,113,113,.08);color: var(--red);    border: 1px solid rgba(248,113,113,.15); }
+.badge-green  { background: rgba(110,231,160,.1);  color: var(--green);  border: 1px solid rgba(110,231,160,.2); }
+.badge-red    { background: rgba(248,113,113,.1);  color: var(--red);    border: 1px solid rgba(248,113,113,.2); }
+.badge-gold   { background: rgba(251,191,36,.1);   color: var(--gold);   border: 1px solid rgba(251,191,36,.2); }
+.badge-purple { background: rgba(176,136,208,.1);  color: var(--purple); border: 1px solid rgba(176,136,208,.2); }
+.badge-cyan   { background: rgba(94,224,212,.1);   color: var(--cyan);   border: 1px solid rgba(94,224,212,.2); }
+.badge-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.badge-dot.pulse { animation: bdpulse 1.5s infinite; }
+@keyframes bdpulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+/* FORMS */
+.form-group { margin-bottom: 18px; }
+.form-label {
+  display: block; font-size: 10px; font-weight: 800;
+  color: var(--text3); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 7px;
+}
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--r-sm); padding: 11px 14px;
+  font-size: 13px; font-weight: 500; color: var(--text);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  outline: none; transition: border-color .2s;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: rgba(232,168,216,.4); }
+.form-input::placeholder, .form-textarea::placeholder { color: var(--text3); }
+.form-textarea { resize: vertical; min-height: 80px; }
+.form-select { appearance: none; cursor: pointer; }
+
+/* TOAST */
+#toast-container {
+  position: fixed; bottom: 24px; right: 24px;
+  z-index: 1000; display: flex; flex-direction: column; gap: 10px;
+}
+.toast {
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 13px; padding: 12px 18px;
+  font-size: 13px; font-weight: 600;
+  display: flex; align-items: center; gap: 10px;
+  backdrop-filter: blur(10px);
+  transform: translateX(120%); transition: transform .3s ease;
+  box-shadow: 0 8px 24px rgba(0,0,0,.35);
+  max-width: 320px;
+}
+.toast.show { transform: translateX(0); }
+.toast.success { border-left: 3px solid var(--green); }
+.toast.error   { border-left: 3px solid var(--red); }
+.toast.info    { border-left: 3px solid var(--cyan); }
+
+/* GRID */
+.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+/* TAG */
+.tag {
+  background: var(--surface3); color: var(--text2);
+  border-radius: 50px; padding: 3px 10px;
+  font-size: 10px; font-weight: 800; letter-spacing: .04em;
+  text-transform: uppercase; display: inline-flex; align-items: center; gap: 4px;
+}
+.tag.pink { background: var(--pink-soft); color: var(--pink); border: 1px solid rgba(232,168,216,.18); }
+.tag.green { background: rgba(110,231,160,.08); color: var(--green); border: 1px solid rgba(110,231,160,.2); }
+.tag.gold  { background: rgba(251,191,36,.08);  color: var(--gold);  border: 1px solid rgba(251,191,36,.2);  }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,.07); border-radius: 4px; }
+
+
+
+/* == MODAL == */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.78);
+  backdrop-filter: blur(8px);
+  z-index: 900;
+  display: flex; align-items: center; justify-content: center;
+  visibility: hidden; opacity: 0;
+  transition: opacity .22s, visibility .22s;
+  padding: 16px;
+}
+.modal-overlay.active { visibility: visible; opacity: 1; }
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 22px;
+  width: 100%; max-width: 600px;
+  max-height: 88vh; overflow-y: auto;
+  box-shadow: 0 24px 60px rgba(0,0,0,.5);
+  position: relative;
+}
+.modal-lg { max-width: 720px; }
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 24px; border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; background: var(--surface); z-index: 1;
+  border-radius: 22px 22px 0 0;
+}
+.modal-header h3 { font-size: 17px; font-weight: 700; letter-spacing: -.02em; }
+.modal-close {
+  background: rgba(255,255,255,.06); border: 1px solid var(--border);
+  color: var(--text2); cursor: pointer;
+  width: 34px; height: 34px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; transition: all .2s; flex-shrink: 0;
+}
+.modal-close:hover { background: rgba(255,255,255,.1); color: var(--text); }
+.modal-body { padding: 22px 24px; }
+.modal-footer {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding: 16px 24px; border-top: 1px solid var(--border);
+}
+
+/* ==================================================
+   RESPONSIVE — TABLET  ?1100px
+   ================================================== */
+@media (max-width: 1100px) { :root { --sidebar: 200px; } }
+
+/* ==================================================
+   RESPONSIVE — MOBILE  ?768px
+   ================================================== */
+@media (max-width: 768px) {
+
+  /* -- OVERFLOW PREVENTION -- */
+  html, body { overflow-x: hidden; max-width: 100vw; }
+  .page-wrap { max-width: 100vw; min-width: 0; overflow-x: hidden; }
+  main { overflow-x: hidden; }
+  * { max-width: 100%; }
+  img, svg, canvas, video { max-width: 100%; }
+  .topbar-search { display: none; }
+
+  /* Сайдбар — слайд из-за края */
+  .sidebar {
+    transform: translateX(-100%);
+    width: 290px;
+    z-index: 400;
+    transition: transform .28s cubic-bezier(.4,0,.2,1);
+  }
+  .sidebar.open {
+    transform: translateX(0);
+    box-shadow: 8px 0 40px rgba(0,0,0,.6);
+  }
+  /* Крупнее nav-item для пальцев */
+  .nav-item { padding: 12px 14px 12px 16px; font-size: 14px; margin: 2px 8px; }
+  .nav-item svg { width: 17px; height: 17px; }
+  .nav-section-lbl { padding: 18px 18px 6px; font-size: 10px; }
+  .s-user-name { font-size: 14px; }
+  .s-user-sub { font-size: 11px; }
+  .s-user-xp { font-size: 11px; padding: 3px 10px; }
+  .s-avatar { width: 40px; height: 40px; font-size: 14px; }
+  .sidebar-footer-links a { font-size: 12px; }
+
+  /* Mobile header */
+  .mobile-header { display: flex; height: 58px; }
+  .burger-btn { width: 40px; height: 40px; }
+  .mobile-logo {
+  font-family: 'Unbounded', sans-serif; font-size: 18px; font-weight: 900;
+  text-decoration: none; color: var(--text);
+}
+.mobile-logo-link {
+  display: flex; align-items: center; text-decoration: none;
+}
+
+  /* Page wrap — сдвигаем вниз под фиксированный mobile-header */
+  .page-wrap { margin-left: 0; padding-top: 58px; width: 100%; max-width: 100vw; overflow-x: hidden; }
+
+  /* Topbar — прилипает сразу под mobile-header */
+  .topbar {
+    height: auto;
+    min-height: 54px;
+    padding: 10px 16px;
+    top: 0;
+    flex-wrap: nowrap;
+    gap: 10px;
+    max-width: 100vw;
+    overflow: hidden;
+  }
+  .topbar-search { display: none; }
+  .topbar-left { flex: 1; min-width: 0; overflow: hidden; }
+  .breadcrumb {
+    font-size: 12px;
+    gap: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .breadcrumb a:not(:first-child) { display: none; }
+  .breadcrumb svg:not(:last-of-type) { display: none; }
+  .topbar-right { gap: 8px; flex-shrink: 0; }
+  /* Compact action buttons in topbar on mobile */
+  .topbar-right .btn-primary {
+    padding: 9px 14px;
+    font-size: 12px;
+    min-height: 38px;
+    white-space: nowrap;
+  }
+  .topbar-right .btn-primary svg { display: none; }
+  .notif-btn { width: 40px; height: 40px; border-radius: 11px; }
+
+  /* Основной контент */
+  main { padding: 16px 14px 56px; overflow-x: hidden; width: 100%; }
+
+  /* Заголовок страницы */
+  .page-hdr { flex-direction: column; gap: 10px; margin-bottom: 20px; }
+  .page-hdr h1 { font-size: 20px; letter-spacing: -.02em; }
+  .page-hdr p { font-size: 13px; }
+
+  /* Сетки */
+  .grid-2, .grid-3 { grid-template-columns: 1fr; gap: 12px; }
+
+  /* Карточки */
+  .card-p { padding: 16px; }
+  .card-hdr { padding: 14px 16px; }
+  .card-title { font-size: 13px; margin-bottom: 16px; }
+
+  /* Таблицы */
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--r);
+  }
+  table { min-width: 340px; }
+  th { padding: 12px 14px; font-size: 10px; }
+  td { padding: 13px 14px; font-size: 13px; }
+
+  /* Кнопки — КРУПНЫЕ тач-зоны */
+  .btn-primary  { padding: 14px 22px; font-size: 14px; border-radius: 13px; min-height: 48px; }
+  .btn-secondary{ padding: 13px 18px; font-size: 13px; min-height: 46px; }
+  .btn-sm       { padding: 10px 16px; font-size: 12px; border-radius: 10px; min-height: 40px; }
+  .btn-ghost    { padding: 12px 16px; font-size: 13px; min-height: 44px; }
+  .btn-danger   { min-height: 40px; }
+
+  /* Форм-элементы */
+  .form-input, .form-select, .form-textarea {
+    font-size: 15px;
+    padding: 14px 15px;
+    min-height: 50px;
+    border-radius: 12px;
+  }
+  .form-textarea { min-height: 90px; }
+  .form-label { font-size: 11px; margin-bottom: 8px; }
+
+  /* Бейджи */
+  .badge { font-size: 10px; padding: 4px 10px; }
+  .nav-badge { font-size: 10px; padding: 2px 8px; }
+
+  /* Модалки — sheet снизу */
+  .modal-overlay { padding: 0; align-items: flex-end; }
+  .modal {
+    border-radius: 24px 24px 0 0;
+    max-height: 90vh;
+    max-width: 100%;
+  }
+  .modal-header { padding: 18px 20px; border-radius: 24px 24px 0 0; }
+  .modal-header h3 { font-size: 16px; }
+  .modal-close { width: 38px; height: 38px; font-size: 18px; }
+  .modal-body { padding: 18px 20px; }
+  .modal-footer {
+    padding: 16px 20px;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .modal-footer .btn-primary,
+  .modal-footer .btn-secondary { width: 100%; justify-content: center; }
+}
+
+/* ==================================================
+   RESPONSIVE — SMALL MOBILE  ?480px  (iPhone SE / 375px)
+   ================================================== */
+@media (max-width: 480px) {
+
+  main { padding: 14px 12px 56px; }
+
+  .page-hdr h1 { font-size: 18px; }
+  .page-hdr p  { font-size: 12px; }
+
+  .card-p { padding: 14px; }
+
+  /* Кнопки во всю ширину */
+  .btn-primary { width: 100%; justify-content: center; }
+
+  /* Таблица ещё компактнее */
+  th { padding: 11px 12px; font-size: 9.5px; }
+  td { padding: 12px 12px; font-size: 12px; }
+
+  /* Убираем тяжёлые блобы */
+  .blob-2, .blob-3 { display: none; }
+}
+
+
+/* == PAGE SPECIFIC == */
+
+.settings-tabs {
+  display: flex;
+  gap: 32px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 32px;
+}
+
+.settings-tab {
+  padding: 12px 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text3);
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s;
+}
+
+.settings-tab:hover {
+  color: var(--text2);
+}
+
+.settings-tab.active {
+  color: var(--pink);
+}
+
+.settings-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--pink);
+  box-shadow: 0 0 8px var(--pink);
+}
+
+.settings-section {
+  display: none;
+  max-width: 800px;
+  animation: fadeIn 0.3s ease;
+}
+
+.settings-section.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.wallet-box {
+  background: linear-gradient(135deg, var(--purple), var(--pink));
+  padding: 28px;
+  border-radius: 20px;
+  color: #111;
+  margin-bottom: 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.wallet-balance h3 {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  opacity: 0.7;
+  margin-bottom: 4px;
+}
+
+.wallet-balance .amount {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 32px;
+  font-weight: 900;
+}
+
+.btn-topup {
+  background: #111;
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.subscription-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--surface2);
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+}
+
+.subscription-info h4 {
+  font-weight: 800;
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.subscription-info p {
+  font-size: 12px;
+  color: var(--text3);
+}
+
+.badge-active {
+  background: rgba(110, 231, 160, 0.1);
+  color: var(--green);
+  padding: 4px 10px;
+  border-radius: 50px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+@media (max-width: 768px) {
+  .settings-tabs {
+    gap: 0; overflow-x: auto; -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; flex-wrap: nowrap; padding-bottom: 0;
+  }
+  .settings-tabs::-webkit-scrollbar { display: none; }
+  .settings-tab { flex-shrink: 0; white-space: nowrap; padding: 12px 18px; font-size: 13px; min-height: 48px; }
+  .settings-section { max-width: 100%; }
+  .avatar-section { flex-direction: column; align-items: flex-start; gap: 16px; }
+  .avatar-actions { flex-wrap: wrap; gap: 10px; }
+  .avatar-actions button { flex: 1; min-width: 120px; justify-content: center; }
+  .danger-zone { padding: 20px 16px; border-radius: var(--r); }
+
+  /* Баланс — стак вертикально */
+  .wallet-box {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 22px 20px;
+    border-radius: 18px;
+  }
+  .wallet-balance .amount { font-size: 26px; }
+  .btn-topup { width: 100%; padding: 13px; text-align: center; border-radius: 12px; font-size: 14px; }
+
+  /* Подписка */
+  .subscription-card { flex-direction: column; align-items: flex-start; gap: 12px; padding: 16px; }
+}
+@media (max-width: 480px) {
+  .settings-tab { padding: 11px 14px; font-size: 12px; }
+  .avatar-actions button { width: 100%; }
+  .danger-zone { padding: 16px 14px; }
+  .wallet-balance .amount { font-size: 22px; }
+  .wallet-box { padding: 18px 16px; border-radius: 16px; }
+}
+</style>
+<script src="user-sync.js"></script>
+  </head>
+<body>
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+
+<div class="mobile-header">
+  <button class="burger-btn" id="burgerBtn"><span class="burger-line"></span><span class="burger-line"></span><span class="burger-line"></span></button>
+  <a href="index.html" style="display:flex;align-items:center;text-decoration:none;gap:8px;">
+    <svg viewBox="0 0 445 416" fill="none" style="width:28px;height:28px;filter:drop-shadow(0 0 8px rgba(232,168,216,.5));">
+      <path d="M 77 375 L 79 377 L 79 378 L 81 380 L 82 380 L 83 381 L 85 381 L 86 382 L 243 382 L 244 381 L 250 381 L 251 380 L 254 380 L 255 379 L 256 379 L 257 378 L 259 378 L 260 377 L 261 377 L 262 376 L 263 376 L 264 375 L 265 375 L 267 373 L 268 373 L 270 371 L 271 371 L 279 363 L 280 363 L 282 361 L 282 360 L 288 354 L 289 354 L 298 345 L 298 344 L 299 343 L 300 343 L 323 320 L 323 319 L 325 317 L 325 315 L 326 314 L 325 313 L 325 309 L 324 308 L 324 307 L 322 305 L 321 305 L 320 304 L 150 304 L 149 305 L 146 305 L 145 306 L 142 306 L 141 307 L 139 307 L 138 308 L 137 308 L 136 309 L 135 309 L 134 310 L 133 310 L 131 312 L 130 312 L 103 339 L 102 339 L 99 342 L 99 343 L 90 352 L 89 352 L 86 355 L 86 356 L 84 358 L 83 358 L 81 360 L 81 361 L 78 364 L 78 366 L 77 367 Z" fill="#f8ccf3"/>
+      <path d="M 113 108 L 106 108 L 105 109 L 104 109 L 59 154 L 59 155 L 56 158 L 56 159 L 55 160 L 55 161 L 54 162 L 54 163 L 53 164 L 53 165 L 52 166 L 52 167 L 51 168 L 51 170 L 50 171 L 50 172 L 49 173 L 49 176 L 48 177 L 48 181 L 47 182 L 47 193 L 46 194 L 46 335 L 47 336 L 47 341 L 48 342 L 48 343 L 53 348 L 61 348 L 63 346 L 64 346 L 105 305 L 105 304 L 108 301 L 108 300 L 109 299 L 109 298 L 110 297 L 110 296 L 111 295 L 111 294 L 112 293 L 112 292 L 113 291 L 113 290 L 114 289 L 114 287 L 115 286 L 115 283 L 116 282 L 116 277 L 117 276 L 117 113 L 116 112 L 116 111 Z" fill="#f8ccf3"/>
+      <path d="M 107 17 L 104 20 L 103 20 L 57 66 L 56 66 L 52 70 L 52 71 L 49 74 L 49 76 L 48 77 L 48 79 L 49 80 L 49 82 L 53 86 L 315 86 L 316 87 L 321 87 L 322 88 L 324 88 L 325 89 L 326 89 L 327 90 L 328 90 L 330 92 L 331 92 L 340 101 L 340 102 L 341 103 L 341 104 L 342 105 L 342 106 L 343 107 L 343 108 L 344 109 L 344 112 L 345 113 L 345 375 L 346 376 L 346 377 L 347 378 L 347 379 L 348 380 L 349 380 L 350 381 L 352 381 L 353 382 L 354 382 L 355 381 L 357 381 L 358 380 L 359 380 L 398 341 L 399 341 L 403 337 L 403 336 L 409 330 L 409 329 L 411 327 L 411 326 L 412 325 L 412 324 L 414 322 L 414 321 L 415 320 L 415 318 L 416 317 L 416 316 L 417 315 L 417 313 L 418 312 L 418 310 L 419 309 L 419 305 L 420 304 L 420 293 L 421 292 L 421 200 L 420 199 L 420 198 L 421 197 L 421 177 L 420 176 L 421 175 L 421 144 L 420 143 L 420 136 L 421 135 L 421 120 L 420 119 L 420 80 L 421 79 L 421 74 L 420 73 L 420 63 L 419 62 L 419 57 L 418 56 L 418 53 L 417 52 L 417 50 L 416 49 L 416 48 L 415 47 L 415 45 L 414 44 L 414 43 L 413 42 L 413 41 L 412 40 L 412 39 L 410 37 L 410 36 L 409 35 L 409 34 L 403 28 L 403 27 L 399 23 L 398 23 L 395 20 L 394 20 L 392 18 L 391 18 L 389 16 L 388 16 L 387 15 L 386 15 L 385 14 L 384 14 L 383 13 L 381 13 L 380 12 L 378 12 L 377 11 L 375 11 L 374 10 L 371 10 L 370 9 L 363 9 L 362 8 L 134 8 L 133 9 L 126 9 L 125 10 L 122 10 L 121 11 L 119 11 L 118 12 L 117 12 L 116 13 L 114 13 L 113 14 L 112 14 L 111 15 L 110 15 L 108 17 Z" fill="#f8ccf3"/>
+    </svg>
+  </a>
+</div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<aside class="sidebar">
+  <div class="sidebar-head">
+    <a href="index.html" class="logo">
+      <div class="logo-gem"><svg viewBox="0 0 445 416" fill="none"><path d="M 77 375 L 79 377 L 79 378 L 81 380 L 82 380 L 83 381 L 85 381 L 86 382 L 243 382 L 244 381 L 250 381 L 251 380 L 254 380 L 255 379 L 256 379 L 257 378 L 259 378 L 260 377 L 261 377 L 262 376 L 263 376 L 264 375 L 265 375 L 267 373 L 268 373 L 270 371 L 271 371 L 279 363 L 280 363 L 282 361 L 282 360 L 288 354 L 289 354 L 298 345 L 298 344 L 299 343 L 300 343 L 323 320 L 323 319 L 325 317 L 325 315 L 326 314 L 325 313 L 325 309 L 324 308 L 324 307 L 322 305 L 321 305 L 320 304 L 150 304 L 149 305 L 146 305 L 145 306 L 142 306 L 141 307 L 139 307 L 138 308 L 137 308 L 136 309 L 135 309 L 134 310 L 133 310 L 131 312 L 130 312 L 103 339 L 102 339 L 99 342 L 99 343 L 90 352 L 89 352 L 86 355 L 86 356 L 84 358 L 83 358 L 81 360 L 81 361 L 78 364 L 78 366 L 77 367 Z" fill="#f8ccf3"/><path d="M 113 108 L 106 108 L 105 109 L 104 109 L 59 154 L 59 155 L 56 158 L 56 159 L 55 160 L 55 161 L 54 162 L 54 163 L 53 164 L 53 165 L 52 166 L 52 167 L 51 168 L 51 170 L 50 171 L 50 172 L 49 173 L 49 176 L 48 177 L 48 181 L 47 182 L 47 193 L 46 194 L 46 335 L 47 336 L 47 341 L 48 342 L 48 343 L 53 348 L 61 348 L 63 346 L 64 346 L 105 305 L 105 304 L 108 301 L 108 300 L 109 299 L 109 298 L 110 297 L 110 296 L 111 295 L 111 294 L 112 293 L 112 292 L 113 291 L 113 290 L 114 289 L 114 287 L 115 286 L 115 283 L 116 282 L 116 277 L 117 276 L 117 113 L 116 112 L 116 111 Z" fill="#f8ccf3"/><path d="M 107 17 L 104 20 L 103 20 L 57 66 L 56 66 L 52 70 L 52 71 L 49 74 L 49 76 L 48 77 L 48 79 L 49 80 L 49 82 L 53 86 L 315 86 L 316 87 L 321 87 L 322 88 L 324 88 L 325 89 L 326 89 L 327 90 L 328 90 L 330 92 L 331 92 L 340 101 L 340 102 L 341 103 L 341 104 L 342 105 L 342 106 L 343 107 L 343 108 L 344 109 L 344 112 L 345 113 L 345 375 L 346 376 L 346 377 L 347 378 L 347 379 L 348 380 L 349 380 L 350 381 L 352 381 L 353 382 L 354 382 L 355 381 L 357 381 L 358 380 L 359 380 L 398 341 L 399 341 L 403 337 L 403 336 L 409 330 L 409 329 L 411 327 L 411 326 L 412 325 L 412 324 L 414 322 L 414 321 L 415 320 L 415 318 L 416 317 L 416 316 L 417 315 L 417 313 L 418 312 L 418 310 L 419 309 L 419 305 L 420 304 L 420 293 L 421 292 L 421 200 L 420 199 L 420 198 L 421 197 L 421 177 L 420 176 L 421 175 L 421 144 L 420 143 L 420 136 L 421 135 L 421 120 L 420 119 L 420 80 L 421 79 L 421 74 L 420 73 L 420 63 L 419 62 L 419 57 L 418 56 L 418 53 L 417 52 L 417 50 L 416 49 L 416 48 L 415 47 L 415 45 L 414 44 L 414 43 L 413 42 L 413 41 L 412 40 L 412 39 L 410 37 L 410 36 L 409 35 L 409 34 L 403 28 L 403 27 L 399 23 L 398 23 L 395 20 L 394 20 L 392 18 L 391 18 L 389 16 L 388 16 L 387 15 L 386 15 L 385 14 L 384 14 L 383 13 L 381 13 L 380 12 L 378 12 L 377 11 L 375 11 L 374 10 L 371 10 L 370 9 L 363 9 L 362 8 L 134 8 L 133 9 L 126 9 L 125 10 L 122 10 L 121 11 L 119 11 L 118 12 L 117 12 L 116 13 L 114 13 L 113 14 L 112 14 L 111 15 L 110 15 L 108 17 Z" fill="#f8ccf3"/></svg></div>
+      <span class="logo-text">АКТИВ</span>
+    </a>
+    <div class="sidebar-user" style="display: none !important;">
+      <div class="s-avatar">АК<div class="s-avatar-online"></div></div>
+      <div class="s-user-info">
+        <div class="s-user-name">Alex_Kostenko</div>
+        <div class="s-user-sub">Искатель · Ур. 12</div>
+      </div>
+      <div class="s-user-xp">4 820 XP</div>
+    </div>
+  </div>
+  
+    
+  
+  <a href="index.html" class="nav-item">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Главная
+  </a>
+
+  <div class="nav-section-lbl">Квесты</div>
+  <a href="my-quests.html" class="nav-item">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4a2 2 0 0 0-2 2v1a4 4 0 0 0 4 4h.5"/><path d="M18 9h2a2 2 0 0 1 2 2v1a4 4 0 0 1-4 4h-.5"/><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v9a5 5 0 0 1-10 0V4Z"/></svg>
+    Мои квесты <span class="nav-badge pink">3</span>
+  </a>
+  <a href="quests-catalog.html" class="nav-item">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22a8 8 0 0 1-8-8c0-5 8-12 8-12s8 7 8 12a8 8 0 0 1-8 8Z"/></svg>
+    Каталог квестов
+  </a>
+
+  <div class="nav-divider"></div>
+  <div class="nav-section-lbl">Сообщество</div>
+  <a href="community.html" class="nav-item">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="17" cy="7" r="4"/><path d="M10.5 14c0-1.93 2.91-3.5 6.5-3.5"/><circle cx="7" cy="14" r="4"/><path d="M1 20c0-2.21 2.687-4 6-4s6 1.79 6 4"/></svg>
+    Сообщество
+  </a>
+  <a href="statistics.html" class="nav-item">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+    Статистика
+  </a>
+  <a href="experts-catalog.html" class="nav-item">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Эксперты
+  </a>
+
+  <div class="nav-divider"></div>
+  <div class="nav-section-lbl">Профиль</div>
+  <a href="user-settings.html" class="nav-item active">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>
+    Мой профиль
+  </a>
+  <a href="support.html" class="nav-item">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    Поддержка
+  </a>
+  <a href="about.html" class="nav-item">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+    О системе
+  </a>
+<div class="sidebar-footer">
+    <div class="sidebar-footer-links">
+      <a href="about.html">О нас</a>
+      <a href="changelog.html">Changelog</a>
+      <a href="partners.html">Партнёрам</a>
+      <a href="cookie.html">Cookie</a>
+    </div>
+    <div class="sidebar-footer-copy">© 2026 АКТИВ Platform</div>
+  </div>
+</aside>
+
+<div class="page-wrap">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="breadcrumb">
+        <a href="index.html">АКТИВ</a>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        <span>Личный кабинет</span>
+      </div>
+    </div>
+    
+    <div class="topbar-right">
+      
+      <div class="notif-btn" onclick="window.location.href='notifications.html'" style="cursor: pointer;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text2)" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><div class="notif-dot"></div></div>
+    </div>
+  </div>
+
+  <main>
+    <h1>Личный кабинет</h1>
+  <div class="sub-header">Управляйте профилем, подпиской и настройками</div>
+
+  <div class="settings-tabs">
+    <div class="settings-tab active" data-target="profile">Профиль</div>
+    <div class="settings-tab" data-target="billing">Баланс</div>
+    <div class="settings-tab" data-target="security">Безопасность</div>
+  </div>
+
+  <!-- Profile Tab -->
+  <div class="settings-section active" id="profile">
+    <div class="card card-p">
+      <div class="card-title">Основная информация</div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Имя пользователя</label>
+          <input type="text" id="userName" class="form-input" value="Alex_Kostenko">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" id="userEmail" class="form-input" value="alex.k@АКТИВ.app">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">О себе (Био)</label>
+        <textarea id="userBio" class="form-textarea" rows="3">Прокачиваю навыки осознанности и спортивной дисциплины. Люблю RPG и хардкорные челленджи.</textarea>
+      </div>
+      <button class="btn-primary" onclick="saveProfile()">Сохранить изменения</button>
+    </div>
+  </div>
+
+  <!-- Billing Tab -->
+  <div class="settings-section" id="billing">
+    <div class="wallet-box">
+      <div class="wallet-balance">
+        <h3>Текущий баланс</h3>
+        <div class="amount">12 450 ₽</div>
+      </div>
+      <button class="btn-topup" onclick="openTopup()">Пополнить</button>
+    </div>
+  </div>
+
+  <!-- Security Tab -->
+  <div class="settings-section" id="security">
+    <div class="card card-p">
+      <div class="card-title">Смена пароля</div>
+      <div class="form-group">
+        <label class="form-label">Текущий пароль</label>
+        <input type="password" class="form-input" placeholder="••••••••">
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Новый пароль</label>
+          <input type="password" class="form-input" placeholder="Минимум 8 символов">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Повторите пароль</label>
+          <input type="password" class="form-input" placeholder="••••••••">
+        </div>
+      </div>
+      <button class="btn-primary" onclick="changePassword()">Обновить пароль</button>
+    </div>
+  </div>
+</div>
+  </main>
+</div>
+
+<div id="toast-container"></div>
+
+<script>
+function showToast(msg, type = 'success') {
+  const container = document.getElementById("toast-container");
+  const toast = document.createElement("div");
+  toast.className = `toast ${type}`;
+  toast.textContent = msg;
+  container.appendChild(toast);
+  setTimeout(() => toast.classList.add("show"), 10);
+  setTimeout(() => {
+    toast.classList.remove("show");
+    setTimeout(() => toast.remove(), 400);
+  }, 3000);
+}
+
+function initMobileMenu() {
+  const burger = document.getElementById("burgerBtn");
+  const sidebar = document.querySelector(".sidebar");
+  const overlay = document.getElementById("sidebarOverlay");
+  if (burger && sidebar && overlay) {
+    burger.addEventListener("click", () => {
+      sidebar.classList.toggle("open");
+      overlay.classList.toggle("active");
+    });
+    overlay.addEventListener("click", () => {
+      sidebar.classList.remove("open");
+      overlay.classList.remove("active");
+    });
+  }
+}
+
+// Tabs
+const tabs = document.querySelectorAll('.settings-tab');
+const sections = document.querySelectorAll('.settings-section');
+
+tabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    tabs.forEach(t => t.classList.remove('active'));
+    sections.forEach(s => s.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(tab.dataset.target).classList.add('active');
+  });
+});
+
+initMobileMenu();
+</script>
+
+<!-- Topup Modal -->
+<div id="topupOverlay" style="position:fixed;inset:0;background:rgba(0,0,0,.78);backdrop-filter:blur(8px);z-index:900;display:flex;align-items:center;justify-content:center;padding:16px;visibility:hidden;opacity:0;transition:opacity .22s,visibility .22s;">
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:22px;width:100%;max-width:400px;box-shadow:0 32px 64px rgba(0,0,0,.55);">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px 16px;border-bottom:1px solid var(--border);">
+      <h3 style="font-family:'Unbounded',sans-serif;font-size:15px;font-weight:700;">Пополнить баланс</h3>
+      <button onclick="document.getElementById('topupOverlay').style.cssText+='visibility:hidden;opacity:0;'" style="background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--text2);cursor:pointer;width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;font-family:inherit;">?</button>
+    </div>
+    <div style="padding:20px 24px;">
+      <div style="font-size:11px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Сумма пополнения</div>
+      <div style="display:flex;gap:8px;margin-bottom:20px;">
+        <button class="topup-amt" data-val="500" onclick="selectTopupAmt(this)" style="flex:1;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;font-size:12px;font-weight:700;color:var(--text2);cursor:pointer;font-family:inherit;transition:all .2s;">500 ₽</button>
+        <button class="topup-amt active" data-val="1000" onclick="selectTopupAmt(this)" style="flex:1;padding:10px;background:rgba(176,136,208,.1);border:1px solid var(--purple);border-radius:10px;font-size:12px;font-weight:700;color:var(--text);cursor:pointer;font-family:inherit;transition:all .2s;">1 000 ₽</button>
+        <button class="topup-amt" data-val="3000" onclick="selectTopupAmt(this)" style="flex:1;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;font-size:12px;font-weight:700;color:var(--text2);cursor:pointer;font-family:inherit;transition:all .2s;">3 000 ₽</button>
+      </div>
+
+      <div style="font-size:11px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Способ оплаты</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px;">
+        <div class="topup-method active" data-method="sbp" onclick="selectTopupMethod(this)" style="padding:16px 12px;background:rgba(176,136,208,0.1);border:1px solid var(--purple);border-radius:14px;text-align:center;cursor:pointer;transition:all 0.2s;">
+          <div style="font-size:18px;margin-bottom:4px;">📲</div>
+          <div style="font-size:12px;font-weight:700;">СБП</div>
+        </div>
+        <div class="topup-method" data-method="umoney" onclick="selectTopupMethod(this)" style="padding:16px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:14px;text-align:center;cursor:pointer;transition:all 0.2s;">
+          <div style="font-size:18px;margin-bottom:4px;">💎</div>
+          <div style="font-size:12px;font-weight:700;">ЮMoney</div>
+        </div>
+      </div>
+
+      <button onclick="submitTopup()" id="topupBtn" style="width:100%;padding:14px;background:linear-gradient(135deg,var(--purple),var(--pink));border:none;border-radius:14px;color:#000;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;">Оплатить 1 000 ₽</button>
+      <p style="font-size:11px;color:var(--text3);text-align:center;margin-top:12px;">Комиссия 0% · Мгновенное зачисление</p>
+    </div>
+  </div>
+</div>
+
+<script>
+let topupAmount = 1000;
+let topupMethod = 'sbp';
+
+function openTopup() {
+  const o = document.getElementById('topupOverlay');
+  o.style.visibility = 'visible'; o.style.opacity = '1';
+}
+
+function selectTopupAmt(btn) {
+  document.querySelectorAll('.topup-amt').forEach(b => {
+    b.style.background = 'var(--surface2)';
+    b.style.borderColor = 'var(--border)';
+    b.style.color = 'var(--text2)';
+  });
+  btn.style.background = 'rgba(176,136,208,.1)';
+  btn.style.borderColor = 'var(--purple)';
+  btn.style.color = 'var(--text)';
+  topupAmount = parseInt(btn.dataset.val);
+  document.getElementById('topupBtn').textContent = `Оплатить ${topupAmount.toLocaleString('ru')} ₽`;
+}
+
+function selectTopupMethod(el) {
+  document.querySelectorAll('.topup-method').forEach(m => {
+    m.style.background = 'var(--surface2)';
+    m.style.borderColor = 'var(--border)';
+  });
+  el.style.background = 'rgba(176,136,208,0.1)';
+  el.style.borderColor = 'var(--purple)';
+  topupMethod = el.dataset.method;
+}
+
+function submitTopup() {
+  const btn = document.getElementById('topupBtn');
+  btn.disabled = true;
+  btn.textContent = 'Ожидание оплаты...';
+  
+  setTimeout(() => {
+    const amountEl = document.querySelector('.amount');
+    if (amountEl) {
+      const cur = parseInt(amountEl.textContent.replace(/\D/g,'')) || 12450;
+      amountEl.textContent = (cur + topupAmount).toLocaleString('ru') + ' ₽';
+    }
+    document.getElementById('topupOverlay').style.cssText += 'visibility:hidden;opacity:0;';
+    showToast('Баланс успешно пополнен!');
+    btn.disabled = false;
+    btn.textContent = `Оплатить ${topupAmount.toLocaleString('ru')} ₽`;
+  }, 1500);
+}
+
+async function changePassword() {
+  const inputs = document.querySelectorAll('#security input[type="password"]');
+  if (inputs.length < 3) return;
+  const cur = inputs[0].value, newP = inputs[1].value, rep = inputs[2].value;
+  if (!cur) { showToast('Введите текущий пароль','error'); return; }
+  if (newP.length < 8) { showToast('Новый пароль должен быть минимум 8 символов','error'); return; }
+  if (newP !== rep) { showToast('Пароли не совпадают','error'); return; }
+  inputs.forEach(i => i.value = '');
+  showToast('Пароль успешно изменён');
+}
+
+// Restore profile from server/local
+function initSettings() {
+  const user = JSON.parse(localStorage.getItem('ludo_user') || 'null');
+  if (user) {
+    if (document.getElementById('userName')) document.getElementById('userName').value = user.username || '';
+    if (document.getElementById('userEmail')) document.getElementById('userEmail').value = user.email || '';
+    if (document.getElementById('userBio')) document.getElementById('userBio').value = user.bio || '';
+  }
+}
+initSettings();
+
+function saveProfile() {
+  const newName = document.getElementById('userName').value.trim();
+  const newEmail = document.getElementById('userEmail').value.trim();
+  const newBio = document.getElementById('userBio').value.trim();
+
+  if(!newName) {
+    showToast('Имя не может быть пустым', 'error');
+    return;
+  }
+
+  let user = JSON.parse(localStorage.getItem('ludo_user') || '{}');
+  user.username = newName;
+  user.email = newEmail;
+  user.bio = newBio;
+  
+  authFetch(`/api/user/${user.id || 1}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: newName, email: newEmail })
+  }).catch(e => console.warn('Profile sync error:', e));
+
+  localStorage.setItem('ludo_user', JSON.stringify(user));
+
+  if(typeof updateUserUI !== 'undefined') {
+    updateUserUI(); // Update sidebar from user-sync.js
+  } else {
+    // Fallback refresh sidebar elements
+    document.querySelectorAll('.s-user-name').forEach(el => el.textContent = newName);
+    document.querySelectorAll('.s-avatar').forEach(el => {
+      el.innerHTML = newName.slice(0,2).toUpperCase() + '<div class="s-avatar-online"></div>';
+    });
+  }
+
+  showToast('Профиль успешно сохранен', 'success');
+}
+</script>
+
+<script src="cookie-consent.js"></script>
+  </body>
+</html>

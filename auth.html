@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=5.0"
+    />
+    <title>АКТИВ — Авторизация</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Unbounded:wght@400;600;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0e0e12;
+        --surface: rgba(22, 22, 28, 0.85);
+        --pink: #e8a8d8;
+        --purple: #b088d0;
+        --text: #f0f0f6;
+        --text2: #8888a0;
+        --text3: #505062;
+        --border: rgba(255, 255, 255, 0.08);
+        --r: 28px;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Plus Jakarta Sans", sans-serif;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+
+      /* == AMBIENT BACKGROUND == */
+      .blobs {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        filter: blur(100px);
+        opacity: 0.4;
+      }
+      .blob {
+        position: absolute;
+        border-radius: 50%;
+      }
+      .b1 {
+        width: 500px;
+        height: 500px;
+        background: var(--pink);
+        top: -10%;
+        left: -10%;
+        animation: move 20s infinite alternate;
+      }
+      .b2 {
+        width: 400px;
+        height: 400px;
+        background: var(--purple);
+        bottom: -5%;
+        right: 5%;
+        animation: move 15s infinite alternate-reverse;
+      }
+      @keyframes move {
+        from {
+          transform: translate(0, 0);
+        }
+        to {
+          transform: translate(100px, 50px);
+        }
+      }
+
+      /* == AUTH CONTAINER == */
+      .auth-container {
+        width: 100%;
+        max-width: 440px;
+        padding: 20px;
+      }
+
+      .auth-card {
+        background: var(--surface);
+        backdrop-filter: blur(30px);
+        border: 1px solid var(--border);
+        border-radius: var(--r);
+        padding: 40px;
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+        position: relative;
+        transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+      }
+
+      .logo-area {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 36px;
+      }
+      .logo-gem {
+        width: 52px;
+        height: 52px;
+        margin-bottom: 16px;
+        filter: drop-shadow(0 0 20px rgba(232, 168, 216, 0.4));
+      }
+      .logo-text {
+        font-family: "Unbounded", sans-serif;
+        font-size: 26px;
+        font-weight: 900;
+        letter-spacing: 0.05em;
+        background: linear-gradient(135deg, var(--text), var(--pink));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      /* == FORM TOGGLE == */
+      .form-toggle {
+        display: flex;
+        background: rgba(0, 0, 0, 0.3);
+        padding: 5px;
+        border-radius: 16px;
+        margin-bottom: 32px;
+        border: 1px solid var(--border);
+      }
+      .toggle-btn {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        background: transparent;
+        color: var(--text3);
+        font-family: inherit;
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+        border-radius: 12px;
+        transition: all 0.3s;
+      }
+      .toggle-btn.active {
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--text);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
+
+      /* == INPUTS == */
+      .form-group {
+        margin-bottom: 22px;
+      }
+      .form-group label {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text2);
+        margin-bottom: 10px;
+        margin-left: 4px;
+      }
+      .input-wrap {
+        position: relative;
+      }
+      .input-wrap input {
+        width: 100%;
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 16px 48px 16px 48px;
+        color: var(--text);
+        font-family: inherit;
+        font-size: 15px;
+        outline: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .input-wrap input:focus {
+        border-color: var(--pink);
+        background: rgba(232, 168, 216, 0.04);
+      }
+      .input-wrap > svg {
+        position: absolute;
+        left: 18px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text3);
+        transition: all 0.3s;
+        pointer-events: none;
+      }
+      .input-wrap input:focus + svg,
+      .input-wrap input:focus ~ .toggle-password {
+        color: var(--pink);
+      }
+
+      .toggle-password {
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text3);
+        cursor: pointer;
+        transition: color 0.3s;
+        background: none;
+        border: none;
+        padding: 4px;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+      }
+      .toggle-password svg {
+        display: block;
+        flex-shrink: 0;
+      }
+      .toggle-password:hover {
+        color: var(--pink);
+      }
+
+      /* == ROLE SELECTION == */
+      .role-btn {
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid var(--border);
+        padding: 12px;
+        border-radius: 12px;
+        text-align: center;
+        font-size: 13px;
+        font-weight: 800;
+        color: var(--text3);
+        transition: all 0.2s;
+        cursor: pointer;
+      }
+      .role-btn.active {
+        border-color: var(--pink);
+        color: var(--text);
+        background: rgba(232, 168, 216, 0.05);
+        box-shadow: 0 0 15px rgba(232, 168, 216, 0.1);
+      }
+
+      /* == BUTTONS == */
+      .btn-submit {
+        width: 100%;
+        padding: 18px;
+        border: none;
+        border-radius: 18px;
+        background: linear-gradient(135deg, var(--pink), var(--purple));
+        color: #111;
+        font-family: inherit;
+        font-size: 16px;
+        font-weight: 800;
+        cursor: pointer;
+        margin-top: 12px;
+        transition: all 0.3s;
+        box-shadow: 0 10px 30px rgba(232, 168, 216, 0.3);
+      }
+      .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 40px rgba(232, 168, 216, 0.45);
+      }
+
+      /* == SWAP ANIMATION == */
+      #registerForm {
+        display: none;
+      }
+      .fade-in {
+        animation: fadeIn 0.4s ease forwards;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .footer-links {
+        margin-top: 28px;
+        text-align: center;
+        font-size: 14px;
+        color: var(--text2);
+      }
+      .footer-links a {
+        color: var(--pink);
+        text-decoration: none;
+        font-weight: 700;
+        margin-left: 4px;
+      }
+      .footer-links a:hover {
+        text-decoration: underline;
+      }
+
+      /* == TOAST == */
+      #toast-container {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .toast {
+        background: var(--surface);
+        border: 1px solid rgba(110, 231, 160, 0.25);
+        padding: 14px 20px;
+        border-radius: 14px;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text);
+        opacity: 0;
+        transform: translateX(20px);
+        transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+        min-width: 240px;
+        backdrop-filter: blur(20px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      }
+      .toast.show {
+        opacity: 1;
+        transform: translateX(0);
+      }
+      .toast.error {
+        border-color: rgba(248, 113, 113, 0.25);
+      }
+      /* mobile */
+      @media (max-width: 480px) {
+        .auth-card {
+          padding: 28px 22px;
+          border-radius: 20px;
+        }
+        .input-wrap input {
+          font-size: 15px;
+        }
+        .btn-submit {
+          font-size: 15px;
+          padding: 16px;
+        }
+      }
+    </style>
+  <script src="user-sync.js"></script>
+  </head>
+  <body>
+    <div class="blobs">
+      <div class="blob b1"></div>
+      <div class="blob b2"></div>
+    </div>
+
+    <div class="auth-container">
+      <div class="auth-card">
+        <div class="logo-area">
+          <div class="logo-gem">
+            <svg viewBox="0 0 445 416">
+              <path
+                d="M 77 375 L 79 377 L 79 378 L 81 380 L 82 380 L 83 381 L 85 381 L 86 382 L 243 382 L 244 381 L 250 381 L 251 380 L 254 380 L 255 379 L 256 379 L 257 378 L 259 378 L 260 377 L 261 377 L 262 376 L 263 376 L 264 375 L 265 375 L 267 373 L 268 373 L 270 371 L 271 371 L 279 363 L 280 363 L 282 361 L 282 360 L 288 354 L 289 354 L 298 345 L 298 344 L 299 343 L 300 343 L 323 320 L 323 319 L 325 317 L 325 315 L 326 314 L 325 313 L 325 309 L 324 308 L 324 307 L 322 305 L 321 305 L 320 304 L 150 304 L 149 305 L 146 305 L 145 306 L 142 306 L 141 307 L 139 307 L 138 308 L 137 308 L 136 309 L 135 309 L 134 310 L 133 310 L 131 312 L 130 312 L 103 339 L 102 339 L 99 342 L 99 343 L 90 352 L 89 352 L 86 355 L 86 356 L 84 358 L 83 358 L 81 360 L 81 361 L 78 364 L 78 366 L 77 367 Z"
+                fill="#f8ccf3"
+              />
+              <path
+                d="M 113 108 L 106 108 L 105 109 L 104 109 L 59 154 L 59 155 L 56 158 L 56 159 L 55 160 L 55 161 L 54 162 L 54 163 L 53 164 L 53 165 L 52 166 L 52 167 L 51 168 L 51 170 L 50 171 L 50 172 L 49 173 L 49 176 L 48 177 L 48 181 L 47 182 L 47 193 L 46 194 L 46 335 L 47 336 L 47 341 L 48 342 L 48 343 L 53 348 L 61 348 L 63 346 L 64 346 L 105 305 L 105 304 L 108 301 L 108 300 L 109 299 L 109 298 L 110 297 L 110 296 L 111 295 L 111 294 L 112 293 L 112 292 L 113 291 L 113 290 L 114 289 L 114 287 L 115 286 L 115 283 L 116 282 L 116 277 L 117 276 L 117 113 L 116 112 L 116 111 Z"
+                fill="#f8ccf3"
+              />
+              <path
+                d="M 107 17 L 104 20 L 103 20 L 57 66 L 56 66 L 52 70 L 52 71 L 49 74 L 49 76 L 48 77 L 48 79 L 49 80 L 49 82 L 53 86 L 315 86 L 316 87 L 321 87 L 322 88 L 324 88 L 325 89 L 326 89 L 327 90 L 328 90 L 330 92 L 331 92 L 340 101 L 340 102 L 341 103 L 341 104 L 342 105 L 342 106 L 343 107 L 343 108 L 344 109 L 344 112 L 345 113 L 345 375 L 346 376 L 346 377 L 347 378 L 347 379 L 348 380 L 349 380 L 350 381 L 352 381 L 353 382 L 354 382 L 355 381 L 357 381 L 358 380 L 359 380 L 398 341 L 399 341 L 403 337 L 403 336 L 409 330 L 409 329 L 411 327 L 411 326 L 412 325 L 412 324 L 414 322 L 414 321 L 415 320 L 415 318 L 416 317 L 416 316 L 417 315 L 417 313 L 418 312 L 418 310 L 419 309 L 419 305 L 420 304 L 420 293 L 421 292 L 421 200 L 420 199 L 420 198 L 421 197 L 421 177 L 420 176 L 421 175 L 421 144 L 420 143 L 420 136 L 421 135 L 421 120 L 420 119 L 420 80 L 421 79 L 421 74 L 420 73 L 420 63 L 419 62 L 419 57 L 418 56 L 418 53 L 417 52 L 417 50 L 416 49 L 416 48 L 415 47 L 415 45 L 414 44 L 414 43 L 413 42 L 413 41 L 412 40 L 412 39 L 410 37 L 410 36 L 409 35 L 409 34 L 403 28 L 403 27 L 399 23 L 398 23 L 395 20 L 394 20 L 392 18 L 391 18 L 389 16 L 388 16 L 387 15 L 386 15 L 385 14 L 384 14 L 383 13 L 381 13 L 380 12 L 378 12 L 377 11 L 375 11 L 374 10 L 371 10 L 370 9 L 363 9 L 362 8 L 134 8 L 133 9 L 126 9 L 125 10 L 122 10 L 121 11 L 119 11 L 118 12 L 117 12 L 116 13 L 114 13 L 113 14 L 112 14 L 111 15 L 110 15 L 108 17 Z"
+                fill="#f8ccf3"
+              />
+            </svg>
+          </div>
+          <div class="logo-text">АКТИВ</div>
+        </div>
+
+        <div class="form-toggle">
+          <button class="toggle-btn active" id="btnJoin">Вход</button>
+          <button class="toggle-btn" id="btnReg">Регистрация</button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="loginForm" class="fade-in" onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label>E-mail адрес</label>
+            <div class="input-wrap">
+              <input type="email" id="loginEmail" placeholder="name@domain.com" required />
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6" /></svg>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Пароль</label>
+            <div class="input-wrap">
+              <input type="password" id="loginPass" placeholder="••••••••" required />
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+              <button type="button" class="toggle-password" onclick="togglePassword('loginPass', this)" aria-label="Показать пароль">
+                <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="eye-closed" style="display:none" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              </button>
+            </div>
+          </div>
+          <button type="submit" class="btn-submit">Авторизоваться</button>
+        </form>
+
+        <!-- Register Form -->
+        <form id="registerForm" onsubmit="handleRegister(event)">
+          <div class="form-group">
+            <label>Имя пользователя</label>
+            <div class="input-wrap">
+              <input type="text" id="regName" placeholder="Gamer_One" required />
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>E-mail адрес</label>
+            <div class="input-wrap">
+              <input type="email" id="regEmail" placeholder="name@domain.com" required />
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6" /></svg>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Кто вы?</label>
+            <div style="display: flex; gap: 10px">
+              <label style="flex: 1">
+                <input type="radio" name="role" value="user" checked style="display: none" />
+                <div class="role-btn active" onclick="selectRole(this)">Пользователь</div>
+              </label>
+              <label style="flex: 1">
+                <input type="radio" name="role" value="expert" style="display: none" />
+                <div class="role-btn" onclick="selectRole(this)">Эксперт</div>
+              </label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Придумайте пароль</label>
+            <div class="input-wrap">
+              <input type="password" id="regPass" placeholder="••••••••" required />
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+              <button type="button" class="toggle-password" onclick="togglePassword('regPass', this)" aria-label="Показать пароль">
+                <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="eye-closed" style="display:none" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              </button>
+            </div>
+          </div>
+          <button type="submit" class="btn-submit">Начать путь</button>
+        </form>
+
+        <div class="footer-links">
+          <span id="footerText">Ещё нет аккаунта?</span>
+          <a href="#" id="footerAction">Создать аккаунт</a>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast-container"></div>
+    <script>
+      // -- Toast --------------------------------------------------
+      function showToast(message, type = 'success') {
+        const c = document.getElementById('toast-container');
+        const t = document.createElement('div');
+        t.className = `toast ${type}`;
+        t.innerText = message;
+        c.appendChild(t);
+        setTimeout(() => t.classList.add('show'), 10);
+        setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 400); }, 3500);
+      }
+
+      // -- Form toggle --------------------------------------------
+      const btnJoin    = document.getElementById('btnJoin');
+      const btnReg     = document.getElementById('btnReg');
+      const loginForm  = document.getElementById('loginForm');
+      const regForm    = document.getElementById('registerForm');
+      const footerText = document.getElementById('footerText');
+      const footerAct  = document.getElementById('footerAction');
+
+      function showLogin() {
+        btnJoin.classList.add('active');    btnReg.classList.remove('active');
+        loginForm.style.display = 'block'; regForm.style.display = 'none';
+        footerText.textContent = 'Ещё нет аккаунта?';
+        footerAct.textContent  = 'Создать аккаунт';
+      }
+      function showReg() {
+        btnReg.classList.add('active');     btnJoin.classList.remove('active');
+        regForm.style.display = 'block';   loginForm.style.display = 'none';
+        footerText.textContent = 'Уже есть аккаунт?';
+        footerAct.textContent  = 'Войти в систему';
+      }
+      function selectRole(el) {
+        document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+        el.classList.add('active');
+        el.parentElement.querySelector('input').checked = true;
+      }
+
+      function togglePassword(inputId, btn) {
+        const input = document.getElementById(inputId);
+        const eyeOpen = btn.querySelector('.eye-open');
+        const eyeClosed = btn.querySelector('.eye-closed');
+        if (input.type === 'password') {
+          input.type = 'text';
+          eyeOpen.style.display = 'none';
+          eyeClosed.style.display = 'block';
+          btn.setAttribute('aria-label', 'Скрыть пароль');
+        } else {
+          input.type = 'password';
+          eyeOpen.style.display = 'block';
+          eyeClosed.style.display = 'none';
+          btn.setAttribute('aria-label', 'Показать пароль');
+        }
+      }
+
+      btnJoin.addEventListener('click', showLogin);
+      btnReg.addEventListener('click', showReg);
+      footerAct.addEventListener('click', e => { e.preventDefault(); loginForm.style.display === 'none' ? showLogin() : showReg(); });
+
+      // -- Loading state helpers ----------------------------------
+      function setLoading(btn, loading) {
+        btn.disabled = loading;
+        btn.dataset.orig = btn.dataset.orig || btn.textContent;
+        btn.textContent = loading ? 'Загрузка...' : btn.dataset.orig;
+      }
+
+      // -- Redirect after auth ------------------------------------
+      function redirectByRole(role) {
+        const map = { admin: 'admin-dashboard.html', expert: 'expert-quests.html' };
+        location.href = map[role] || 'my-quests.html';
+      }
+
+      // -- Login --------------------------------------------------
+      async function handleLogin(e) {
+        e.preventDefault();
+        const btn   = loginForm.querySelector('button[type=submit]');
+        const email = document.getElementById('loginEmail').value.trim();
+        const pass  = document.getElementById('loginPass').value;
+        setLoading(btn, true);
+        try {
+          const res  = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password: pass })
+          });
+          const data = await res.json();
+          if (res.ok) {
+            localStorage.setItem('ludo_token', data.token);
+            localStorage.setItem('ludo_user', JSON.stringify(data.user));
+            localStorage.removeItem('АКТИВ_joined_quests');
+            showToast('Добро пожаловать, ' + data.user.username + '!', 'success');
+            setTimeout(() => redirectByRole(data.user.role), 700);
+          } else {
+            showToast(data.error || 'Ошибка входа', 'error');
+            setLoading(btn, false);
+          }
+        } catch (err) {
+          showToast('Сервер недоступен. Убедитесь, что сервер запущен.', 'error');
+          setLoading(btn, false);
+        }
+      }
+
+      // -- Register -----------------------------------------------
+      async function handleRegister(e) {
+        e.preventDefault();
+        const btn      = regForm.querySelector('button[type=submit]');
+        const username = document.getElementById('regName').value.trim();
+        const email    = document.getElementById('regEmail').value.trim();
+        const password = document.getElementById('regPass').value;
+        const role     = document.querySelector('input[name="role"]:checked').value;
+        setLoading(btn, true);
+        try {
+          const res  = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, email, password, role })
+          });
+          const data = await res.json();
+          if (res.ok) {
+            localStorage.setItem('ludo_token', data.token);
+            localStorage.setItem('ludo_user', JSON.stringify(data.user));
+            localStorage.removeItem('АКТИВ_joined_quests');
+            showToast('Аккаунт создан! Добро пожаловать!', 'success');
+            setTimeout(() => redirectByRole(data.user.role), 700);
+          } else {
+            showToast(data.error || 'Ошибка регистрации', 'error');
+            setLoading(btn, false);
+          }
+        } catch (err) {
+          showToast('Сервер недоступен. Убедитесь, что сервер запущен.', 'error');
+          setLoading(btn, false);
+        }
+      }
+
+    </script>
+    <script src="cookie-consent.js"></script>
+  </body>
+</html>

@@ -1,0 +1,1602 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>АКТИВ Admin — Очередь модерации</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Unbounded:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css" />
+  <script src="user-sync.js"></script>
+  <style>
+    :root { --r2: 14px; }
+    
+    .funnel-section {
+      margin-bottom: 32px;
+    }
+    
+    .funnel-title {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text3);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .funnel-title::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    
+    .funnel-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+    }
+    
+    .funnel-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r2);
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+    
+    .funnel-card:hover {
+      border-color: var(--border2);
+      transform: translateY(-2px);
+    }
+    
+    .funnel-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--fc-color, var(--purple));
+    }
+    
+    .funnel-card-icon {
+      width: 32px;
+      height: 32px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+    }
+    
+    .funnel-card-icon svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      stroke-width: 1.8;
+    }
+    
+    .funnel-card-value {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    
+    .funnel-card-label {
+      font-size: 12px;
+      color: var(--text2);
+      font-weight: 600;
+      margin-top: 4px;
+    }
+    
+    .funnel-card-delta {
+      font-size: 10px;
+      font-weight: 700;
+      margin-top: 8px;
+      opacity: 0.7;
+    }
+    
+    
+    .cat-group {
+      margin-bottom: 20px;
+    }
+    
+    .cat-group-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px 16px 0 0;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .cat-group-header:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    
+    .cat-group-header.open {
+      border-radius: 16px 16px 0 0;
+    }
+    
+    .cat-group-header.closed {
+      border-radius: 16px;
+    }
+    
+    .cat-group-icon {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .cat-group-icon svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      stroke-width: 1.8;
+    }
+    
+    .cat-group-name {
+      font-size: 14px;
+      font-weight: 700;
+      flex: 1;
+    }
+    
+    .cat-group-counts {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .count-badge {
+      padding: 2px 10px;
+      border-radius: 50px;
+      font-size: 10px;
+      font-weight: 800;
+    }
+    
+    .count-new {
+      background: rgba(232, 168, 216, 0.12);
+      color: var(--pink);
+      border: 1px solid rgba(232, 168, 216, 0.2);
+    }
+    
+    .count-open {
+      background: rgba(94, 224, 212, 0.1);
+      color: var(--cyan);
+      border: 1px solid rgba(94, 224, 212, 0.18);
+    }
+    
+    .count-closed {
+      background: rgba(136, 136, 160, 0.1);
+      color: var(--text2);
+      border: 1px solid var(--border);
+    }
+    
+    .caret {
+      font-size: 14px;
+      color: var(--text3);
+      transition: transform 0.22s;
+    }
+    
+    .cat-group-header.open .caret {
+      transform: rotate(90deg);
+    }
+    
+    .cat-group-body {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 16px 16px;
+      overflow: hidden;
+    }
+    
+    .cat-group-body.hidden {
+      display: none;
+    }
+    
+    
+    .sub-tabs {
+      display: flex;
+      padding: 12px 16px 0;
+      gap: 4px;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .sub-tab {
+      padding: 8px 16px;
+      border-radius: 10px 10px 0 0;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text2);
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-bottom: 2px solid transparent;
+    }
+    
+    .sub-tab.active {
+      color: var(--pink);
+      border-bottom-color: var(--pink);
+    }
+    
+    .sub-tab:hover:not(.active) {
+      color: var(--text);
+    }
+    
+    .sub-tab-count {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 1px 6px;
+      font-size: 10px;
+    }
+    
+    .sub-tab.active .sub-tab-count {
+      background: rgba(232, 168, 216, 0.15);
+    }
+    
+    
+    .sort-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+      flex-wrap: wrap;
+    }
+    
+    .sort-label {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+    
+    .sort-btn {
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text2);
+      border: 1px solid var(--border);
+      background: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .sort-btn.active {
+      border-color: rgba(232, 168, 216, 0.25);
+      color: var(--pink);
+      background: rgba(232, 168, 216, 0.06);
+    }
+    
+    .sort-btn:hover:not(.active) {
+      color: var(--text);
+    }
+    
+    .filter-spacer {
+      flex: 1;
+    }
+    
+    .filter-wrap {
+      position: relative;
+    }
+    
+    .filter-input {
+      background: var(--surface3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 7px 12px 7px 30px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text);
+      font-family: inherit;
+      outline: none;
+      width: 160px;
+    }
+    
+    .filter-input:focus {
+      border-color: var(--border2);
+    }
+    
+    .filter-icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text3);
+    }
+    
+    
+    .ticket-row {
+      display: grid;
+      grid-template-columns: auto auto 1fr auto auto auto;
+      gap: 16px;
+      align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+      cursor: pointer;
+    }
+    
+    .ticket-row:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    
+    .ticket-row.selected {
+      background: rgba(232, 168, 216, 0.04);
+    }
+    
+    .ticket-check {
+      width: 18px;
+      height: 18px;
+      border-radius: 5px;
+      border: 1.5px solid var(--border2);
+      background: none;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    
+    .ticket-check.checked {
+      background: linear-gradient(135deg, var(--pink), var(--purple));
+      border-color: transparent;
+      position: relative;
+    }
+    
+    .ticket-check.checked::after {
+      content: "✓";
+      font-size: 10px;
+      color: #000;
+      font-weight: 900;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    
+    .ticket-priority {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    
+    .ticket-info {
+      min-width: 0;
+    }
+    
+    .ticket-title {
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .ticket-meta {
+      font-size: 10px;
+      color: var(--text2);
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    
+    .ticket-tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 9px;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+    }
+    
+    .ticket-user {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    
+    .ticket-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--purple), var(--pink));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 800;
+      color: #000;
+    }
+    
+    .ticket-username {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text2);
+    }
+    
+    .ticket-actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    
+    .ticket-action {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--text2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    
+    .ticket-action:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
+    }
+    
+    .ticket-action.approve:hover {
+      border-color: rgba(111, 207, 151, 0.3);
+      color: var(--green);
+      background: rgba(111, 207, 151, 0.06);
+    }
+    
+    .ticket-action.reject:hover {
+      border-color: rgba(235, 87, 87, 0.3);
+      color: var(--red);
+      background: rgba(235, 87, 87, 0.06);
+    }
+    
+    
+    .bulk-bar {
+      position: sticky;
+      bottom: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 60px;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-top: 24px;
+      transform: translateY(20px);
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.25s;
+      z-index: 50;
+    }
+    
+    .bulk-bar.active {
+      transform: none;
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .bulk-count {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--pink);
+    }
+    
+    .bulk-spacer {
+      flex: 1;
+    }
+    
+    
+    .right-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    .panel-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r2);
+      overflow: hidden;
+    }
+    
+    .panel-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .panel-header svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      stroke-width: 1.8;
+    }
+    
+    .panel-body {
+      padding: 16px 20px;
+    }
+    
+    .metric-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .metric-row:last-child {
+      border-bottom: none;
+    }
+    
+    .metric-label {
+      font-size: 12px;
+      color: var(--text2);
+      font-weight: 600;
+    }
+    
+    .metric-value {
+      font-size: 13px;
+      font-weight: 800;
+    }
+    
+    .progress-bar {
+      height: 4px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.04);
+      margin-top: 6px;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      border-radius: 10px;
+      transition: width 0.4s;
+    }
+    
+    
+    .agent-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .agent-item:last-child {
+      border-bottom: none;
+    }
+    
+    .agent-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+      color: #000;
+      flex-shrink: 0;
+    }
+    
+    .agent-name {
+      font-size: 13px;
+      font-weight: 700;
+      flex: 1;
+    }
+    
+    .agent-load {
+      font-size: 11px;
+      font-weight: 700;
+    }
+    
+    .agent-bar {
+      height: 4px;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 10px;
+      margin-top: 4px;
+      width: 60px;
+      overflow: hidden;
+    }
+    
+    .agent-fill {
+      height: 100%;
+      border-radius: 10px;
+    }
+    
+    
+    .sla-item {
+      margin-bottom: 14px;
+    }
+    
+    .sla-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    
+    .sla-label {
+      color: var(--text2);
+    }
+    
+    .sla-value {
+      color: var(--green);
+    }
+    
+    .sla-value.warning {
+      color: var(--red);
+    }
+    
+    .sla-bar {
+      height: 4px;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    
+    .sla-fill {
+      height: 100%;
+      border-radius: 10px;
+    }
+    
+    
+    .quick-filter-btn {
+      width: 100%;
+      justify-content: flex-start;
+      margin-bottom: 6px;
+      text-align: left;
+    }
+    
+    
+    .ai-hint {
+      background: rgba(176, 136, 208, 0.06);
+      border: 1px solid rgba(176, 136, 208, 0.15);
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 12px;
+      color: var(--text2);
+      margin-bottom: 20px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    
+    .ai-hint-icon {
+      flex-shrink: 0;
+      color: var(--purple);
+    }
+    
+    .ai-hint-text b {
+      color: var(--purple);
+    }
+    
+    
+    .message-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .message {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    
+    .message.agent {
+      flex-direction: row-reverse;
+    }
+    
+    .message-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+      color: #000;
+      flex-shrink: 0;
+    }
+    
+    .message-content {
+      flex: 1;
+    }
+    
+    .message-name {
+      font-size: 10px;
+      color: var(--text2);
+      margin-bottom: 4px;
+    }
+    
+    .message.agent .message-name {
+      text-align: right;
+    }
+    
+    .message-bubble {
+      border-radius: 14px;
+      padding: 12px 16px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    
+    .message.user .message-bubble {
+      background: var(--surface3);
+      border: 1px solid var(--border);
+    }
+    
+    .message.agent .message-bubble {
+      background: rgba(232, 168, 216, 0.07);
+      border: 1px solid rgba(232, 168, 216, 0.15);
+    }
+    
+    .message-time {
+      font-size: 10px;
+      color: var(--text3);
+      margin-top: 4px;
+    }
+    
+    .message.agent .message-time {
+      text-align: right;
+    }
+    
+    
+    .reply-box {
+      border-top: 1px solid var(--border);
+      padding-top: 20px;
+    }
+    
+    .reply-tools {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    
+    .reply-tool {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--text2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    
+    .reply-tool:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
+    }
+    
+    .reply-textarea {
+      width: 100%;
+      background: var(--surface3);
+      border: 1px solid var(--border2);
+      border-radius: 14px;
+      padding: 12px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      font-family: inherit;
+      outline: none;
+      resize: vertical;
+      min-height: 90px;
+    }
+    
+    .reply-textarea:focus {
+      border-color: rgba(232, 168, 216, 0.35);
+    }
+    
+    .note-label {
+      display: none;
+      font-size: 11px;
+      color: var(--gold);
+      margin: 8px 0;
+    }
+    
+    
+    .action-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      background: var(--surface2);
+    }
+    
+    .action-btn {
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1.5px solid var(--border);
+      background: none;
+      color: var(--text2);
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    
+    .quick-filter-label {
+  display: block; padding: 6px 10px; font-size: 12px;
+  font-weight: 600; color: var(--text2); width: 100%;
+}
+.action-btn:hover {
+      color: var(--text);
+      border-color: var(--border2);
+    }
+    
+    .action-btn.approve {
+      border-color: rgba(111, 207, 151, 0.25);
+      color: var(--green);
+    }
+    
+    .action-btn.approve:hover {
+      background: rgba(111, 207, 151, 0.06);
+    }
+    
+    .action-btn.reject {
+      border-color: rgba(235, 87, 87, 0.25);
+      color: var(--red);
+    }
+    
+    .action-btn.reject:hover {
+      background: rgba(235, 87, 87, 0.06);
+    }
+    
+    .action-btn.escalate {
+      border-color: rgba(242, 153, 74, 0.25);
+      color: var(--orange);
+    }
+    
+    .action-btn.escalate:hover {
+      background: rgba(242, 153, 74, 0.06);
+    }
+    
+    
+    .empty-state {
+      padding: 48px 24px;
+      text-align: center;
+    }
+    
+    .empty-state-icon {
+      margin-bottom: 16px;
+      opacity: 0.4;
+    }
+    
+    .empty-state h4 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    
+    .empty-state p {
+      font-size: 12px;
+      color: var(--text2);
+    }
+    
+    
+    .detail-meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    
+    .detail-meta-item {
+      background: var(--surface3);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+    }
+    
+    .detail-meta-label {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 6px;
+    }
+    
+    .detail-meta-value {
+      font-size: 13px;
+      font-weight: 700;
+    }
+    
+    
+    /* PAGE WRAP & LAYOUT */
+    .page-wrap {
+      margin-left: var(--sidebar);
+      flex: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      max-width: none; /* Растягиваем на весь экран на десктопе */
+    }
+
+    main {
+      padding: 24px clamp(12px, 3vw, 32px);
+      width: 100%;
+      max-width: none;
+    }
+
+    .mod-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: clamp(16px, 2vw, 28px);
+      align-items: start;
+      width: 100%;
+    }
+    
+    @media (min-width: 1400px) {
+      .mod-layout {
+        grid-template-columns: 1fr 360px;
+      }
+    }
+    
+    /* Таблица */
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    @media (max-width: 900px) {
+      .funnel-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    
+    @media (max-width: 600px) {
+      .funnel-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      main {
+        padding: 16px 12px;
+      }
+      .page-hdr h1 {
+        font-size: clamp(18px, 5vw, 22px);
+      }
+      .cat-group-header {
+        padding: 12px;
+      }
+      .modal {
+        width: 100%;
+        margin: 0;
+        border-radius: 24px 24px 0 0;
+      }
+    }
+
+  @media (max-width: 768px) {
+    .table-wrapper { 
+      background: transparent; 
+      border: none; 
+      border-radius: 0; 
+      overflow-x: hidden; /* Запрещаем горизонтальный скролл на мобилке */
+    }
+    table, thead, tbody, th, td, tr { display: block; width: 100%; }
+    thead { display: none; }
+    tbody tr {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 100%;
+      box-sizing: border-box;
+    }
+    td {
+      border: none;
+      padding: 10px 0;
+      display: grid;
+      grid-template-columns: 85px 1fr; /* Уменьшил колонку лейбла для 375px */
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      min-width: 0;
+    }
+    td:last-child { border-bottom: none; }
+    td[data-label]::before {
+      content: attr(data-label);
+      font-weight: 700;
+      font-size: 10px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    td > * { 
+      justify-self: end; 
+      text-align: right; 
+      min-width: 0;
+      word-break: break-word; /* Чтобы длинные ники не ломали верстку */
+    }
+    
+    td[data-label="Пользователь"] > div {
+      justify-content: flex-end;
+      max-width: 100%;
+    }
+    
+    td.td-actions {
+      display: flex !important;
+      flex-wrap: wrap;
+      justify-content: stretch !important;
+      gap: 8px;
+      margin-top: 8px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+      border-bottom: none;
+    }
+    td.td-actions::before { display: none; }
+    td.td-actions > * { 
+      flex: 1;
+      min-width: 120px;
+      justify-self: stretch; 
+      text-align: center;
+      padding: 10px !important;
+    }
+  }
+  </style>
+<script src="user-sync.js"></script>
+  </head>
+<body>
+  <div class="mobile-header">
+  <button class="burger-btn" id="burgerBtn"><span class="burger-line"></span><span class="burger-line"></span><span class="burger-line"></span></button>
+  <a href="admin-dashboard.html" style="display:flex;align-items:center;text-decoration:none;gap:8px;">
+    <svg viewBox="0 0 445 416" fill="none" style="width:28px;height:28px;filter:drop-shadow(0 0 8px rgba(232,168,216,.5));">
+      <path d="M 77 375 L 79 377 L 79 378 L 81 380 L 82 380 L 83 381 L 85 381 L 86 382 L 243 382 L 244 381 L 250 381 L 251 380 L 254 380 L 255 379 L 256 379 L 257 378 L 259 378 L 260 377 L 261 377 L 262 376 L 263 376 L 264 375 L 265 375 L 267 373 L 268 373 L 270 371 L 271 371 L 279 363 L 280 363 L 282 361 L 282 360 L 288 354 L 289 354 L 298 345 L 298 344 L 299 343 L 300 343 L 323 320 L 323 319 L 325 317 L 325 315 L 326 314 L 325 313 L 325 309 L 324 308 L 324 307 L 322 305 L 321 305 L 320 304 L 150 304 L 149 305 L 146 305 L 145 306 L 142 306 L 141 307 L 139 307 L 138 308 L 137 308 L 136 309 L 135 309 L 134 310 L 133 310 L 131 312 L 130 312 L 103 339 L 102 339 L 99 342 L 99 343 L 90 352 L 89 352 L 86 355 L 86 356 L 84 358 L 83 358 L 81 360 L 81 361 L 78 364 L 78 366 L 77 367 Z" fill="#f8ccf3"/>
+      <path d="M 113 108 L 106 108 L 105 109 L 104 109 L 59 154 L 59 155 L 56 158 L 56 159 L 55 160 L 55 161 L 54 162 L 54 163 L 53 164 L 53 165 L 52 166 L 52 167 L 51 168 L 51 170 L 50 171 L 50 172 L 49 173 L 49 176 L 48 177 L 48 181 L 47 182 L 47 193 L 46 194 L 46 335 L 47 336 L 47 341 L 48 342 L 48 343 L 53 348 L 61 348 L 63 346 L 64 346 L 105 305 L 105 304 L 108 301 L 108 300 L 109 299 L 109 298 L 110 297 L 110 296 L 111 295 L 111 294 L 112 293 L 112 292 L 113 291 L 113 290 L 114 289 L 114 287 L 115 286 L 115 283 L 116 282 L 116 277 L 117 276 L 117 113 L 116 112 L 116 111 Z" fill="#f8ccf3"/>
+      <path d="M 107 17 L 104 20 L 103 20 L 57 66 L 56 66 L 52 70 L 52 71 L 49 74 L 49 76 L 48 77 L 48 79 L 49 80 L 49 82 L 53 86 L 315 86 L 316 87 L 321 87 L 322 88 L 324 88 L 325 89 L 326 89 L 327 90 L 328 90 L 330 92 L 331 92 L 340 101 L 340 102 L 341 103 L 341 104 L 342 105 L 342 106 L 343 107 L 343 108 L 344 109 L 344 112 L 345 113 L 345 375 L 346 376 L 346 377 L 347 378 L 347 379 L 348 380 L 349 380 L 350 381 L 352 381 L 353 382 L 354 382 L 355 381 L 357 381 L 358 380 L 359 380 L 398 341 L 399 341 L 403 337 L 403 336 L 409 330 L 409 329 L 411 327 L 411 326 L 412 325 L 412 324 L 414 322 L 414 321 L 415 320 L 415 318 L 416 317 L 416 316 L 417 315 L 417 313 L 418 312 L 418 310 L 419 309 L 419 305 L 420 304 L 420 293 L 421 292 L 421 200 L 420 199 L 420 198 L 421 197 L 421 177 L 420 176 L 421 175 L 421 144 L 420 143 L 420 136 L 421 135 L 421 120 L 420 119 L 420 80 L 421 79 L 421 74 L 420 73 L 420 63 L 419 62 L 419 57 L 418 56 L 418 53 L 417 52 L 417 50 L 416 49 L 416 48 L 415 47 L 415 45 L 414 44 L 414 43 L 413 42 L 413 41 L 412 40 L 412 39 L 410 37 L 410 36 L 409 35 L 409 34 L 403 28 L 403 27 L 399 23 L 398 23 L 395 20 L 394 20 L 392 18 L 391 18 L 389 16 L 388 16 L 387 15 L 386 15 L 385 14 L 384 14 L 383 13 L 381 13 L 380 12 L 378 12 L 377 11 L 375 11 L 374 10 L 371 10 L 370 9 L 363 9 L 362 8 L 134 8 L 133 9 L 126 9 L 125 10 L 122 10 L 121 11 L 119 11 L 118 12 L 117 12 L 116 13 L 114 13 L 113 14 L 112 14 L 111 15 L 110 15 L 108 17 Z" fill="#f8ccf3"/>
+    </svg>
+    
+  </a>
+</div>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <aside class="sidebar">
+    <div class="sidebar-head">
+      <a href="admin-dashboard.html" class="logo">
+        <div class="logo-gem">
+          <svg viewBox="0 0 445 416"><path d="M 77 375 L 79 377 L 79 378 L 81 380 L 82 380 L 83 381 L 85 381 L 86 382 L 243 382 L 244 381 L 250 381 L 251 380 L 254 380 L 255 379 L 256 379 L 257 378 L 259 378 L 260 377 L 261 377 L 262 376 L 263 376 L 264 375 L 265 375 L 267 373 L 268 373 L 270 371 L 271 371 L 279 363 L 280 363 L 282 361 L 282 360 L 288 354 L 289 354 L 298 345 L 298 344 L 299 343 L 300 343 L 323 320 L 323 319 L 325 317 L 325 315 L 326 314 L 325 313 L 325 309 L 324 308 L 324 307 L 322 305 L 321 305 L 320 304 L 150 304 L 149 305 L 146 305 L 145 306 L 142 306 L 141 307 L 139 307 L 138 308 L 137 308 L 136 309 L 135 309 L 134 310 L 133 310 L 131 312 L 130 312 L 103 339 L 102 339 L 99 342 L 99 343 L 90 352 L 89 352 L 86 355 L 86 356 L 84 358 L 83 358 L 81 360 L 81 361 L 78 364 L 78 366 L 77 367 Z" fill="#f8ccf3" /><path d="M 113 108 L 106 108 L 105 109 L 104 109 L 59 154 L 59 155 L 56 158 L 56 159 L 55 160 L 55 161 L 54 162 L 54 163 L 53 164 L 53 165 L 52 166 L 52 167 L 51 168 L 51 170 L 50 171 L 50 172 L 49 173 L 49 176 L 48 177 L 48 181 L 47 182 L 47 193 L 46 194 L 46 335 L 47 336 L 47 341 L 48 342 L 48 343 L 53 348 L 61 348 L 63 346 L 64 346 L 105 305 L 105 304 L 108 301 L 108 300 L 109 299 L 109 298 L 110 297 L 110 296 L 111 295 L 111 294 L 112 293 L 112 292 L 113 291 L 113 290 L 114 289 L 114 287 L 115 286 L 115 283 L 116 282 L 116 277 L 117 276 L 117 113 L 116 112 L 116 111 Z" fill="#f8ccf3" /><path d="M 107 17 L 104 20 L 103 20 L 57 66 L 56 66 L 52 70 L 52 71 L 49 74 L 49 76 L 48 77 L 48 79 L 49 80 L 49 82 L 53 86 L 315 86 L 316 87 L 321 87 L 322 88 L 324 88 L 325 89 L 326 89 L 327 90 L 328 90 L 330 92 L 331 92 L 340 101 L 340 102 L 341 103 L 341 104 L 342 105 L 342 106 L 343 107 L 343 108 L 344 109 L 344 112 L 345 113 L 345 375 L 346 376 L 346 377 L 347 378 L 347 379 L 348 380 L 349 380 L 350 381 L 352 381 L 353 382 L 354 382 L 355 381 L 357 381 L 358 380 L 359 380 L 398 341 L 399 341 L 403 337 L 403 336 L 409 330 L 409 329 L 411 327 L 411 326 L 412 325 L 412 324 L 414 322 L 414 321 L 415 320 L 415 318 L 416 317 L 416 316 L 417 315 L 417 313 L 418 312 L 418 310 L 419 309 L 419 305 L 420 304 L 420 293 L 421 292 L 421 200 L 420 199 L 420 198 L 421 197 L 421 177 L 420 176 L 421 175 L 421 144 L 420 143 L 420 136 L 421 135 L 421 120 L 420 119 L 420 80 L 421 79 L 421 74 L 420 73 L 420 63 L 419 62 L 419 57 L 418 56 L 418 53 L 417 52 L 417 50 L 416 49 L 416 48 L 415 47 L 415 45 L 414 44 L 414 43 L 413 42 L 413 41 L 412 40 L 412 39 L 410 37 L 410 36 L 409 35 L 409 34 L 403 28 L 403 27 L 399 23 L 398 23 L 395 20 L 394 20 L 392 18 L 391 18 L 389 16 L 388 16 L 387 15 L 386 15 L 385 14 L 384 14 L 383 13 L 381 13 L 380 12 L 378 12 L 377 11 L 375 11 L 374 10 L 371 10 L 370 9 L 363 9 L 362 8 L 134 8 L 133 9 L 126 9 L 125 10 L 122 10 L 121 11 L 119 11 L 118 12 L 117 12 L 116 13 L 114 13 L 113 14 L 112 14 L 111 15 L 110 15 L 108 17 Z" fill="#f8ccf3" /></svg>
+        </div>
+        АКТИВ
+      </a>
+      <div class="sidebar-user" style="display: none !important;">
+        <div class="s-avatar">АД<div class="s-avatar-online"></div></div>
+        <div class="s-user-info">
+          <div class="s-user-name">Alex_Admin</div>
+          <div class="s-user-sub">Администратор</div>
+        </div>
+      </div>
+    </div>
+    <a href="admin-dashboard.html" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Обзор системы
+    </a>
+    <a href="admin-events.html" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Последние события
+    </a>
+    <a href="admin-moderation.html" class="nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Очередь модерации
+    </a>
+    <a href="admin-finances.html" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      Финансы и комиссии
+    </a>
+    <a href="admin-partners.html" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Партнерская сеть
+    </a>
+  <div class="sidebar-footer">
+    <div class="sidebar-footer-links">
+      <a href="about.html">О системе</a>
+      <a href="changelog.html">Changelog</a>
+      <a href="about.html">Документация</a>
+    </div>
+    <div class="sidebar-footer-copy">© 2026 АКТИВ Platform</div>
+  </div>
+  </aside>
+
+  <div class="page-wrap">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="breadcrumb">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <a href="admin-dashboard.html">АКТИВ Admin</a>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          <span>Очередь модерации</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        </div>
+      </div>
+        <main>
+    <div class="page-hdr">
+      <div>
+        <h1>Очередь модерации</h1>
+        <p>Управление обращениями пользователей</p>
+      </div>
+      <div style="display:inline-flex;align-items:center;gap:6px;">
+        
+      </div>
+    </div>
+
+    <div class="funnel-section">
+      <div class="funnel-title">Воронка модерации</div>
+      <div class="funnel-grid" id="funnelGrid"></div>
+    </div>
+
+    <div class="mod-layout">
+      <div>
+        <div id="categoriesContainer"></div>
+        <div class="bulk-bar" id="bulkBar">
+          <span class="bulk-count" id="bulkCount">0 выбрано</span>
+          <div class="bulk-spacer"></div>
+          <button class="btn-sm" onclick="bulkAction('approve')">✓ Одобрить</button>
+          <button class="btn-sm" onclick="bulkAction('reject')">✗ Отклонить</button>
+          <button class="btn-sm" onclick="bulkAction('close')">🔒 Закрыть</button>
+          <button class="btn-sm" onclick="clearSelection()">Снять выбор</button>
+        </div>
+      </div>
+      
+
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <div class="modal-overlay" id="ticketModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modalTitle">Обращение #CMP-001</h3>
+        <button class="modal-close" onclick="closeModal('ticketModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="ai-hint" id="aiHint" style="display: none;">
+          <div class="ai-hint-icon">✨</div>
+          <div class="ai-hint-text" id="aiHintText"></div>
+        </div>
+        <div class="detail-meta-grid" id="detailMetaGrid"></div>
+        <div class="message-list" id="messageList"></div>
+        <div class="reply-box">
+          <div class="reply-tools">
+            <button class="reply-tool" title="Прикрепить файл">📎</button>
+            <button class="reply-tool" title="Шаблон ответа" onclick="insertTemplate()">📋</button>
+            <button class="reply-tool" title="Внутренняя заметка" onclick="toggleNoteMode()">📝</button>
+            <div class="bulk-spacer"></div>
+            <div style="font-size: 11px; color: var(--text3); display: flex; align-items: center; gap: 6px;">
+              <span>Назначить:</span>
+              <select class="form-select" style="width: auto; padding: 5px 10px; font-size: 11px;" id="assignSelect">
+                <option>Анна К.</option>
+                <option>Дмитрий В.</option>
+                <option>Мария С.</option>
+              </select>
+            </div>
+          </div>
+          <textarea class="reply-textarea" id="replyText" placeholder="Написать ответ пользователю..."></textarea>
+          <div class="note-label" id="noteLabel">📝 Внутренняя заметка — пользователь не увидит</div>
+        </div>
+      </div>
+      <div class="action-strip" id="actionStrip"></div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('ticketModal')">Отмена</button>
+        <button class="btn-primary" onclick="sendReply()">Отправить ответ</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="createModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Создать тикет вручную</h3>
+        <button class="modal-close" onclick="closeModal('createModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Пользователь</label>
+          <input type="text" class="form-input" placeholder="Никнейм или email...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Категория</label>
+          <select class="form-select">
+            <option>Проблема с оплатой</option>
+            <option>Жалоба</option>
+            <option>Технический баг</option>
+            <option>Аккаунт</option>
+            <option>Партнёрство</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Описание</label>
+          <textarea class="form-textarea" placeholder="Описание проблемы..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Приоритет</label>
+          <select class="form-select">
+            <option>Низкий</option>
+            <option>Средний</option>
+            <option>Высокий</option>
+            <option>Критический</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('createModal')">Отмена</button>
+        <button class="btn-primary" onclick="createTicket()">Создать тикет</button>
+      </div>
+    </div>
+  </div>
+    </main>
+    </div>
+
+
+
+  <script>
+    let allSubmissions = [];
+    let selectedIds = new Set();
+    let currentSubmissionId = null;
+    let currentSubmissionStatus = null;
+    let isNoteMode = false;
+
+    async function loadSubmissions() {
+      const container = document.getElementById("categoriesContainer");
+      container.innerHTML = '<div style="padding:40px; text-align:center; color:var(--text3);">Загрузка отчетов...</div>';
+
+      try {
+        let ok = false;
+        try {
+          const response = await authFetch("/api/admin/submissions");
+          if (response.ok) {
+            allSubmissions = await response.json();
+            ok = true;
+          }
+        } catch(e) {}
+        
+        if (!ok || !allSubmissions || allSubmissions.length === 0) {
+          allSubmissions = [
+            { id: 401, username: 'Max_Speed', quest_name: 'Киберспорт ПРО', day_number: 5, reward_xp: 500, status: 'pending', file_url: null, comment: '', created_at: new Date().toISOString() },
+            { id: 402, username: 'Sophie_Q', quest_name: 'Йога по утрам', day_number: 2, reward_xp: 150, status: 'approved', file_url: null, comment: 'Отлично выполнено!', created_at: new Date().toISOString() }
+          ];
+        }
+        
+        renderSubmissions();
+        updateFunnel();
+      } catch (err) {
+        console.error("Load error:", err);
+      }
+    }
+
+    function renderSubmissions() {
+      const container = document.getElementById("categoriesContainer");
+      
+      if (allSubmissions.length === 0) {
+        container.innerHTML = '<div class="empty-state"><h4>Нет отчетов</h4><p>Очередь модерации пуста</p></div>';
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Дата</th>
+                <th>Пользователь</th>
+                <th>Квест / День</th>
+                <th>Статус</th>
+                <th style="text-align:right">Действия</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${allSubmissions.map(s => `
+                <tr onclick="openSubmission(${s.id})">
+                  <td data-label="Дата">${new Date(s.created_at).toLocaleDateString()}</td>
+                  <td data-label="Пользователь">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                      <div class="ticket-avatar">${s.username.slice(0,2).toUpperCase()}</div>
+                      <b>${s.username}</b>
+                    </div>
+                  </td>
+                  <td data-label="Квест">
+                    <div style="font-weight:700;">${s.quest_name}</div>
+                    <div style="font-size:11px; color:var(--text3);">Задание дня: ${s.day_number}</div>
+                  </td>
+                  <td data-label="Статус">${getStatusBadge(s.status)}</td>
+                  <td data-label="Действия" class="td-actions">
+                    ${s.status === 'pending' ? `
+                      <button class="btn-sm" onclick="event.stopPropagation(); updateStatus(${s.id}, 'approved')" style="color:var(--green)">Одобрить</button>
+                      <button class="btn-sm" onclick="event.stopPropagation(); updateStatus(${s.id}, 'rejected')" style="color:var(--red)">Отклонить</button>
+                    ` : '<span style="color:var(--text3); font-size:11px;">Обработано</span>'}
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    async function updateStatus(id, status) {
+      let comment = '';
+      if (status === 'rejected') {
+        comment = prompt("Укажите причину отклонения:") || "Не соответствует условиям задания";
+      } else {
+        comment = "Отлично выполнено!";
+      }
+
+      try {
+        const response = await authFetch(`/api/admin/submissions/${id}/status`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status, comment })
+        });
+
+        if (response.ok) {
+          showToast(status === 'approved' ? 'success' : 'error', status === 'approved' ? "Отчет одобрен, XP начислено" : "Отчет отклонен");
+          loadSubmissions();
+        }
+      } catch (err) {
+        showToast('error', "Ошибка сервера");
+      }
+    }
+
+    function getStatusBadge(status) {
+      const map = {
+        pending: '<span class="badge badge-wait">Ожидает</span>',
+        approved: '<span class="badge badge-green">Одобрен</span>',
+        rejected: '<span class="badge badge-red">Отклонен</span>'
+      };
+      return map[status] || status;
+    }
+
+    function updateFunnel() {
+      const pending = allSubmissions.filter(s => s.status === 'pending').length;
+      const approved = allSubmissions.filter(s => s.status === 'approved').length;
+      
+      const grid = document.getElementById("funnelGrid");
+      grid.innerHTML = `
+        <div class="funnel-card" style="--fc-color: var(--cyan)">
+          <div class="funnel-card-value">${pending}</div>
+          <div class="funnel-card-label">Ожидают проверки</div>
+        </div>
+        <div class="funnel-card" style="--fc-color: var(--green)">
+          <div class="funnel-card-value">${approved}</div>
+          <div class="funnel-card-label">Одобрено за всё время</div>
+        </div>
+      `;
+    }
+
+    function openSubmission(id) {
+      const s = allSubmissions.find(x => x.id === id);
+      if (!s) return;
+      currentSubmissionId = id;
+      currentSubmissionStatus = s.status;
+      isNoteMode = false;
+      document.getElementById('replyText').value = '';
+      document.getElementById('noteLabel').style.display = 'none';
+      
+      document.getElementById("modalTitle").textContent = `Отчет #${s.id}`;
+      document.getElementById("detailMetaGrid").innerHTML = `
+        <div class="detail-meta-item"><div class="detail-meta-label">Квест</div><div class="detail-meta-value">${s.quest_name}</div></div>
+        <div class="detail-meta-item"><div class="detail-meta-label">День</div><div class="detail-meta-value">${s.day_number}</div></div>
+        <div class="detail-meta-item"><div class="detail-meta-label">Пользователь</div><div class="detail-meta-value">${s.username}</div></div>
+        <div class="detail-meta-item"><div class="detail-meta-label">XP Квеста</div><div class="detail-meta-value">${s.reward_xp}</div></div>
+      `;
+      
+      document.getElementById("messageList").innerHTML = `
+        <div class="message user">
+
+          <div class="message-content">
+            <div class="message-name">Пользователь · ${new Date(s.created_at).toLocaleString()}</div>
+            <div class="message-bubble">
+              ${s.file_url ? `<b>Видео-отчет:</b> <a href="${s.file_url}" target="_blank" style="color:var(--pink)">смотреть файл</a><br><br>` : ''}
+              ${s.comment || 'Комментарий не оставлен'}
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.getElementById("actionStrip").innerHTML = s.status === 'pending' ? `
+        <button class="action-btn approve" onclick="updateStatus(${s.id}, 'approved'); closeModal('ticketModal')">✓ Одобрить</button>
+        <button class="action-btn reject" onclick="updateStatus(${s.id}, 'rejected'); closeModal('ticketModal')">✗ Отклонить</button>
+      ` : '';
+      
+      document.getElementById("ticketModal").classList.add("active");
+    }
+
+    function initMobileMenu() {
+      const b = document.getElementById("burgerBtn"), s = document.querySelector(".sidebar"), o = document.getElementById("sidebarOverlay");
+      if (b && s && o) {
+        b.addEventListener("click", () => { s.classList.toggle("open"); o.classList.toggle("active"); });
+        o.addEventListener("click", () => { s.classList.remove("open"); o.classList.remove("active"); });
+      }
+    }
+
+    function closeModal(id) { document.getElementById(id).classList.remove("active"); }
+
+    function showToast(type, message) {
+      const c = document.getElementById("toast-container"), t = document.createElement("div");
+      t.className = `toast show ${type}`;
+      t.innerHTML = message;
+      c.appendChild(t);
+      setTimeout(() => { t.classList.remove("show"); setTimeout(() => t.remove(), 300); }, 3000);
+    }
+
+    // ── sendReply ───────────────────────────────────────────────
+    async function sendReply() {
+      const text = document.getElementById('replyText').value.trim();
+      if (!text) { showToast('error', 'Введите текст ответа'); return; }
+      if (!currentSubmissionId) { showToast('error', 'Нет активного отчёта'); return; }
+
+      const btn = document.querySelector('.modal-footer .btn-primary');
+      btn.disabled = true;
+      btn.textContent = 'Отправка...';
+
+      try {
+        const sub = allSubmissions.find(s => s.id === currentSubmissionId);
+        const status = sub ? sub.status : 'pending';
+        const res = await authFetch(`/api/admin/submissions/${currentSubmissionId}/status`, {
+          method: 'POST',
+          body: JSON.stringify({ status, comment: text })
+        });
+        if (res.ok) {
+          showToast('success', isNoteMode ? 'Заметка сохранена' : 'Ответ отправлен пользователю');
+          document.getElementById('replyText').value = '';
+          closeModal('ticketModal');
+          loadSubmissions();
+        } else {
+          const err = await res.json().catch(() => ({}));
+          showToast('error', err.error || 'Ошибка отправки');
+        }
+      } catch (e) {
+        showToast('error', 'Ошибка сети');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Отправить ответ';
+      }
+    }
+
+    // ── toggleNoteMode ──────────────────────────────────────────
+    function toggleNoteMode() {
+      isNoteMode = !isNoteMode;
+      const label = document.getElementById('noteLabel');
+      const ta = document.getElementById('replyText');
+      label.style.display = isNoteMode ? 'block' : 'none';
+      ta.placeholder = isNoteMode ? 'Внутренняя заметка (пользователь не увидит)...' : 'Написать ответ пользователю...';
+      ta.style.background = isNoteMode ? 'rgba(255,200,50,0.07)' : '';
+      ta.style.borderColor = isNoteMode ? 'rgba(255,200,50,0.3)' : '';
+    }
+
+    // ── insertTemplate ──────────────────────────────────────────
+    function insertTemplate() {
+      const templates = [
+        'Спасибо за отчёт! Ваше выполнение засчитано. Продолжайте в том же духе! 💪',
+        'Хорошая работа! Однако нам нужно видео-подтверждение выполнения задания.',
+        'Отчёт принят на проверку. Результат будет известен в течение 24 часов.',
+        'К сожалению, отчёт не соответствует требованиям задания. Пожалуйста, перечитайте условия и повторите попытку.',
+      ];
+      const ta = document.getElementById('replyText');
+      const menu = document.createElement('div');
+      menu.style.cssText = 'position:fixed;z-index:9999;background:#1e1e26;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:8px;box-shadow:0 8px 30px rgba(0,0,0,0.4);max-width:320px;';
+      menu.style.top = (event.clientY + 10) + 'px';
+      menu.style.left = (event.clientX - 160) + 'px';
+      templates.forEach(t => {
+        const btn = document.createElement('div');
+        btn.style.cssText = 'padding:10px 14px;cursor:pointer;border-radius:8px;font-size:12px;color:#c0c0d4;line-height:1.4;';
+        btn.textContent = t;
+        btn.onmouseenter = () => btn.style.background = 'rgba(255,255,255,0.06)';
+        btn.onmouseleave = () => btn.style.background = '';
+        btn.onclick = () => { ta.value = t; ta.focus(); document.body.removeChild(menu); };
+        menu.appendChild(btn);
+      });
+      document.body.appendChild(menu);
+      setTimeout(() => { document.addEventListener('click', () => { if (menu.parentNode) document.body.removeChild(menu); }, { once: true }); }, 50);
+    }
+
+    // ── bulkAction ──────────────────────────────────────────────
+    async function bulkAction(action) {
+      if (selectedIds.size === 0) { showToast('error', 'Выберите отчёты для действия'); return; }
+      const ids = [...selectedIds];
+      const comment = action === 'reject' ? (prompt('Причина отклонения:') || 'Не соответствует условиям') : 'Одобрено администратором';
+      const status = action === 'approve' ? 'approved' : action === 'reject' ? 'rejected' : 'pending';
+
+      let done = 0;
+      for (const id of ids) {
+        try {
+          const res = await authFetch(`/api/admin/submissions/${id}/status`, {
+            method: 'POST',
+            body: JSON.stringify({ status, comment })
+          });
+          if (res.ok) done++;
+        } catch (e) {}
+      }
+
+      showToast('success', `${done} из ${ids.length} обработано`);
+      selectedIds.clear();
+      document.getElementById('bulkBar').style.display = 'none';
+      loadSubmissions();
+    }
+
+    // ── clearSelection ──────────────────────────────────────────
+    function clearSelection() {
+      selectedIds.clear();
+      document.querySelectorAll('.row-check').forEach(cb => cb.checked = false);
+      document.getElementById('bulkBar').style.display = 'none';
+    }
+
+    // ── createTicket (manual support ticket) ───────────────────
+    async function createTicket() {
+      const modal = document.getElementById('createModal');
+      const inputs = modal.querySelectorAll('.form-input, .form-select, .form-textarea');
+      const username = inputs[0]?.value?.trim();
+      const category = inputs[1]?.value;
+      const description = inputs[2]?.value?.trim();
+      const priority = inputs[3]?.value;
+
+      if (!username || !description) { showToast('error', 'Заполните обязательные поля'); return; }
+
+      try {
+        const res = await authFetch('/api/support/contact', {
+          method: 'POST',
+          body: JSON.stringify({ name: username, email: username + '@manual.activ', subject: category + ' — ' + priority, message: description })
+        });
+        if (res.ok) {
+          showToast('success', 'Тикет создан');
+          closeModal('createModal');
+          inputs.forEach(i => i.value = '');
+        } else {
+          showToast('error', 'Ошибка создания тикета');
+        }
+      } catch (e) { showToast('error', 'Ошибка сети'); }
+    }
+
+    loadSubmissions();
+    initMobileMenu();
+  </script>
+<script src="cookie-consent.js"></script>
+  </body>
+</html>

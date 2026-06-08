@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>АКТИВ Admin — Партнерская сеть</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Unbounded:wght@400;600;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin.css">
+
+<style>
+
+.invite-topbar-btn { padding: 8px 18px; font-size: 12px; border-radius: 10px; }
+
+.filter-spacer { flex: 1; }
+.finance-summary {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 24px;
+}
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+}
+.summary-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 20px;
+}
+.summary-label {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+}
+.summary-value {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+}
+.summary-sub {
+  font-size: 10.5px;
+  color: var(--text2);
+  margin-top: 6px;
+  font-weight: 600;
+}
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.filter-tabs {
+  display: flex;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 4px;
+  gap: 2px;
+}
+.filter-tab {
+  padding: 7px 14px;
+  border-radius: 9px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text2);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.filter-tab.active {
+  background: linear-gradient(135deg, var(--pink), var(--purple));
+  color: #000;
+}
+.filter-tab:hover:not(.active) {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.04);
+}
+.partner-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.partner-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 20px 24px;
+  display: grid;
+  grid-template-columns: 1fr 100px 100px 120px 120px 140px;
+  align-items: center;
+  gap: 16px;
+  transition: all 0.22s;
+}
+.partner-card:hover {
+  border-color: rgba(232, 168, 216, 0.18);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+}
+.partner-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+}
+.partner-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  background: linear-gradient(135deg, var(--pink), var(--purple));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 800;
+  color: #000;
+  flex-shrink: 0;
+}
+.partner-name {
+  font-size: 14px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+.partner-category {
+  font-size: 11px;
+  color: var(--text2);
+  font-weight: 600;
+}
+.commission-badge {
+  background: rgba(176, 136, 208, 0.1);
+  color: var(--purple);
+  border-radius: 20px;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 800;
+  display: inline-block;
+}
+.partner-cell {
+  min-width: 0;
+}
+.partner-cell-value {
+  font-size: 14px;
+  font-weight: 700;
+}
+.partner-cell-sub {
+  font-size: 10.5px;
+  color: var(--text2);
+  margin-top: 2px;
+  font-weight: 600;
+}
+.commission-bar {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+.commission-fill {
+  height: 100%;
+  border-radius: 10px;
+  background: linear-gradient(90deg, var(--pink), var(--purple));
+}
+.partner-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.pending-section { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+.pending-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+  transition: border-color .2s;
+  cursor: pointer;
+}
+.pending-card:hover { border-color: rgba(244,200,110,.3); }
+.pending-card.open { border-color: rgba(244,200,110,.4); }
+.pending-head {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 20px;
+}
+.pending-chevron {
+  margin-left: auto; flex-shrink: 0;
+  width: 20px; height: 20px;
+  color: var(--text3);
+  transition: transform .25s ease;
+}
+.pending-card.open .pending-chevron { transform: rotate(180deg); }
+.pending-body {
+  display: none;
+  padding: 0 20px 18px;
+  border-top: 1px solid var(--border);
+}
+.pending-card.open .pending-body { display: block; }
+.pending-proposal {
+  font-size: 13px; color: var(--text2); line-height: 1.6;
+  padding: 14px 0 16px;
+}
+.pending-meta-row {
+  display: flex; gap: 24px; margin-bottom: 16px; flex-wrap: wrap;
+}
+.pending-meta-item { font-size: 12px; color: var(--text3); font-weight: 600; }
+.pending-meta-item span { color: var(--text); font-weight: 700; }
+.pending-actions {
+  display: flex; gap: 8px;
+}
+
+.admin-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--border);
+}
+.admin-tab {
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text2);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+.admin-tab.active {
+  color: var(--pink);
+  border-bottom-color: var(--pink);
+}
+
+.finance-table {
+  overflow-x: auto;
+}
+.finance-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.finance-table th, .finance-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.finance-table th {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text3);
+  text-transform: uppercase;
+}
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 50px;
+  font-size: 10px;
+  font-weight: 800;
+}
+.status-paid { background: rgba(110,231,160,0.1); color: var(--green); }
+.status-pending { background: rgba(244,200,110,0.1); color: var(--gold); }
+.status-overdue { background: rgba(248,113,113,0.1); color: var(--red); }
+.btn-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text2);
+  transition: color 0.2s;
+}
+.btn-icon:hover { color: var(--text); }
+
+.modal-lg {
+  max-width: 700px;
+}
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  
+  .summary-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+  .summary-card {
+    padding: 14px 12px !important;
+    min-height: 0 !important;
+    overflow: hidden;
+  }
+  .summary-label {
+    font-size: 9px !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    line-height: 1.3 !important;
+    margin-bottom: 6px !important;
+  }
+  .summary-value {
+    font-size: 20px !important;
+    line-height: 1.1 !important;
+    white-space: nowrap !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .summary-currency {
+    font-size: 12px !important;
+  }
+  .summary-delta {
+    font-size: 10px !important;
+    margin-top: 4px !important;
+  }
+
+  
+  .admin-tabs {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    flex-wrap: nowrap !important;
+    gap: 0 !important;
+    scrollbar-width: none !important;
+  }
+  .admin-tabs::-webkit-scrollbar { display: none; }
+  .admin-tab {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    padding: 12px 16px !important;
+    font-size: 13px !important;
+    min-height: 46px !important;
+  }
+
+  
+  .toolbar {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  .filter-tabs {
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    scrollbar-width: none !important;
+  }
+  .filter-tabs::-webkit-scrollbar { display: none; }
+  .filter-tab {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    padding: 9px 14px !important;
+    font-size: 13px !important;
+    min-height: 42px !important;
+  }
+
+  
+  .partner-card {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr 1fr !important;
+    gap: 14px !important;
+    padding: 16px !important;
+  }
+  .partner-info {
+    grid-column: 1 / -1 !important;
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+  .partner-name {
+    font-size: 15px !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+  }
+  .partner-meta {
+    font-size: 11px !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    line-height: 1.5 !important;
+  }
+  .partner-cell:nth-of-type(2) {
+    grid-column: 1 / 2 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 4px !important;
+    border-bottom: none !important;
+    padding: 0 !important;
+  }
+  .partner-cell:nth-of-type(3) {
+    grid-column: 2 / 3 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 4px !important;
+    border-bottom: none !important;
+    padding: 0 !important;
+  }
+  .partner-cell:nth-of-type(4) {
+    grid-column: 3 / 4 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 4px !important;
+    border-bottom: none !important;
+    padding: 0 !important;
+  }
+  .partner-cell:nth-of-type(5) {
+    grid-column: 1 / 2 !important;
+    display: flex !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    border-bottom: none !important;
+    padding: 0 !important;
+  }
+  .partner-cell-value {
+    font-size: 16px !important;
+    font-weight: 800 !important;
+  }
+  .partner-cell-sub {
+    font-size: 11px !important;
+    color: var(--text2) !important;
+    font-weight: 600 !important;
+  }
+  .commission-bar {
+    width: 60px !important;
+    flex-shrink: 0 !important;
+    margin-top: 0 !important;
+  }
+  .partner-actions {
+    grid-column: 2 / -1 !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    width: 100% !important;
+    margin-top: 0 !important;
+  }
+  .partner-actions button {
+    flex: 1 !important;
+    min-width: 80px !important;
+    justify-content: center !important;
+    text-align: center !important;
+    min-height: 40px !important;
+    font-size: 13px !important;
+    padding: 10px 14px !important;
+  }
+  .partner-avatar {
+    flex-shrink: 0 !important;
+    width: 44px !important;
+    height: 44px !important;
+    font-size: 16px !important;
+  }
+  .badge {
+    font-size: 11px !important;
+    padding: 4px 10px !important;
+  }
+
+  
+  .form-row {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  
+  .payments-table-wrap { overflow-x: auto !important; }
+}
+
+@media (max-width: 480px) {
+  .summary-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  .summary-value { font-size: 18px !important; }
+  .summary-label { font-size: 8.5px !important; }
+  .admin-tab { padding: 11px 13px !important; font-size: 12px !important; }
+  .filter-tab { padding: 9px 12px !important; font-size: 12px !important; }
+  .partner-actions button { min-width: 100px !important; font-size: 12px !important; }
+}
+</style>
+<script src="user-sync.js"></script>
+  </head>
+<body>
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+
+<div class="mobile-header">
+  <button class="burger-btn" id="burgerBtn"><span class="burger-line"></span><span class="burger-line"></span><span class="burger-line"></span></button>
+  <a href="admin-dashboard.html" style="display:flex;align-items:center;text-decoration:none;gap:8px;">
+    <svg viewBox="0 0 445 416" fill="none" style="width:28px;height:28px;filter:drop-shadow(0 0 8px rgba(232,168,216,.5));">
+      <path d="M 77 375 L 79 377 L 79 378 L 81 380 L 82 380 L 83 381 L 85 381 L 86 382 L 243 382 L 244 381 L 250 381 L 251 380 L 254 380 L 255 379 L 256 379 L 257 378 L 259 378 L 260 377 L 261 377 L 262 376 L 263 376 L 264 375 L 265 375 L 267 373 L 268 373 L 270 371 L 271 371 L 279 363 L 280 363 L 282 361 L 282 360 L 288 354 L 289 354 L 298 345 L 298 344 L 299 343 L 300 343 L 323 320 L 323 319 L 325 317 L 325 315 L 326 314 L 325 313 L 325 309 L 324 308 L 324 307 L 322 305 L 321 305 L 320 304 L 150 304 L 149 305 L 146 305 L 145 306 L 142 306 L 141 307 L 139 307 L 138 308 L 137 308 L 136 309 L 135 309 L 134 310 L 133 310 L 131 312 L 130 312 L 103 339 L 102 339 L 99 342 L 99 343 L 90 352 L 89 352 L 86 355 L 86 356 L 84 358 L 83 358 L 81 360 L 81 361 L 78 364 L 78 366 L 77 367 Z" fill="#f8ccf3"/>
+      <path d="M 113 108 L 106 108 L 105 109 L 104 109 L 59 154 L 59 155 L 56 158 L 56 159 L 55 160 L 55 161 L 54 162 L 54 163 L 53 164 L 53 165 L 52 166 L 52 167 L 51 168 L 51 170 L 50 171 L 50 172 L 49 173 L 49 176 L 48 177 L 48 181 L 47 182 L 47 193 L 46 194 L 46 335 L 47 336 L 47 341 L 48 342 L 48 343 L 53 348 L 61 348 L 63 346 L 64 346 L 105 305 L 105 304 L 108 301 L 108 300 L 109 299 L 109 298 L 110 297 L 110 296 L 111 295 L 111 294 L 112 293 L 112 292 L 113 291 L 113 290 L 114 289 L 114 287 L 115 286 L 115 283 L 116 282 L 116 277 L 117 276 L 117 113 L 116 112 L 116 111 Z" fill="#f8ccf3"/>
+      <path d="M 107 17 L 104 20 L 103 20 L 57 66 L 56 66 L 52 70 L 52 71 L 49 74 L 49 76 L 48 77 L 48 79 L 49 80 L 49 82 L 53 86 L 315 86 L 316 87 L 321 87 L 322 88 L 324 88 L 325 89 L 326 89 L 327 90 L 328 90 L 330 92 L 331 92 L 340 101 L 340 102 L 341 103 L 341 104 L 342 105 L 342 106 L 343 107 L 343 108 L 344 109 L 344 112 L 345 113 L 345 375 L 346 376 L 346 377 L 347 378 L 347 379 L 348 380 L 349 380 L 350 381 L 352 381 L 353 382 L 354 382 L 355 381 L 357 381 L 358 380 L 359 380 L 398 341 L 399 341 L 403 337 L 403 336 L 409 330 L 409 329 L 411 327 L 411 326 L 412 325 L 412 324 L 414 322 L 414 321 L 415 320 L 415 318 L 416 317 L 416 316 L 417 315 L 417 313 L 418 312 L 418 310 L 419 309 L 419 305 L 420 304 L 420 293 L 421 292 L 421 200 L 420 199 L 420 198 L 421 197 L 421 177 L 420 176 L 421 175 L 421 144 L 420 143 L 420 136 L 421 135 L 421 120 L 420 119 L 420 80 L 421 79 L 421 74 L 420 73 L 420 63 L 419 62 L 419 57 L 418 56 L 418 53 L 417 52 L 417 50 L 416 49 L 416 48 L 415 47 L 415 45 L 414 44 L 414 43 L 413 42 L 413 41 L 412 40 L 412 39 L 410 37 L 410 36 L 409 35 L 409 34 L 403 28 L 403 27 L 399 23 L 398 23 L 395 20 L 394 20 L 392 18 L 391 18 L 389 16 L 388 16 L 387 15 L 386 15 L 385 14 L 384 14 L 383 13 L 381 13 L 380 12 L 378 12 L 377 11 L 375 11 L 374 10 L 371 10 L 370 9 L 363 9 L 362 8 L 134 8 L 133 9 L 126 9 L 125 10 L 122 10 L 121 11 L 119 11 L 118 12 L 117 12 L 116 13 L 114 13 L 113 14 L 112 14 L 111 15 L 110 15 L 108 17 Z" fill="#f8ccf3"/>
+    </svg>
+    
+  </a>
+</div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<aside class="sidebar">
+  <div class="sidebar-head">
+    <a href="admin-dashboard.html" class="logo">
+      <div class="logo-gem"><svg viewBox="0 0 445 416" fill="none"><path d="M 77 375 L 79 377 L 79 378 L 81 380 L 82 380 L 83 381 L 85 381 L 86 382 L 243 382 L 244 381 L 250 381 L 251 380 L 254 380 L 255 379 L 256 379 L 257 378 L 259 378 L 260 377 L 261 377 L 262 376 L 263 376 L 264 375 L 265 375 L 267 373 L 268 373 L 270 371 L 271 371 L 279 363 L 280 363 L 282 361 L 282 360 L 288 354 L 289 354 L 298 345 L 298 344 L 299 343 L 300 343 L 323 320 L 323 319 L 325 317 L 325 315 L 326 314 L 325 313 L 325 309 L 324 308 L 324 307 L 322 305 L 321 305 L 320 304 L 150 304 L 149 305 L 146 305 L 145 306 L 142 306 L 141 307 L 139 307 L 138 308 L 137 308 L 136 309 L 135 309 L 134 310 L 133 310 L 131 312 L 130 312 L 103 339 L 102 339 L 99 342 L 99 343 L 90 352 L 89 352 L 86 355 L 86 356 L 84 358 L 83 358 L 81 360 L 81 361 L 78 364 L 78 366 L 77 367 Z" fill="#f8ccf3"/><path d="M 113 108 L 106 108 L 105 109 L 104 109 L 59 154 L 59 155 L 56 158 L 56 159 L 55 160 L 55 161 L 54 162 L 54 163 L 53 164 L 53 165 L 52 166 L 52 167 L 51 168 L 51 170 L 50 171 L 50 172 L 49 173 L 49 176 L 48 177 L 48 181 L 47 182 L 47 193 L 46 194 L 46 335 L 47 336 L 47 341 L 48 342 L 48 343 L 53 348 L 61 348 L 63 346 L 64 346 L 105 305 L 105 304 L 108 301 L 108 300 L 109 299 L 109 298 L 110 297 L 110 296 L 111 295 L 111 294 L 112 293 L 112 292 L 113 291 L 113 290 L 114 289 L 114 287 L 115 286 L 115 283 L 116 282 L 116 277 L 117 276 L 117 113 L 116 112 L 116 111 Z" fill="#f8ccf3"/><path d="M 107 17 L 104 20 L 103 20 L 57 66 L 56 66 L 52 70 L 52 71 L 49 74 L 49 76 L 48 77 L 48 79 L 49 80 L 49 82 L 53 86 L 315 86 L 316 87 L 321 87 L 322 88 L 324 88 L 325 89 L 326 89 L 327 90 L 328 90 L 330 92 L 331 92 L 340 101 L 340 102 L 341 103 L 341 104 L 342 105 L 342 106 L 343 107 L 343 108 L 344 109 L 344 112 L 345 113 L 345 375 L 346 376 L 346 377 L 347 378 L 347 379 L 348 380 L 349 380 L 350 381 L 352 381 L 353 382 L 354 382 L 355 381 L 357 381 L 358 380 L 359 380 L 398 341 L 399 341 L 403 337 L 403 336 L 409 330 L 409 329 L 411 327 L 411 326 L 412 325 L 412 324 L 414 322 L 414 321 L 415 320 L 415 318 L 416 317 L 416 316 L 417 315 L 417 313 L 418 312 L 418 310 L 419 309 L 419 305 L 420 304 L 420 293 L 421 292 L 421 200 L 420 199 L 420 198 L 421 197 L 421 177 L 420 176 L 421 175 L 421 144 L 420 143 L 420 136 L 421 135 L 421 120 L 420 119 L 420 80 L 421 79 L 421 74 L 420 73 L 420 63 L 419 62 L 419 57 L 418 56 L 418 53 L 417 52 L 417 50 L 416 49 L 416 48 L 415 47 L 415 45 L 414 44 L 414 43 L 413 42 L 413 41 L 412 40 L 412 39 L 410 37 L 410 36 L 409 35 L 409 34 L 403 28 L 403 27 L 399 23 L 398 23 L 395 20 L 394 20 L 392 18 L 391 18 L 389 16 L 388 16 L 387 15 L 386 15 L 385 14 L 384 14 L 383 13 L 381 13 L 380 12 L 378 12 L 377 11 L 375 11 L 374 10 L 371 10 L 370 9 L 363 9 L 362 8 L 134 8 L 133 9 L 126 9 L 125 10 L 122 10 L 121 11 L 119 11 L 118 12 L 117 12 L 116 13 L 114 13 L 113 14 L 112 14 L 111 15 L 110 15 L 108 17 Z" fill="#f8ccf3"/></svg></div>
+      <span class="logo-text">АКТИВ</span>
+    </a>
+    <div class="sidebar-user" style="display: none !important;">
+      <div class="s-avatar">АД<div class="s-avatar-online"></div></div>
+      <div class="s-user-info">
+        <div class="s-user-name">Alex_Admin</div>
+        <div class="s-user-sub">Администратор</div>
+      </div>
+    </div>
+  </div>
+  <a href="admin-dashboard.html" class="nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Обзор системы
+  </a>
+  <a href="admin-events.html" class="nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    Последние события
+  </a>
+  <a href="admin-moderation.html" class="nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    Очередь модерации
+    <span class="nav-badge">7</span>
+  </a><a href="admin-finances.html" class="nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+    Финансы и комиссии
+  </a>
+  <a href="admin-partners.html" class="nav-item active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Партнерская сеть
+    <span class="nav-badge green">4</span>
+  </a>
+  <div class="sidebar-footer">
+    <div class="sidebar-footer-links"><a href="about.html">О системе</a><a href="changelog.html">Changelog</a></div>
+    <div class="sidebar-footer-copy">© 2026 АКТИВ Platform</div>
+  </div>
+</aside>
+
+<div class="page-wrap">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="breadcrumb">
+        <a href="admin-dashboard.html">АКТИВ Admin</a>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        <a href="admin-dashboard.html">Финансы</a>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        <span>Партнерская сеть</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn-primary invite-topbar-btn" onclick="openModal('inviteModal')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Пригласить
+      </button>
+      </div>
+    </div>
+      <main>
+    <div class="page-hdr">
+      <div>
+        <h1>Партнёрская сеть</h1>
+        <p>Управление аффилиатами, отчисления и аналитика привлечённых пользователей</p>
+      </div>
+    </div>
+
+  
+  <div class="summary-grid" id="summaryStats"></div>
+
+  
+  <div class="admin-tabs">
+    <div class="admin-tab active" data-tab="all">Все партнёры</div>
+    <div class="admin-tab" data-tab="pending">Заявки на рассмотрение <span id="pendingCountBadge" class="nav-badge" style="margin-left: 6px;">0</span></div>
+    <div class="admin-tab" data-tab="finance">Финансы и выплаты</div>
+  </div>
+
+  
+  <div id="tab-all" class="tab-content">
+    <div class="toolbar">
+      <div class="filter-tabs">
+        <button class="filter-tab active" data-filter="all">Все</button>
+        <button class="filter-tab" data-filter="active">Активные</button>
+        <button class="filter-tab" data-filter="top">Топ</button>
+        <button class="filter-tab" data-filter="inactive">Неактивные</button>
+      </div>
+      <div class="filter-spacer" style="flex:1;"></div>
+      <input id="partnerSearch" type="text" placeholder="Поиск партнёра..." style="padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:12px;min-width:180px;outline:none;">
+    </div>
+    <div class="partner-list" id="partnerListContainer"></div>
+  </div>
+
+  
+  <div id="tab-pending" class="tab-content" style="display:none;">
+    <div class="pending-section" id="pendingRequestsContainer"></div>
+  </div>
+
+  
+  <div id="tab-finance" class="tab-content" style="display:none;">
+    <div class="finance-summary" style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:24px;"></div>
+    <div class="card card-p">
+      <div class="card-title">История выплат партнёрам</div>
+      <div class="finance-table" id="financeTable"></div>
+    </div>
+  </div>
+</div>
+
+  </main>
+  </div>
+
+
+</div>
+
+<div class="modal-overlay" id="inviteModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3>Пригласить партнёра</h3>
+      <button class="modal-close" onclick="closeModal('inviteModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="inviteForm">
+        <div class="form-group">
+          <label class="form-label">Название компании / Имя партнёра *</label>
+          <input type="text" class="form-input" id="partnerName" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Email *</label>
+            <input type="email" class="form-input" id="partnerEmail" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Телефон</label>
+            <input type="text" class="form-input" id="partnerPhone">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Сайт / соцсети</label>
+          <input type="text" class="form-input" id="partnerUrl" placeholder="https://...">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Тип партнёрства</label>
+            <select class="form-select" id="partnerType">
+              <option value="blogger">Блогер / Инфлюенсер</option>
+              <option value="referral">Реферальная программа</option>
+              <option value="agency">Агентство</option>
+              <option value="expert">Эксперт / Наставник</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Желаемая комиссия (%)</label>
+            <input type="number" class="form-input" id="requestedCommission" value="20" min="0" max="50" step="1">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Предложение / Комментарий</label>
+          <textarea class="form-textarea" id="partnerProposal" rows="3" placeholder="Опишите, как планируете продвигать платформу..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeModal('inviteModal')">Отмена</button>
+          <button type="submit" class="btn-primary">Отправить заявку</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="partnerDetailModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3 id="detailTitle">Профиль партнёра</h3>
+      <button class="modal-close" onclick="closeModal('partnerDetailModal')">✕</button>
+    </div>
+    <div class="modal-body" id="detailBody"></div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script>
+
+let partners = [];
+let pendingRequests = [];
+
+function loadMockData() {
+  let storedPartners = null, storedPending = null;
+  try { storedPartners = localStorage.getItem('АКТИВ_partners'); storedPending = localStorage.getItem('АКТИВ_pending'); } catch(e) {}
+  if (storedPartners) {
+    try { partners = JSON.parse(storedPartners); } catch(e) { storedPartners = null; }
+  }
+  if (!storedPartners) {
+    partners = [
+      { id: 'p1', name: 'blog_health_24', email: 'health@blog.com', phone: '', type: 'blogger', commission: 20, earned: 18720, paid: 14000, referrals: 312, status: 'active', createdAt: '2025-01-14', lastPayout: '2025-06-01', nextPayout: '2025-07-01', pendingAmount: 4720, category: 'Здоровье' },
+      { id: 'p2', name: 'fit_community_ru', email: 'fit@community.ru', phone: '', type: 'referral', commission: 20, earned: 29350, paid: 20000, referrals: 587, status: 'active', createdAt: '2025-02-03', lastPayout: '2025-06-01', nextPayout: '2025-07-01', pendingAmount: 9350, category: 'Фитнес' },
+      { id: 'p3', name: 'mindfulness_pro', email: 'mind@pro.com', phone: '', type: 'expert', commission: 25, earned: 42050, paid: 35000, referrals: 841, status: 'top', createdAt: '2024-12-28', lastPayout: '2025-06-01', nextPayout: '2025-07-01', pendingAmount: 7050, category: 'Медитации' },
+      { id: 'p4', name: 'old_runner_blog', email: 'old@runner.com', phone: '', type: 'blogger', commission: 20, earned: 5000, paid: 5000, referrals: 100, status: 'inactive', createdAt: '2024-08-05', lastPayout: '2025-03-01', nextPayout: null, pendingAmount: 0, category: 'Бег' },
+    ];
+    try { localStorage.setItem('АКТИВ_partners', JSON.stringify(partners)); } catch(e) {}
+  }
+  if (storedPending) {
+    try { pendingRequests = JSON.parse(storedPending); } catch(e) { storedPending = null; }
+  }
+  if (!storedPending) {
+    pendingRequests = [
+      { id: 'req1', name: 'nutrition_coach_ru', email: 'coach@nutrition.com', phone: '', type: 'blogger', requestedCommission: 25, proposal: 'Instagram 48k followers, хочу продвигать челленджи по питанию.', status: 'pending', createdAt: new Date().toISOString() },
+      { id: 'req2', name: 'goal_setters_club', email: 'goals@club.com', phone: '', type: 'referral', requestedCommission: 20, proposal: 'Telegram-канал 22k подписчиков, готов запустить реферальную программу.', status: 'pending', createdAt: new Date().toISOString() },
+      { id: 'req3', name: 'biohack_daily', email: 'bio@hack.com', phone: '', type: 'expert', requestedCommission: 30, proposal: 'YouTube 35k, хочу создавать экспертные квесты.', status: 'pending', createdAt: new Date().toISOString() },
+    ];
+    try { localStorage.setItem('АКТИВ_pending', JSON.stringify(pendingRequests)); } catch(e) {}
+  }
+}
+loadMockData();
+
+function updateSummary() {
+  const active = partners.filter(p => p.status === 'active' || p.status === 'top').length;
+  const totalPaid = partners.reduce((s, p) => s + p.paid, 0);
+  const totalEarned = partners.reduce((s, p) => s + p.earned, 0);
+  const totalReferrals = partners.reduce((s, p) => s + p.referrals, 0);
+  const pendingCount = pendingRequests.length;
+  document.getElementById('summaryStats').innerHTML = `
+    <div class="summary-card"><div class="summary-label">Активных партнёров</div><div class="summary-value" style="color:var(--green);">${active}</div><div class="summary-sub">↑ ${active - 4} за месяц</div></div>
+    <div class="summary-card"><div class="summary-label">Выплачено всего</div><div class="summary-value">${totalPaid.toLocaleString()} ₽</div><div class="summary-sub">Партнёрских отчислений</div></div>
+    <div class="summary-card"><div class="summary-label">Начислено всего</div><div class="summary-value">${totalEarned.toLocaleString()} ₽</div><div class="summary-sub">включая ожидающие выплаты</div></div>
+    <div class="summary-card"><div class="summary-label">Привлечено пользователей</div><div class="summary-value">${totalReferrals.toLocaleString()}</div><div class="summary-sub">конверсия 8.4%</div></div>
+  `;
+  document.getElementById('pendingCountBadge').textContent = pendingCount;
+}
+updateSummary();
+
+function renderPartners(filter = 'all', search = '') {
+  let filtered = [...partners];
+  if (filter !== 'all') {
+    filtered = filtered.filter(p => p.status === filter || (filter === 'top' && p.status === 'top'));
+  }
+  if (search) {
+    filtered = filtered.filter(p => p.name.toLowerCase().includes(search) || p.email.toLowerCase().includes(search));
+  }
+  const container = document.getElementById('partnerListContainer');
+  if (!filtered.length) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-ic">📭</div><p>Нет партнёров</p></div>';
+    return;
+  }
+  container.innerHTML = filtered.map(p => `
+    <div class="partner-card" data-id="${p.id}">
+      <div class="partner-info" onclick="showPartnerDetail('${p.id}')">
+        <div class="partner-avatar">${p.name.slice(0,2).toUpperCase()}</div>
+        <div><div class="partner-name">${p.name}</div><div class="partner-category">${p.category || '—'} · С ${new Date(p.createdAt).toLocaleDateString()}</div></div>
+      </div>
+      <div class="partner-cell"><div class="partner-cell-value">${p.referrals}</div><div class="partner-cell-sub">пользователей</div></div>
+      <div class="partner-cell"><div class="partner-cell-value" style="color:var(--green);">${p.earned.toLocaleString()} ₽</div><div class="partner-cell-sub">начислено</div></div>
+      <div class="partner-cell">
+        <div class="partner-cell-value"><span class="commission-badge" data-id="${p.id}" data-comm="${p.commission}" onclick="event.stopPropagation();editCommission('${p.id}', this)">${p.commission}%</span></div>
+        <div class="commission-bar"><div class="commission-fill" style="width:${p.commission}%;"></div></div>
+      </div>
+      <div class="partner-cell"><span class="badge badge-${p.status === 'active' ? 'green' : (p.status === 'top' ? 'purple' : 'open')}">${p.status === 'top' ? 'Топ-партнёр' : (p.status === 'active' ? 'Активен' : 'На паузе')}</span></div>
+      <div class="partner-actions">
+        <button class="btn-sm" onclick="showPartnerDetail('${p.id}')">Профиль</button>
+        <button class="btn-sm btn-danger" onclick="togglePartnerStatus('${p.id}')">${p.status === 'inactive' ? 'Активировать' : 'Пауза'}</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderPendingRequests() {
+  const container = document.getElementById('pendingRequestsContainer');
+  if (!pendingRequests.length) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-ic">📬</div><p>Нет новых заявок</p></div>';
+    return;
+  }
+  const typeLabel = { blogger: 'Блогер', referral: 'Реферальная программа', expert: 'Эксперт' };
+  const typeColor = { blogger: 'pink', referral: 'cyan', expert: 'gold' };
+  container.innerHTML = pendingRequests.map(req => {
+    const date = new Date(req.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+    return `
+    <div class="pending-card" data-id="${req.id}" onclick="togglePending(this)">
+      <div class="pending-head">
+        <div class="pending-avatar">${req.name.slice(0,2).toUpperCase()}</div>
+        <div class="pending-info" style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            <div class="pending-name">${req.name}</div>
+            <span class="badge badge-${typeColor[req.type] || 'gold'}">${typeLabel[req.type] || req.type}</span>
+          </div>
+          <div class="pending-sub">${req.email}${req.phone ? ' · ' + req.phone : ''} · Желаемая комиссия: <b style="color:var(--text)">${req.requestedCommission}%</b></div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;margin-right:10px;">
+          <div style="font-size:10px;color:var(--text3);font-weight:600;">${date}</div>
+        </div>
+        <svg class="pending-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="pending-body">
+        <div class="pending-proposal">${req.proposal}</div>
+        <div class="pending-meta-row">
+          <div class="pending-meta-item">Email: <span>${req.email}</span></div>
+          ${req.phone ? `<div class="pending-meta-item">Телефон: <span>${req.phone}</span></div>` : ''}
+          <div class="pending-meta-item">Тип: <span>${typeLabel[req.type] || req.type}</span></div>
+          <div class="pending-meta-item">Желаемая комиссия: <span>${req.requestedCommission}%</span></div>
+        </div>
+        <div class="pending-actions" onclick="event.stopPropagation()">
+          <button class="btn-primary btn-sm" onclick="approveRequest('${req.id}')">✓ Одобрить</button>
+          <button class="btn-sm btn-danger" onclick="rejectRequest('${req.id}')">✕ Отклонить</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function togglePending(card) {
+  card.classList.toggle('open');
+}
+
+function approveRequest(id) {
+  const req = pendingRequests.find(r => r.id === id);
+  if (!req) return;
+  const newPartner = {
+    id: 'p' + Date.now(),
+    name: req.name,
+    email: req.email,
+    phone: req.phone || '',
+    type: req.type,
+    commission: req.requestedCommission,
+    earned: 0,
+    paid: 0,
+    referrals: 0,
+    status: 'active',
+    createdAt: new Date().toISOString().slice(0,10),
+    lastPayout: null,
+    nextPayout: null,
+    pendingAmount: 0,
+    category: req.type === 'blogger' ? 'Промо' : 'Партнёр'
+  };
+  partners.push(newPartner);
+  pendingRequests = pendingRequests.filter(r => r.id !== id);
+  try { localStorage.setItem('АКТИВ_partners', JSON.stringify(partners)); } catch(e) {}
+  try { localStorage.setItem('АКТИВ_pending', JSON.stringify(pendingRequests)); } catch(e) {}
+  updateSummary();
+  renderPartners(document.querySelector('.filter-tab.active')?.dataset.filter || 'all', (document.getElementById('partnerSearch')?.value || ''));
+  renderPendingRequests();
+  showToast(`Партнёр ${req.name} одобрен`, 'success');
+}
+
+function rejectRequest(id) {
+  pendingRequests = pendingRequests.filter(r => r.id !== id);
+  try { localStorage.setItem('АКТИВ_pending', JSON.stringify(pendingRequests)); } catch(e) {}
+  renderPendingRequests();
+  updateSummary();
+  showToast('Заявка отклонена', 'error');
+}
+
+function editCommission(partnerId, element) {
+  const partner = partners.find(p => p.id === partnerId);
+  if (!partner) return;
+  const current = partner.commission;
+  const newComm = prompt('Введите новую комиссию (%)', current);
+  if (newComm !== null && !isNaN(parseFloat(newComm))) {
+    partner.commission = parseFloat(newComm);
+    try { localStorage.setItem('АКТИВ_partners', JSON.stringify(partners)); } catch(e) {}
+    element.textContent = partner.commission + '%';
+    const bar = element.closest('.partner-cell').querySelector('.commission-fill');
+    if (bar) bar.style.width = partner.commission + '%';
+    showToast('Комиссия обновлена');
+  }
+}
+
+function togglePartnerStatus(partnerId) {
+  const partner = partners.find(p => p.id === partnerId);
+  if (partner) {
+    partner.status = partner.status === 'inactive' ? 'active' : 'inactive';
+    try { localStorage.setItem('АКТИВ_partners', JSON.stringify(partners)); } catch(e) {}
+    renderPartners(document.querySelector('.filter-tab.active')?.dataset.filter || 'all', (document.getElementById('partnerSearch')?.value || ''));
+    showToast(`Статус партнёра изменён на ${partner.status === 'active' ? 'активен' : 'на паузе'}`);
+  }
+}
+
+function renderFinance() {
+  const container = document.getElementById('financeTable');
+  if (!partners.length) {
+    container.innerHTML = '<div class="empty-state">Нет данных</div>';
+    return;
+  }
+  const totalDue = partners.reduce((s,p) => s + (p.earned - p.paid), 0);
+  const totalPaid = partners.reduce((s,p) => s + p.paid, 0);
+  const totalEarned = partners.reduce((s,p) => s + p.earned, 0);
+  document.querySelector('.finance-summary').innerHTML = `
+    <div class="summary-card"><div class="summary-label">Начислено всего</div><div class="summary-value">${totalEarned.toLocaleString()} ₽</div></div>
+    <div class="summary-card"><div class="summary-label">Выплачено всего</div><div class="summary-value">${totalPaid.toLocaleString()} ₽</div></div>
+    <div class="summary-card"><div class="summary-label">Долг перед партнёрами</div><div class="summary-value" style="color:${totalDue > 0 ? 'var(--gold)' : 'var(--green)'}">${totalDue.toLocaleString()} ₽</div></div>
+  `;
+  container.innerHTML = `
+    <table>
+      <thead><tr><th>Партнёр</th><th>Начислено</th><th>Выплачено</th><th>Остаток</th><th>Статус выплаты</th><th>Следующая выплата</th><th></th></tr></thead>
+      <tbody>
+        ${partners.map(p => {
+          const due = p.earned - p.paid;
+          let statusClass = 'status-pending';
+          let statusText = 'Ожидает';
+          if (due <= 0) { statusClass = 'status-paid'; statusText = 'Выплачено'; }
+          else if (p.nextPayout && new Date(p.nextPayout) < new Date()) statusClass = 'status-overdue';
+          return `
+            <tr>
+              <td><strong>${p.name}</strong><br><small>${p.email}</small></td>
+              <td>${p.earned.toLocaleString()} ₽</td>
+              <td>${p.paid.toLocaleString()} ₽</td>
+              <td>${due.toLocaleString()} ₽</td>
+              <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+              <td>${p.nextPayout ? new Date(p.nextPayout).toLocaleDateString() : '—'}</td>
+              <td><button class="btn-sm" onclick="markPaid('${p.id}')" ${due <= 0 ? 'disabled' : ''}>Выплатить</button></td>
+            </tr>
+          `;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function markPaid(partnerId) {
+  const partner = partners.find(p => p.id === partnerId);
+  if (!partner) return;
+  const due = partner.earned - partner.paid;
+  if (due <= 0) return;
+  partner.paid = partner.earned;
+  partner.lastPayout = new Date().toISOString();
+  partner.nextPayout = new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString();
+  try { localStorage.setItem('АКТИВ_partners', JSON.stringify(partners)); } catch(e) {}
+  renderFinance();
+  renderPartners(document.querySelector('.filter-tab.active')?.dataset.filter || 'all', (document.getElementById('partnerSearch')?.value || ''));
+  showToast(`Выплачено ${due.toLocaleString()} ₽ партнёру ${partner.name}`);
+}
+
+function showPartnerDetail(id) {
+  const partner = partners.find(p => p.id === id);
+  if (!partner) return;
+  const due = partner.earned - partner.paid;
+  document.getElementById('detailTitle').textContent = partner.name;
+  document.getElementById('detailBody').innerHTML = `
+    <div style="display:flex; gap:20px; flex-wrap:wrap;">
+      <div style="flex:1"><div class="form-label">Email</div><div>${partner.email}</div></div>
+      <div style="flex:1"><div class="form-label">Телефон</div><div>${partner.phone || '—'}</div></div>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin:20px 0;">
+      <div class="stat-item" style="background:var(--surface2); padding:12px; border-radius:12px;"><div class="stat-label">Привлечено</div><div class="stat-value" style="font-size:20px;">${partner.referrals}</div></div>
+      <div class="stat-item" style="background:var(--surface2); padding:12px; border-radius:12px;"><div class="stat-label">Начислено</div><div class="stat-value" style="font-size:20px;">${partner.earned.toLocaleString()} ₽</div></div>
+      <div class="stat-item" style="background:var(--surface2); padding:12px; border-radius:12px;"><div class="stat-label">Остаток к выплате</div><div class="stat-value" style="font-size:20px; color:${due > 0 ? 'var(--gold)' : 'var(--green)'};">${due.toLocaleString()} ₽</div></div>
+    </div>
+    <div class="form-label">История выплат (последние 3)</div>
+
+  `;
+  document.getElementById('partnerDetailModal').classList.add('active');
+}
+
+document.getElementById('inviteForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const newReq = {
+    id: 'req' + Date.now(),
+    name: document.getElementById('partnerName').value,
+    email: document.getElementById('partnerEmail').value,
+    phone: document.getElementById('partnerPhone').value,
+    type: document.getElementById('partnerType').value,
+    requestedCommission: parseInt(document.getElementById('requestedCommission').value),
+    proposal: document.getElementById('partnerProposal').value,
+    status: 'pending',
+    createdAt: new Date().toISOString()
+  };
+  pendingRequests.push(newReq);
+  try { localStorage.setItem('АКТИВ_pending', JSON.stringify(pendingRequests)); } catch(e) {}
+  closeModal('inviteModal');
+  document.getElementById('inviteForm').reset();
+  updateSummary();
+  renderPendingRequests();
+  showToast('Заявка отправлена на рассмотрение');
+});
+
+document.querySelectorAll('.admin-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const tabName = tab.dataset.tab;
+    document.querySelectorAll('.tab-content').forEach(cont => cont.style.display = 'none');
+    document.getElementById(`tab-${tabName}`).style.display = 'block';
+    if (tabName === 'all') renderPartners();
+    if (tabName === 'pending') renderPendingRequests();
+    if (tabName === 'finance') renderFinance();
+  });
+});
+
+let currentFilter = 'all';
+document.querySelectorAll('.filter-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    renderPartners(currentFilter, (document.getElementById('partnerSearch')?.value || ''));
+  });
+});
+document.getElementById('partnerSearch')?.addEventListener('input', (e) => {
+  renderPartners(currentFilter, e.target.value.toLowerCase());
+});
+
+renderPartners();
+renderPendingRequests();
+
+function openModal(id) { document.getElementById(id).classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+function exportData() {
+  const header = ['Имя', 'Email', 'Тип', 'Комиссия %', 'Начислено ₽', 'Выплачено ₽', 'Рефералы', 'Статус'];
+  const rows = partners.map(p => [p.name, p.email, p.type, p.commission, p.earned, p.paid, p.referrals, p.status]);
+  const bom = '\uFEFF';
+  const csv = bom + [header, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'АКТИВ_partners_' + new Date().toISOString().slice(0,10) + '.csv';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  showToast('CSV-файл скачан: ' + partners.length + ' партнёров');
+}
+function showToast(msg, type='success') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.textContent = msg;
+  container.appendChild(toast);
+  setTimeout(() => toast.classList.add('show'), 10);
+  setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 3000);
+}
+
+function initMobileMenu() {
+  const burger = document.getElementById('burgerBtn');
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  if (burger && sidebar && overlay) {
+    burger.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('active');
+    });
+    overlay.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('active');
+    });
+  }
+}
+initMobileMenu();
+</script>
+  <script src="cookie-consent.js"></script>
+  </body>
+</html>

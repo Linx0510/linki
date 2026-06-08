@@ -1,0 +1,13 @@
+.env
+.env.backup
+node_modules
+logs
+uploads
+*.log
+.venv
+data
+scripts/
+.dockerignore
+Dockerfile
+docker-compose.yml
+setup-server.sh

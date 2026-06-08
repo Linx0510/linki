@@ -1,0 +1,2229 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=5.0"
+    />
+    <title>АКТИВ — Создать квест (Эксперт)</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Unbounded:wght@400;600;700;900&display=swap"
+      rel="stylesheet"
+    />
+  <link rel="stylesheet" href="admin.css">
+    <style>
+      /* == АКТИВ SHARED == */
+      /* ======================================
+   АКТИВ-shared.css — единая дизайн-система
+   ====================================== */
+      :root {
+        --bg: #0e0e12;
+        --surface: #16161c;
+        --surface2: #1e1e26;
+        --surface3: #26262f;
+        --surface4: #2e2e3a;
+        --pink: #e8a8d8;
+        --pink2: #d488c4;
+        --pink-glow: rgba(232, 168, 216, 0.18);
+        --pink-soft: rgba(232, 168, 216, 0.07);
+        --purple: #b088d0;
+        --text: #f0f0f6;
+        --text2: #8888a0;
+        --text3: #505062;
+        --border: rgba(255, 255, 255, 0.055);
+        --border2: rgba(255, 255, 255, 0.1);
+        --green: #6ee7a0;
+        --red: #f87171;
+        --orange: #ff9b4e;
+        --blue: #7ec8e8;
+        --gold: #fbbf24;
+        --cyan: #5ee0d4;
+        --r: 14px;
+        --r-sm: 10px;
+        --r-xs: 7px;
+        --sidebar: 240px;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+        overflow-x: hidden;
+        max-width: 100%;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Plus Jakarta Sans", sans-serif;
+        min-height: 100vh;
+        display: flex;
+        line-height: 1.5;
+        overflow-x: hidden;
+      }
+
+      /* NOISE */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+        opacity: 0.025;
+        pointer-events: none;
+        z-index: 9999;
+      }
+
+      /* BLOBS */
+      .blob {
+        position: fixed;
+        pointer-events: none;
+        z-index: 0;
+        border-radius: 50%;
+        filter: blur(90px);
+        opacity: 0.12;
+        overflow: hidden;
+      }
+      .blob-1 {
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, var(--pink), transparent 70%);
+        top: -200px;
+        left: calc(var(--sidebar) - 100px);
+      }
+      .blob-2 {
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, var(--purple), transparent 70%);
+        bottom: -100px;
+        right: 100px;
+      }
+      .blob-3 {
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, #7ec8e8, transparent 70%);
+        top: 50%;
+        right: 20%;
+      }
+
+      /* == SIDEBAR == */
+      .sidebar {
+        width: var(--sidebar);
+        min-height: 100vh;
+        background: rgba(16, 16, 22, 0.95);
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: 200;
+        backdrop-filter: blur(20px);
+        overflow-y: auto;
+        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .sidebar::-webkit-scrollbar {
+        width: 3px;
+      }
+      .sidebar::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 10px;
+      }
+      .sidebar-head {
+        padding: 22px 18px 18px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      /* LOGO */
+      .logo {
+        font-family: "Unbounded", sans-serif;
+        font-size: 17px;
+        font-weight: 900;
+        color: var(--text);
+        text-decoration: none;
+        letter-spacing: -0.02em;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        margin-bottom: 18px;
+      }
+      .logo-gem {
+        width: 34px;
+        height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        filter: drop-shadow(0 0 14px rgba(232, 168, 216, 0.45));
+        flex-shrink: 0;
+      }
+      .logo-gem svg {
+        width: 34px;
+        height: 34px;
+      }
+      .logo-text {
+        background: linear-gradient(135deg, var(--text), var(--pink));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      /* USER CARD */
+      .sidebar-user {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: var(--r-sm);
+        cursor: pointer;
+        transition: border-color 0.2s;
+      }
+      .sidebar-user:hover {
+        border-color: rgba(232, 168, 216, 0.25);
+      }
+      .s-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--pink), var(--purple));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        font-size: 13px;
+        color: #fff;
+        border: 2px solid rgba(232, 168, 216, 0.35);
+        flex-shrink: 0;
+        position: relative;
+      }
+      .s-avatar-online {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--green);
+        border: 2px solid var(--surface2);
+      }
+      .s-user-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .s-user-name {
+        font-size: 13px;
+        font-weight: 800;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .s-user-sub {
+        font-size: 11px;
+        color: var(--text3);
+        font-weight: 600;
+        margin-top: 1px;
+      }
+      .s-user-xp {
+        font-size: 11px;
+        font-weight: 800;
+        color: var(--pink);
+        background: var(--pink-soft);
+        border: 1px solid rgba(232, 168, 216, 0.15);
+        border-radius: 50px;
+        padding: 2px 8px;
+        white-space: nowrap;
+      }
+
+      /* NAV */
+      .nav-section-lbl {
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--text3);
+        padding: 16px 18px 6px;
+      }
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 10px 9px 14px;
+        color: var(--text2);
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 700;
+        border-radius: var(--r-xs);
+        margin: 1px 8px;
+        transition:
+          color 0.18s,
+          background 0.18s;
+        position: relative;
+      }
+      .nav-item svg {
+        flex-shrink: 0;
+        opacity: 0.75;
+        width: 15px;
+        height: 15px;
+      }
+      .nav-item:hover {
+        color: var(--text);
+        background: var(--surface2);
+      }
+      .nav-item.active {
+        color: var(--pink);
+        background: linear-gradient(
+          90deg,
+          rgba(232, 168, 216, 0.1),
+          rgba(232, 168, 216, 0.04)
+        );
+        border: 1px solid rgba(232, 168, 216, 0.12);
+      }
+      .nav-item.active::before {
+        content: "";
+        position: absolute;
+        left: -8px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 3px;
+        height: 55%;
+        background: linear-gradient(180deg, var(--pink), var(--purple));
+        border-radius: 0 3px 3px 0;
+        box-shadow: 0 0 10px var(--pink);
+      }
+      .nav-item.active svg {
+        opacity: 1;
+      }
+      .nav-badge {
+        margin-left: auto;
+        background: rgba(248, 113, 113, 0.15);
+        color: var(--red);
+        font-size: 10px;
+        font-weight: 800;
+        border-radius: 50px;
+        padding: 2px 7px;
+        border: 1px solid rgba(248, 113, 113, 0.2);
+      }
+      .nav-badge.green {
+        background: rgba(110, 231, 160, 0.1);
+        color: var(--green);
+        border-color: rgba(110, 231, 160, 0.2);
+      }
+      .nav-badge.gold {
+        background: rgba(251, 191, 36, 0.1);
+        color: var(--gold);
+        border-color: rgba(251, 191, 36, 0.2);
+      }
+      .nav-badge.pink {
+        background: var(--pink-soft);
+        color: var(--pink);
+        border-color: rgba(232, 168, 216, 0.15);
+      }
+      .nav-divider {
+        height: 1px;
+        background: var(--border);
+        margin: 10px 18px;
+      }
+
+      /* SIDEBAR FOOTER */
+      .sidebar-footer {
+        margin-top: auto;
+        padding: 12px 18px 18px;
+        border-top: 1px solid var(--border);
+      }
+      .sidebar-footer-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 14px;
+        margin-bottom: 10px;
+      }
+      .sidebar-footer-links a {
+        font-size: 11px;
+        color: var(--text3);
+        font-weight: 600;
+        text-decoration: none;
+        transition: color 0.15s;
+      }
+      .sidebar-footer-links a:hover {
+        color: var(--text2);
+      }
+      .sidebar-footer-copy {
+        font-size: 10px;
+        color: var(--text3);
+        font-weight: 500;
+      }
+
+      /* MOBILE HEADER */
+      .mobile-header {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 56px;
+        background: rgba(14, 14, 18, 0.97);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--border);
+        z-index: 300;
+        padding: 0 16px;
+        align-items: center;
+        gap: 12px;
+      }
+      .burger-btn {
+        width: 36px;
+        height: 36px;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        cursor: pointer;
+      }
+      .burger-line {
+        width: 18px;
+        height: 2px;
+        background: var(--text);
+        border-radius: 2px;
+      }
+      .mobile-logo {
+        font-family: "Unbounded", sans-serif;
+        font-size: 18px;
+        font-weight: 900;
+        text-decoration: none;
+        color: var(--text);
+      }
+      .mobile-logo-link {
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+      }
+      .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 180;
+      }
+      .sidebar-overlay.active {
+        display: block;
+      }
+
+      /* PAGE WRAP */
+      .page-wrap {
+        margin-left: var(--sidebar);
+        flex: 1;
+        min-height: 100vh;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        z-index: 1;
+        max-width: calc(100% - var(--sidebar));
+      }
+
+      /* TOPBAR */
+      .topbar {
+        height: 54px;
+        background: rgba(14, 14, 18, 0.92);
+        backdrop-filter: blur(14px);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 0 24px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        flex-shrink: 0;
+      }
+      .topbar-left {
+        flex: 1;
+      }
+      .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text2);
+      }
+      .breadcrumb a {
+        color: var(--text2);
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+      .breadcrumb a:hover {
+        color: var(--text);
+      }
+      .breadcrumb .sep {
+        color: var(--text3);
+        font-size: 11px;
+      }
+      .breadcrumb span {
+        color: var(--text);
+        font-weight: 700;
+      }
+      .topbar-search {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 11px;
+        padding: 7px 13px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text3);
+        min-width: 200px;
+        cursor: text;
+        transition: border-color 0.2s;
+      }
+      .topbar-search:hover {
+        border-color: var(--border2);
+      }
+      .topbar-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .notif-btn {
+        width: 34px;
+        height: 34px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        cursor: pointer;
+      }
+      .notif-dot {
+        width: 6px;
+        height: 6px;
+        background: var(--pink);
+        border-radius: 50%;
+        position: absolute;
+        top: 7px;
+        right: 7px;
+        border: 1.5px solid var(--bg);
+      }
+
+      /* MAIN CONTENT */
+      main {
+        padding: 28px 32px 60px;
+      }
+
+      .page-hdr {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 28px;
+        gap: 16px;
+      }
+      .page-hdr h1 {
+        font-family: "Unbounded", sans-serif;
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        margin-bottom: 4px;
+      }
+      .page-hdr p {
+        font-size: 13px;
+        color: var(--text2);
+        font-weight: 600;
+      }
+
+      /* CARD */
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r);
+        overflow: hidden;
+        position: relative;
+      }
+      .card::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.018) 0%,
+          transparent 50%
+        );
+        pointer-events: none;
+      }
+      .card-p {
+        padding: 20px;
+      }
+      .card-hdr {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--border);
+      }
+      .card-hdr h3 {
+        font-size: 13px;
+        font-weight: 800;
+      }
+      .card-hdr p {
+        font-size: 11px;
+        color: var(--text2);
+        margin-top: 3px;
+      }
+      .card-title {
+        font-family: "Unbounded", sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .card-title svg {
+        color: var(--purple);
+        width: 16px;
+        height: 16px;
+      }
+      .card-sub {
+        font-size: 11px;
+        color: var(--text3);
+        font-weight: 600;
+        margin-top: 2px;
+      }
+
+      /* TABLES */
+      .table-wrapper {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r);
+        overflow-x: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th {
+        text-align: left;
+        padding: 14px 18px;
+        font-size: 10px;
+        font-weight: 800;
+        color: var(--text3);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        border-bottom: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.01);
+      }
+      td {
+        padding: 14px 18px;
+        font-size: 13px;
+        font-weight: 500;
+        border-bottom: 1px solid var(--border);
+      }
+      tr:last-child td {
+        border-bottom: none;
+      }
+      tr:hover td {
+        background: rgba(255, 255, 255, 0.015);
+      }
+
+      /* BUTTONS */
+      .btn-primary {
+        background: linear-gradient(135deg, var(--pink), var(--purple));
+        color: #000;
+        border: none;
+        padding: 10px 22px;
+        border-radius: 12px;
+        font-weight: 800;
+        font-size: 13px;
+        font-family: "Plus Jakarta Sans", sans-serif;
+        cursor: pointer;
+        transition:
+          transform 0.2s,
+          opacity 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+      }
+      .btn-primary:hover {
+        transform: translateY(-1px);
+        opacity: 0.92;
+      }
+      .btn-secondary {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--border);
+        padding: 9px 18px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 12px;
+        color: var(--text2);
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: inherit;
+      }
+      .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--text);
+      }
+      .btn-sm {
+        padding: 6px 12px;
+        border-radius: 9px;
+        font-size: 11px;
+        font-weight: 700;
+        border: 1px solid var(--border);
+        background: none;
+        color: var(--text2);
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: inherit;
+      }
+      .btn-sm:hover {
+        color: var(--text);
+        border-color: var(--border2);
+      }
+      .btn-danger {
+        background: rgba(248, 113, 113, 0.08);
+        color: var(--red);
+        border: 1px solid rgba(248, 113, 113, 0.18);
+      }
+      .btn-danger:hover {
+        background: rgba(248, 113, 113, 0.15);
+      }
+      .btn-ghost {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 8px 14px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text2);
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: inherit;
+      }
+      .btn-ghost:hover {
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--text);
+      }
+
+      /* BADGES */
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 10px;
+        border-radius: 50px;
+        font-size: 10px;
+        font-weight: 800;
+      }
+      .badge-new {
+        background: rgba(232, 168, 216, 0.1);
+        color: var(--pink);
+        border: 1px solid rgba(232, 168, 216, 0.2);
+      }
+      .badge-open {
+        background: rgba(94, 224, 212, 0.08);
+        color: var(--cyan);
+        border: 1px solid rgba(94, 224, 212, 0.15);
+      }
+      .badge-wait {
+        background: rgba(251, 191, 36, 0.08);
+        color: var(--gold);
+        border: 1px solid rgba(251, 191, 36, 0.15);
+      }
+      .badge-closed {
+        background: rgba(110, 231, 160, 0.08);
+        color: var(--green);
+        border: 1px solid rgba(110, 231, 160, 0.15);
+      }
+      .badge-rejected {
+        background: rgba(248, 113, 113, 0.08);
+        color: var(--red);
+        border: 1px solid rgba(248, 113, 113, 0.15);
+      }
+      .badge-green {
+        background: rgba(110, 231, 160, 0.1);
+        color: var(--green);
+        border: 1px solid rgba(110, 231, 160, 0.2);
+      }
+      .badge-red {
+        background: rgba(248, 113, 113, 0.1);
+        color: var(--red);
+        border: 1px solid rgba(248, 113, 113, 0.2);
+      }
+      .badge-gold {
+        background: rgba(251, 191, 36, 0.1);
+        color: var(--gold);
+        border: 1px solid rgba(251, 191, 36, 0.2);
+      }
+      .badge-purple {
+        background: rgba(176, 136, 208, 0.1);
+        color: var(--purple);
+        border: 1px solid rgba(176, 136, 208, 0.2);
+      }
+      .badge-cyan {
+        background: rgba(94, 224, 212, 0.1);
+        color: var(--cyan);
+        border: 1px solid rgba(94, 224, 212, 0.2);
+      }
+      .badge-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: currentColor;
+      }
+      .badge-dot.pulse {
+        animation: bdpulse 1.5s infinite;
+      }
+      @keyframes bdpulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.4;
+        }
+      }
+
+      /* FORMS */
+      .form-group {
+        margin-bottom: 18px;
+      }
+      .form-label {
+        display: block;
+        font-size: 10px;
+        font-weight: 800;
+        color: var(--text3);
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        margin-bottom: 7px;
+      }
+      .form-input,
+      .form-select,
+      .form-textarea {
+        width: 100%;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: var(--r-sm);
+        padding: 11px 14px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text);
+        font-family: "Plus Jakarta Sans", sans-serif;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      .form-input:focus,
+      .form-select:focus,
+      .form-textarea:focus {
+        border-color: rgba(232, 168, 216, 0.4);
+      }
+      .form-input::placeholder,
+      .form-textarea::placeholder {
+        color: var(--text3);
+      }
+      .form-textarea {
+        resize: vertical;
+        min-height: 80px;
+      }
+      .form-select {
+        appearance: none;
+        cursor: pointer;
+      }
+
+      /* TOAST */
+      #toast-container {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .toast {
+        background: var(--surface2);
+        border: 1px solid var(--border2);
+        border-radius: 13px;
+        padding: 12px 18px;
+        font-size: 13px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        backdrop-filter: blur(10px);
+        transform: translateX(120%);
+        transition: transform 0.3s ease;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+        max-width: 320px;
+      }
+      .toast.show {
+        transform: translateX(0);
+      }
+      .toast.success {
+        border-left: 3px solid var(--green);
+      }
+      .toast.error {
+        border-left: 3px solid var(--red);
+      }
+      .toast.info {
+        border-left: 3px solid var(--cyan);
+      }
+
+      /* GRID */
+      .grid-2 {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+      }
+      .grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+
+      /* TAG */
+      .tag {
+        background: var(--surface3);
+        color: var(--text2);
+        border-radius: 50px;
+        padding: 3px 10px;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .tag.pink {
+        background: var(--pink-soft);
+        color: var(--pink);
+        border: 1px solid rgba(232, 168, 216, 0.18);
+      }
+      .tag.green {
+        background: rgba(110, 231, 160, 0.08);
+        color: var(--green);
+        border: 1px solid rgba(110, 231, 160, 0.2);
+      }
+      .tag.gold {
+        background: rgba(251, 191, 36, 0.08);
+        color: var(--gold);
+        border: 1px solid rgba(251, 191, 36, 0.2);
+      }
+
+      /* SCROLLBAR */
+      ::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.07);
+        border-radius: 4px;
+      }
+
+      /* == MODAL == */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.78);
+        backdrop-filter: blur(8px);
+        z-index: 900;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        visibility: hidden;
+        opacity: 0;
+        transition:
+          opacity 0.22s,
+          visibility 0.22s;
+        padding: 16px;
+      }
+      .modal-overlay.active {
+        visibility: visible;
+        opacity: 1;
+      }
+      .modal {
+        background: var(--surface);
+        border: 1px solid var(--border2);
+        border-radius: 22px;
+        width: 100%;
+        max-width: 600px;
+        max-height: 88vh;
+        overflow-y: auto;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+        position: relative;
+      }
+      .modal-lg {
+        max-width: 720px;
+      }
+      .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border);
+        position: sticky;
+        top: 0;
+        background: var(--surface);
+        z-index: 1;
+        border-radius: 22px 22px 0 0;
+      }
+      .modal-header h3 {
+        font-size: 17px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+      .modal-close {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid var(--border);
+        color: var(--text2);
+        cursor: pointer;
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        transition: all 0.2s;
+        flex-shrink: 0;
+      }
+      .modal-close:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text);
+      }
+      .modal-body {
+        padding: 22px 24px;
+      }
+      .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 16px 24px;
+        border-top: 1px solid var(--border);
+      }
+
+      /* ==================================================
+   RESPONSIVE — TABLET  ?1100px
+   ================================================== */
+      @media (max-width: 1100px) {
+        :root {
+          --sidebar: 200px;
+        }
+      }
+
+      /* ==================================================
+   RESPONSIVE — MOBILE  ?768px
+   ================================================== */
+      @media (max-width: 768px) {
+        /* -- OVERFLOW PREVENTION -- */
+        html,
+        body {
+          overflow-x: hidden;
+          max-width: 100vw;
+        }
+        .page-wrap {
+          max-width: 100vw;
+          min-width: 0;
+          overflow-x: hidden;
+        }
+        main {
+          overflow-x: hidden;
+        }
+        * {
+          max-width: 100%;
+        }
+        img,
+        svg,
+        canvas,
+        video {
+          max-width: 100%;
+        }
+        .topbar-search {
+          display: none;
+        }
+
+        /* Сайдбар — слайд из-за края */
+        .sidebar {
+          transform: translateX(-100%);
+          width: 290px;
+          z-index: 400;
+          transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .sidebar.open {
+          transform: translateX(0);
+          box-shadow: 8px 0 40px rgba(0, 0, 0, 0.6);
+        }
+        /* Крупнее nav-item для пальцев */
+        .nav-item {
+          padding: 12px 14px 12px 16px;
+          font-size: 14px;
+          margin: 2px 8px;
+        }
+        .nav-item svg {
+          width: 17px;
+          height: 17px;
+        }
+        .nav-section-lbl {
+          padding: 18px 18px 6px;
+          font-size: 10px;
+        }
+        .s-user-name {
+          font-size: 14px;
+        }
+        .s-user-sub {
+          font-size: 11px;
+        }
+        .s-user-xp {
+          font-size: 11px;
+          padding: 3px 10px;
+        }
+        .s-avatar {
+          width: 40px;
+          height: 40px;
+          font-size: 14px;
+        }
+        .sidebar-footer-links a {
+          font-size: 12px;
+        }
+
+        /* Mobile header */
+        .mobile-header {
+          display: flex;
+          height: 58px;
+        }
+        .burger-btn {
+          width: 40px;
+          height: 40px;
+        }
+        .mobile-logo {
+          font-family: "Unbounded", sans-serif;
+          font-size: 18px;
+          font-weight: 900;
+          text-decoration: none;
+          color: var(--text);
+        }
+        .mobile-logo-link {
+          display: flex;
+          align-items: center;
+          text-decoration: none;
+        }
+
+        /* Page wrap — сдвигаем вниз под фиксированный mobile-header */
+        .page-wrap {
+          margin-left: 0;
+          padding-top: 58px;
+          width: 100%;
+          max-width: 100vw;
+          overflow-x: hidden;
+        }
+
+        /* Topbar — прилипает сразу под mobile-header */
+        .topbar {
+          height: auto;
+          min-height: 54px;
+          padding: 10px 16px;
+          top: 0;
+          flex-wrap: nowrap;
+          gap: 10px;
+          max-width: 100vw;
+          overflow: hidden;
+        }
+        .topbar-search {
+          display: none;
+        }
+        .topbar-left {
+          flex: 1;
+          min-width: 0;
+          overflow: hidden;
+        }
+        .breadcrumb {
+          font-size: 12px;
+          gap: 5px;
+          white-space: nowrap;
+          overflow: hidden;
+        }
+        .breadcrumb a:not(:first-child) {
+          display: none;
+        }
+        .breadcrumb svg:not(:last-of-type) {
+          display: none;
+        }
+        .topbar-right {
+          gap: 8px;
+          flex-shrink: 0;
+        }
+        /* Compact action buttons in topbar on mobile */
+        .topbar-right .btn-primary {
+          padding: 9px 14px;
+          font-size: 12px;
+          min-height: 38px;
+          white-space: nowrap;
+        }
+        .topbar-right .btn-primary svg {
+          display: none;
+        }
+        .notif-btn {
+          width: 40px;
+          height: 40px;
+          border-radius: 11px;
+        }
+
+        /* Основной контент */
+        main {
+          padding: 16px 14px 56px;
+          overflow-x: hidden;
+          width: 100%;
+        }
+
+        /* Заголовок страницы */
+        .page-hdr {
+          flex-direction: column;
+          gap: 10px;
+          margin-bottom: 20px;
+        }
+        .page-hdr h1 {
+          font-size: 20px;
+          letter-spacing: -0.02em;
+        }
+        .page-hdr p {
+          font-size: 13px;
+        }
+
+        /* Сетки */
+        .grid-2,
+        .grid-3 {
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+
+        /* Карточки */
+        .card-p {
+          padding: 16px;
+        }
+        .card-hdr {
+          padding: 14px 16px;
+        }
+        .card-title {
+          font-size: 13px;
+          margin-bottom: 16px;
+        }
+
+        /* Таблицы */
+        .table-wrapper {
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          border-radius: var(--r);
+        }
+        table {
+          min-width: 340px;
+        }
+        th {
+          padding: 12px 14px;
+          font-size: 10px;
+        }
+        td {
+          padding: 13px 14px;
+          font-size: 13px;
+        }
+
+        /* Кнопки — КРУПНЫЕ тач-зоны */
+        .btn-primary {
+          padding: 14px 22px;
+          font-size: 14px;
+          border-radius: 13px;
+          min-height: 48px;
+        }
+        .btn-secondary {
+          padding: 13px 18px;
+          font-size: 13px;
+          min-height: 46px;
+        }
+        .btn-sm {
+          padding: 10px 16px;
+          font-size: 12px;
+          border-radius: 10px;
+          min-height: 40px;
+        }
+        .btn-ghost {
+          padding: 12px 16px;
+          font-size: 13px;
+          min-height: 44px;
+        }
+        .btn-danger {
+          min-height: 40px;
+        }
+
+        /* Форм-элементы */
+        .form-input,
+        .form-select,
+        .form-textarea {
+          font-size: 15px;
+          padding: 14px 15px;
+          min-height: 50px;
+          border-radius: 12px;
+        }
+        .form-textarea {
+          min-height: 90px;
+        }
+        .form-label {
+          font-size: 11px;
+          margin-bottom: 8px;
+        }
+
+        /* Бейджи */
+        .badge {
+          font-size: 10px;
+          padding: 4px 10px;
+        }
+        .nav-badge {
+          font-size: 10px;
+          padding: 2px 8px;
+        }
+
+        /* Модалки — sheet снизу */
+        .modal-overlay {
+          padding: 0;
+          align-items: flex-end;
+        }
+        .modal {
+          border-radius: 24px 24px 0 0;
+          max-height: 90vh;
+          max-width: 100%;
+        }
+        .modal-header {
+          padding: 18px 20px;
+          border-radius: 24px 24px 0 0;
+        }
+        .modal-header h3 {
+          font-size: 16px;
+        }
+        .modal-close {
+          width: 38px;
+          height: 38px;
+          font-size: 18px;
+        }
+        .modal-body {
+          padding: 18px 20px;
+        }
+        .modal-footer {
+          padding: 16px 20px;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .modal-footer .btn-primary,
+        .modal-footer .btn-secondary {
+          width: 100%;
+          justify-content: center;
+        }
+      }
+
+      /* ==================================================
+   RESPONSIVE — SMALL MOBILE  ?480px  (iPhone SE / 375px)
+   ================================================== */
+      @media (max-width: 480px) {
+        main {
+          padding: 14px 12px 56px;
+        }
+
+        .page-hdr h1 {
+          font-size: 18px;
+        }
+        .page-hdr p {
+          font-size: 12px;
+        }
+
+        .card-p {
+          padding: 14px;
+        }
+
+        /* Кнопки во всю ширину */
+        .btn-primary {
+          width: 100%;
+          justify-content: center;
+        }
+
+        /* Таблица ещё компактнее */
+        th {
+          padding: 11px 12px;
+          font-size: 9.5px;
+        }
+        td {
+          padding: 12px 12px;
+          font-size: 12px;
+        }
+
+        /* Убираем тяжёлые блобы */
+        .blob-2,
+        .blob-3 {
+          display: none;
+        }
+      }
+
+      /* == PAGE SPECIFIC == */
+
+      .stepper {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 40px;
+      }
+      .step {
+        flex: 1;
+        height: 4px;
+        background: var(--surface3);
+        border-radius: 10px;
+        position: relative;
+      }
+      .step.done,
+      .step.active {
+        background: var(--pink);
+        box-shadow: 0 0 10px rgba(232, 168, 216, 0.35);
+      }
+      .step-lbl {
+        position: absolute;
+        top: 12px;
+        left: 0;
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: var(--pink);
+        letter-spacing: 0.05em;
+        white-space: nowrap;
+      }
+      .wizard-step {
+        display: none;
+      }
+      .wizard-step.active {
+        display: block;
+        animation: fadeIn 0.35s ease;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .type-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+        margin: 20px 0;
+      }
+      .type-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        padding: 28px 24px;
+        border-radius: var(--r);
+        cursor: pointer;
+        transition: all 0.25s;
+      }
+      .type-card:hover {
+        border-color: rgba(232, 168, 216, 0.22);
+      }
+      .type-card.active {
+        border-color: rgba(232, 168, 216, 0.4);
+        background: rgba(232, 168, 216, 0.05);
+        box-shadow: 0 8px 28px rgba(232, 168, 216, 0.08);
+      }
+      .type-icon {
+        margin-bottom: 16px;
+      }
+      .type-card h3 {
+        font-family: "Unbounded", sans-serif;
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+      .type-card p {
+        font-size: 13px;
+        color: var(--text2);
+        line-height: 1.6;
+      }
+      .cat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 12px;
+        margin: 20px 0;
+      }
+      .cat-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        padding: 18px 14px;
+        border-radius: var(--r);
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .cat-card:hover {
+        border-color: var(--border2);
+      }
+      .cat-card.active {
+        border-color: rgba(176, 136, 208, 0.4);
+        background: rgba(176, 136, 208, 0.06);
+        color: var(--purple);
+      }
+      .cat-card svg {
+        margin-bottom: 10px;
+      }
+      .cat-card span {
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: block;
+      }
+      .reward-preview {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        padding: 18px 20px;
+        border-radius: var(--r);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 28px;
+      }
+      .rp-lbl {
+        font-size: 10px;
+        font-weight: 800;
+        color: var(--text3);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 5px;
+      }
+      .rp-val {
+        font-family: "Unbounded", sans-serif;
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--pink);
+      }
+      .wiz-nav {
+        margin-top: 36px;
+        display: flex;
+        gap: 12px;
+      }
+      .btn-back {
+        background: none;
+        border: 1px solid var(--border);
+        color: var(--text2);
+        padding: 12px 22px;
+        border-radius: 12px;
+        font-weight: 800;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 14px;
+        min-height: 48px;
+      }
+      .btn-back:hover {
+        border-color: var(--border2);
+        color: var(--text);
+      }
+      @media (max-width: 768px) {
+        .type-grid {
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+        .type-card {
+          padding: 20px 18px;
+        }
+        .cat-grid {
+          grid-template-columns: repeat(3, 1fr);
+          gap: 10px;
+        }
+        .cat-card {
+          padding: 14px 10px;
+        }
+      }
+      @media (max-width: 480px) {
+        .stepper {
+          gap: 5px;
+        }
+        .cat-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .type-card h3 {
+          font-size: 14px;
+        }
+        .wiz-nav {
+          flex-direction: column-reverse;
+        }
+        .btn-back {
+          text-align: center;
+        }
+      }
+    @keyframes spin { to { transform: rotate(360deg); } }
+      #toast-container { position:fixed;bottom:24px;right:24px;z-index:1000;display:flex;flex-direction:column;gap:10px; }
+      .toast { background:var(--surface2);border:1px solid var(--border2);border-radius:13px;padding:12px 18px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:10px;backdrop-filter:blur(10px);transform:translateX(120%);transition:transform .3s ease;box-shadow:0 8px 24px rgba(0,0,0,.35);max-width:320px; }
+      .toast.show { transform:translateX(0); }
+      .toast.success { border-left:3px solid var(--green); }
+      .toast.error   { border-left:3px solid var(--red); }
+      .toast.info    { border-left:3px solid var(--cyan); }
+
+      .day-controls {
+        display: flex;
+        gap: 10px;
+        margin-top: 8px;
+      }
+      .day-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 10px 18px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--text);
+      }
+      .day-btn:hover {
+        border-color: var(--pink);
+        background: rgba(232,168,216,0.06);
+      }
+      .day-btn.add {
+        background: linear-gradient(135deg, rgba(110,231,160,0.12), rgba(34,197,94,0.08));
+        border-color: rgba(110,231,160,0.3);
+        color: var(--green);
+      }
+      .day-btn.add:hover {
+        background: linear-gradient(135deg, rgba(110,231,160,0.2), rgba(34,197,94,0.15));
+      }
+      .day-btn.remove {
+        background: linear-gradient(135deg, rgba(239,68,68,0.08), rgba(220,38,38,0.05));
+        border-color: rgba(239,68,68,0.25);
+        color: var(--red);
+      }
+      .day-btn.remove:hover {
+        background: linear-gradient(135deg, rgba(239,68,68,0.15), rgba(220,38,38,0.1));
+      }
+      .day-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        border-color: var(--border) !important;
+        background: var(--surface) !important;
+        color: var(--text3) !important;
+      }
+
+      @media (max-width: 768px) {
+        .day-controls { flex-wrap: wrap; }
+        .day-btn { flex: 1; min-width: 120px; }
+      }
+      </style>
+  <script src="user-sync.js"></script>
+  <script src="expert-sidebar.js"></script>
+  </head>
+  <body>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="mobile-header">
+  <button class="burger-btn" id="burgerBtn"><span class="burger-line"></span><span class="burger-line"></span><span class="burger-line"></span></button>
+  <a href="index.html" style="display:flex;align-items:center;text-decoration:none;gap:8px;">
+    <svg viewBox="0 0 445 416" fill="none" style="width:28px;height:28px;filter:drop-shadow(0 0 8px rgba(232,168,216,.5));">
+      <path d="M 77 375 L 79 377 L 79 378 L 81 380 L 82 380 L 83 381 L 85 381 L 86 382 L 243 382 L 244 381 L 250 381 L 251 380 L 254 380 L 255 379 L 256 379 L 257 378 L 259 378 L 260 377 L 261 377 L 262 376 L 263 376 L 264 375 L 265 375 L 267 373 L 268 373 L 270 371 L 271 371 L 279 363 L 280 363 L 282 361 L 282 360 L 288 354 L 289 354 L 298 345 L 298 344 L 299 343 L 300 343 L 323 320 L 323 319 L 325 317 L 325 315 L 326 314 L 325 313 L 325 309 L 324 308 L 324 307 L 322 305 L 321 305 L 320 304 L 150 304 L 149 305 L 146 305 L 145 306 L 142 306 L 141 307 L 139 307 L 138 308 L 137 308 L 136 309 L 135 309 L 134 310 L 133 310 L 131 312 L 130 312 L 103 339 L 102 339 L 99 342 L 99 343 L 90 352 L 89 352 L 86 355 L 86 356 L 84 358 L 83 358 L 81 360 L 81 361 L 78 364 L 78 366 L 77 367 Z" fill="#f8ccf3"/>
+      <path d="M 113 108 L 106 108 L 105 109 L 104 109 L 59 154 L 59 155 L 56 158 L 56 159 L 55 160 L 55 161 L 54 162 L 54 163 L 53 164 L 53 165 L 52 166 L 52 167 L 51 168 L 51 170 L 50 171 L 50 172 L 49 173 L 49 176 L 48 177 L 48 181 L 47 182 L 47 193 L 46 194 L 46 335 L 47 336 L 47 341 L 48 342 L 48 343 L 53 348 L 61 348 L 63 346 L 64 346 L 105 305 L 105 304 L 108 301 L 108 300 L 109 299 L 109 298 L 110 297 L 110 296 L 111 295 L 111 294 L 112 293 L 112 292 L 113 291 L 113 290 L 114 289 L 114 287 L 115 286 L 115 283 L 116 282 L 116 277 L 117 276 L 117 113 L 116 112 L 116 111 Z" fill="#f8ccf3"/>
+      <path d="M 107 17 L 104 20 L 103 20 L 57 66 L 56 66 L 52 70 L 52 71 L 49 74 L 49 76 L 48 77 L 48 79 L 49 80 L 49 82 L 53 86 L 315 86 L 316 87 L 321 87 L 322 88 L 324 88 L 325 89 L 326 89 L 327 90 L 328 90 L 330 92 L 331 92 L 340 101 L 340 102 L 341 103 L 341 104 L 342 105 L 342 106 L 343 107 L 343 108 L 344 109 L 344 112 L 345 113 L 345 375 L 346 376 L 346 377 L 347 378 L 347 379 L 348 380 L 349 380 L 350 381 L 352 381 L 353 382 L 354 382 L 355 381 L 357 381 L 358 380 L 359 380 L 398 341 L 399 341 L 403 337 L 403 336 L 409 330 L 409 329 L 411 327 L 411 326 L 412 325 L 412 324 L 414 322 L 414 321 L 415 320 L 415 318 L 416 317 L 416 316 L 417 315 L 417 313 L 418 312 L 418 310 L 419 309 L 419 305 L 420 304 L 420 293 L 421 292 L 421 200 L 420 199 L 420 198 L 421 197 L 421 177 L 420 176 L 421 175 L 421 144 L 420 143 L 420 136 L 421 135 L 421 120 L 420 119 L 420 80 L 421 79 L 421 74 L 420 73 L 420 63 L 419 62 L 419 57 L 418 56 L 418 53 L 417 52 L 417 50 L 416 49 L 416 48 L 415 47 L 415 45 L 414 44 L 414 43 L 413 42 L 413 41 L 412 40 L 412 39 L 410 37 L 410 36 L 409 35 L 409 34 L 403 28 L 403 27 L 399 23 L 398 23 L 395 20 L 394 20 L 392 18 L 391 18 L 389 16 L 388 16 L 387 15 L 386 15 L 385 14 L 384 14 L 383 13 L 381 13 L 380 12 L 378 12 L 377 11 L 375 11 L 374 10 L 371 10 L 370 9 L 363 9 L 362 8 L 134 8 L 133 9 L 126 9 L 125 10 L 122 10 L 121 11 L 119 11 L 118 12 L 117 12 L 116 13 L 114 13 L 113 14 L 112 14 L 111 15 L 110 15 L 108 17 Z" fill="#f8ccf3"/>
+    </svg>
+  </a>
+</div>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <aside class="sidebar">
+      <div class="sidebar-head">
+        <a href="index.html" class="logo"
+          ><div class="logo-gem">
+            <svg viewBox="0 0 445 416" fill="none">
+              <path
+                d="M 77 375 L 79 377 L 79 378 L 81 380 L 82 380 L 83 381 L 85 381 L 86 382 L 243 382 L 244 381 L 250 381 L 251 380 L 254 380 L 255 379 L 256 379 L 257 378 L 259 378 L 260 377 L 261 377 L 262 376 L 263 376 L 264 375 L 265 375 L 267 373 L 268 373 L 270 371 L 271 371 L 279 363 L 280 363 L 282 361 L 282 360 L 288 354 L 289 354 L 298 345 L 298 344 L 299 343 L 300 343 L 323 320 L 323 319 L 325 317 L 325 315 L 326 314 L 325 313 L 325 309 L 324 308 L 324 307 L 322 305 L 321 305 L 320 304 L 150 304 L 149 305 L 146 305 L 145 306 L 142 306 L 141 307 L 139 307 L 138 308 L 137 308 L 136 309 L 135 309 L 134 310 L 133 310 L 131 312 L 130 312 L 103 339 L 102 339 L 99 342 L 99 343 L 90 352 L 89 352 L 86 355 L 86 356 L 84 358 L 83 358 L 81 360 L 81 361 L 78 364 L 78 366 L 77 367 Z"
+                fill="#f8ccf3"
+              />
+              <path
+                d="M 113 108 L 106 108 L 105 109 L 104 109 L 59 154 L 59 155 L 56 158 L 56 159 L 55 160 L 55 161 L 54 162 L 54 163 L 53 164 L 53 165 L 52 166 L 52 167 L 51 168 L 51 170 L 50 171 L 50 172 L 49 173 L 49 176 L 48 177 L 48 181 L 47 182 L 47 193 L 46 194 L 46 335 L 47 336 L 47 341 L 48 342 L 48 343 L 53 348 L 61 348 L 63 346 L 64 346 L 105 305 L 105 304 L 108 301 L 108 300 L 109 299 L 109 298 L 110 297 L 110 296 L 111 295 L 111 294 L 112 293 L 112 292 L 113 291 L 113 290 L 114 289 L 114 287 L 115 286 L 115 283 L 116 282 L 116 277 L 117 276 L 117 113 L 116 112 L 116 111 Z"
+                fill="#f8ccf3"
+              />
+              <path
+                d="M 107 17 L 104 20 L 103 20 L 57 66 L 56 66 L 52 70 L 52 71 L 49 74 L 49 76 L 48 77 L 48 79 L 49 80 L 49 82 L 53 86 L 315 86 L 316 87 L 321 87 L 322 88 L 324 88 L 325 89 L 326 89 L 327 90 L 328 90 L 330 92 L 331 92 L 340 101 L 340 102 L 341 103 L 341 104 L 342 105 L 342 106 L 343 107 L 343 108 L 344 109 L 344 112 L 345 113 L 345 375 L 346 376 L 346 377 L 347 378 L 347 379 L 348 380 L 349 380 L 350 381 L 352 381 L 353 382 L 354 382 L 355 381 L 357 381 L 358 380 L 359 380 L 398 341 L 399 341 L 403 337 L 403 336 L 409 330 L 409 329 L 411 327 L 411 326 L 412 325 L 412 324 L 414 322 L 414 321 L 415 320 L 415 318 L 416 317 L 416 316 L 417 315 L 417 313 L 418 312 L 418 310 L 419 309 L 419 305 L 420 304 L 420 293 L 421 292 L 421 200 L 420 199 L 420 198 L 421 197 L 421 177 L 420 176 L 421 175 L 421 144 L 420 143 L 420 136 L 421 135 L 421 120 L 420 119 L 420 80 L 421 79 L 421 74 L 420 73 L 420 63 L 419 62 L 419 57 L 418 56 L 418 53 L 417 52 L 417 50 L 416 49 L 416 48 L 415 47 L 415 45 L 414 44 L 414 43 L 413 42 L 413 41 L 412 40 L 412 39 L 410 37 L 410 36 L 409 35 L 409 34 L 403 28 L 403 27 L 399 23 L 398 23 L 395 20 L 394 20 L 392 18 L 391 18 L 389 16 L 388 16 L 387 15 L 386 15 L 385 14 L 384 14 L 383 13 L 381 13 L 380 12 L 378 12 L 377 11 L 375 11 L 374 10 L 371 10 L 370 9 L 363 9 L 362 8 L 134 8 L 133 9 L 126 9 L 125 10 L 122 10 L 121 11 L 119 11 L 118 12 L 117 12 L 116 13 L 114 13 L 113 14 L 112 14 L 111 15 L 110 15 L 108 17 Z"
+                fill="#f8ccf3"
+              />
+            </svg>
+          </div>
+          <span class="logo-text">АКТИВ</span></a
+        ></div><nav id="expertSidebarNav"></nav>
+      <div class="sidebar-footer">
+        <div class="sidebar-footer-links">
+          <a href="about.html">О нас</a><a href="changelog.html">Changelog</a
+          ><a href="partners.html">Партнёрам</a>
+        </div>
+        <div class="sidebar-footer-copy">© 2026 АКТИВ Platform</div>
+      </div>
+    </aside>
+    <div class="page-wrap">
+      <div class="topbar">
+        <div class="topbar-left">
+          <div class="breadcrumb">
+            <a href="index.html">АКТИВ</a
+            ><svg
+              width="11"
+              height="11"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="9 18 15 12 9 6" /></svg
+            ><a href="expert-quests.html">Мои квесты</a
+            ><svg
+              width="11"
+              height="11"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="9 18 15 12 9 6" /></svg
+            ><span>Новый квест</span>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="notif-btn" onclick="window.location.href='notifications.html'" style="cursor: pointer;">
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="var(--text2)"
+              stroke-width="2"
+            >
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
+            <div class="notif-dot"></div>
+          </div>
+        </div>
+      </div>
+      <main>
+        <div class="stepper" id="stepper">
+          <div class="step active" id="s1">
+            <span class="step-lbl">Тип</span>
+          </div>
+          <div class="step" id="s2">
+            <span class="step-lbl">Категория</span>
+          </div>
+          <div class="step" id="s3">
+            <span class="step-lbl">Настройка</span>
+          </div>
+          <div class="step expert-only" id="s4" style="display:none">
+            <span class="step-lbl">Задания</span>
+          </div>
+        </div>
+
+        <div class="wizard-step active" id="step1">
+          <div class="page-hdr">
+            <div>
+              <h1>Новый квест</h1>
+              <p>Создайте программу для ваших учеников</p>
+            </div>
+          </div>
+          <div class="type-grid">
+            <div class="type-card active" onclick="selectType(this)">
+              <div class="type-icon">
+                <svg
+                  width="36"
+                  height="36"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="var(--pink)"
+                  stroke-width="2"
+                >
+                  <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                  <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                </svg>
+              </div>
+              <h3>Экспертный</h3>
+              <p>
+                Авторская программа с ежедневными заданиями и проверкой отчетов учеников.
+              </p>
+            </div>
+            <div class="type-card" onclick="selectType(this)">
+              <div class="type-icon">
+                <svg
+                  width="36"
+                  height="36"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="var(--purple)"
+                  stroke-width="2"
+                >
+                  <circle cx="17" cy="7" r="4" />
+                  <path d="M10.5 14c0-1.93 2.91-3.5 6.5-3.5" />
+                  <circle cx="7" cy="14" r="4" />
+                  <path d="M1 20c0-2.21 2.687-4 6-4s6 1.79 6 4" />
+                </svg>
+              </div>
+              <h3>Групповой</h3>
+              <p>
+                Квест для сообщества. Участники выполняют задания совместно.
+              </p>
+            </div>
+          </div>
+          <div class="wiz-nav">
+            <div></div>
+            <button
+              class="btn-primary"
+              onclick="nextStep(2)"
+              style="flex: 1; justify-content: center"
+            >
+              Продолжить
+            </button>
+          </div>
+        </div>
+
+        <div class="wizard-step" id="step2">
+          <div class="page-hdr">
+            <div>
+              <h1>Категория</h1>
+              <p>В какой сфере вы хотите стать сильнее?</p>
+            </div>
+          </div>
+          <div class="cat-grid">
+            <div class="cat-card active" onclick="selectCat(this)">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="var(--purple)"
+                stroke-width="2"
+              >
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" /></svg
+              ><span>Спорт</span>
+            </div>
+            <div class="cat-card" onclick="selectCat(this)">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"
+                />
+                <path
+                  d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"
+                /></svg
+              ><span>Разум</span>
+            </div>
+            <div class="cat-card" onclick="selectCat(this)">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="16 18 22 12 16 6" />
+                <polyline points="8 6 2 12 8 18" /></svg
+              ><span>Код</span>
+            </div>
+            <div class="cat-card" onclick="selectCat(this)">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+                /></svg
+              ><span>Здоровье</span>
+            </div>
+            <div class="cat-card" onclick="selectCat(this)">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+                <line x1="9" y1="9" x2="9.01" y2="9" />
+                <line x1="15" y1="9" x2="15.01" y2="9" /></svg
+              ><span>Творчество</span>
+            </div>
+            <div class="cat-card" onclick="selectCat(this)">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg
+              ><span>Книги</span>
+            </div>
+          </div>
+          <div class="wiz-nav">
+            <button class="btn-back" onclick="nextStep(1)">Назад</button
+            ><button
+              class="btn-primary"
+              onclick="nextStep(3)"
+              style="flex: 1; justify-content: center"
+            >
+              Продолжить
+            </button>
+          </div>
+        </div>
+
+        <div class="wizard-step" id="step3">
+          <div class="page-hdr">
+            <div>
+              <h1>Настройка</h1>
+              <p>Определите условия и длительность пути</p>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Название квеста</label
+            ><input
+              type="text"
+              class="form-input"
+              id="qName"
+              placeholder="Например: 100 дней без сахара"
+              oninput="updateReward()"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Длительность (дней)</label
+            ><input
+              type="number"
+              class="form-input"
+              id="qDays"
+              value="7"
+              min="1"
+              max="100"
+              oninput="updateReward()"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Тип квеста</label>
+            <select class="form-select" id="qQuestType" onchange="onQuestTypeChange()">
+              <option value="expert" selected>Экспертный (с чатом)</option>
+              <option value="community">Сообщество (бесплатный)</option>
+            </select>
+          </div>
+          <div class="form-group expert-only">
+            <label class="form-label">Цена (?)</label>
+            <input type="number" class="form-input" id="qPrice" value="0" min="0">
+          </div>
+          <div class="form-group expert-only">
+            <label class="form-label">Сложность</label>
+            <select class="form-select" id="qDifficulty">
+              <option value="Easy">Легко</option>
+              <option value="Medium" selected>Средне</option>
+              <option value="Hard">Сложно</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Ваша цель / Описание</label
+            ><textarea
+              id="qDesc"
+              class="form-textarea"
+              rows="3"
+              placeholder="Что именно вы будете считать выполненным заданием?"
+            ></textarea>
+          </div>
+          <div class="reward-preview">
+            <div>
+              <div class="rp-lbl">Награда за финиш</div>
+              <div class="rp-val" id="xpPreview">+105 XP</div>
+            </div>
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2">
+              <circle cx="12" cy="8" r="6" /><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" />
+            </svg>
+          </div>
+          <div class="wiz-nav">
+            <button class="btn-back" onclick="nextStep(2)">Назад</button
+            ><button
+              class="btn-primary expert-only"
+              onclick="initTasksStep()"
+              style="flex: 1; justify-content: center; display:none"
+              id="btnTasksStep"
+            >
+              Настроить задания
+            </button
+            ><button
+              class="btn-primary non-expert-only"
+              onclick="createQuest()"
+              id="submitBtnStep3"
+              style="flex: 1; justify-content: center"
+            >
+              Опубликовать квест
+            </button>
+          </div>
+        </div>
+
+        <div class="wizard-step" id="step4">
+          <div class="page-hdr">
+            <div>
+              <h1>Ежедневные задания</h1>
+              <p>Опишите, что ученик должен делать каждый день</p>
+            </div>
+          </div>
+          <div id="tasksList" style="display:flex; flex-direction:column; gap:20px;">
+            <!-- Поля заданий -->
+          </div>
+          <div class="day-controls" id="dayControls" style="display:none;">
+            <button class="day-btn add" onclick="addDay()" title="Добавить день">+ Добавить день</button>
+            <button class="day-btn remove" onclick="removeDay()" title="Удалить последний день">− Удалить день</button>
+          </div>
+          <div class="wiz-nav">
+            <button class="btn-back" onclick="nextStep(3)">Назад</button
+            ><button
+              class="btn-primary"
+              onclick="createQuest()"
+              id="submitBtn"
+              style="flex: 1; justify-content: center"
+            >
+              Опубликовать квест
+            </button>
+          </div>
+        </div>
+      </main>
+    </div>
+    <div id="toast-container"></div>
+    <script>
+      function selectType(el) {
+        document.querySelectorAll(".type-card").forEach((c) => c.classList.remove("active"));
+        el.classList.add("active");
+      }
+      function selectCat(el) {
+        document.querySelectorAll(".cat-card").forEach((c) => c.classList.remove("active"));
+        el.classList.add("active");
+      }
+      function nextStep(n) {
+        document.querySelectorAll(".wizard-step").forEach((s) => s.classList.remove("active"));
+        document.getElementById("step" + n).classList.add("active");
+        document.querySelectorAll(".step").forEach((s, i) => {
+          if (i < n) { s.classList.add("done"); s.classList.add("active"); }
+          else { s.classList.remove("done"); s.classList.remove("active"); }
+        });
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      function updateReward() {
+        const d = parseInt(document.getElementById("qDays").value) || 0;
+        document.getElementById("xpPreview").textContent = "+" + (d * 15).toLocaleString("ru") + " XP";
+      }
+
+      function saveTaskData() {
+        const data = new Map();
+        document.querySelectorAll('#tasksList .card').forEach((card, idx) => {
+          const title = card.querySelector('.q-task-title')?.value || '';
+          const desc = card.querySelector('.q-task-desc')?.value || '';
+          data.set(idx + 1, { title, desc });
+        });
+        return data;
+      }
+
+      function renderTaskCards(days, savedData, goal) {
+        const container = document.getElementById('tasksList');
+        container.innerHTML = '';
+        for (let i = 1; i <= days; i++) {
+          const saved = savedData.get(i);
+          const title = saved ? saved.title : `Задание дня ${i}`;
+          const desc = saved ? saved.desc : (goal || '');
+          const div = document.createElement('div');
+          div.className = 'card card-p';
+          div.innerHTML = `
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div class="card-title">День ${i}</div>
+              ${days > 1 ? `<button class="day-btn remove" style="padding:4px 10px;font-size:11px;" onclick="removeDay(${i})" title="Удалить этот день">✕</button>` : ''}
+            </div>
+            <div class="form-group">
+              <label class="form-label">Заголовок дня</label>
+              <input type="text" class="form-input q-task-title" data-day="${i}" value="${title.replace(/"/g, '&quot;')}" placeholder="Например: Первая тренировка">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Что нужно сделать?</label>
+              <textarea class="form-textarea q-task-desc" placeholder="Краткое описание...">${desc}</textarea>
+            </div>
+          `;
+          container.appendChild(div);
+        }
+        document.getElementById('dayControls').style.display = '';
+      }
+
+      function initTasksStep() {
+        const days = Math.max(1, parseInt(document.getElementById('qDays').value) || 7);
+        document.getElementById('qDays').value = days;
+        const saved = saveTaskData();
+        const goal = document.getElementById('qDesc').value;
+        renderTaskCards(days, saved, goal);
+        nextStep(4);
+      }
+
+      function addDay() {
+        const container = document.getElementById('tasksList');
+        const currentDays = container.querySelectorAll('.card').length;
+        const saved = saveTaskData();
+        const goal = document.getElementById('qDesc').value;
+        const newDays = currentDays + 1;
+        document.getElementById('qDays').value = newDays;
+        updateReward();
+        renderTaskCards(newDays, saved, goal);
+      }
+
+      function removeDay(dayIndex) {
+        const container = document.getElementById('tasksList');
+        const currentDays = container.querySelectorAll('.card').length;
+        if (currentDays <= 1) {
+          showToast('Нужен хотя бы один день', 'error');
+          return;
+        }
+        const saved = saveTaskData();
+        // If removing specific index, shift later days
+        if (dayIndex !== undefined) {
+          saved.delete(dayIndex);
+          const reordered = new Map();
+          let newIdx = 1;
+          for (let oldIdx = 1; oldIdx <= currentDays; oldIdx++) {
+            if (oldIdx !== dayIndex && saved.has(oldIdx)) {
+              reordered.set(newIdx++, saved.get(oldIdx));
+            }
+          }
+          saved.clear();
+          reordered.forEach((v, k) => saved.set(k, v));
+        }
+        const newDays = currentDays - 1;
+        document.getElementById('qDays').value = newDays;
+        updateReward();
+        const goal = document.getElementById('qDesc').value;
+        renderTaskCards(newDays, saved, goal);
+      }
+
+      function showToast(msg, type = 'success') {
+        const c = document.getElementById('toast-container');
+        if (!c) return;
+        const t = document.createElement('div');
+        t.className = 'toast ' + type;
+        t.textContent = msg;
+        c.appendChild(t);
+        setTimeout(() => t.classList.add('show'), 10);
+        setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 400); }, 3500);
+      }
+
+            async function createQuest() {
+        const btn = document.getElementById("submitBtnStep3") || document.getElementById("submitBtn");
+        
+        // Validate required fields
+        const name = document.getElementById("qName").value.trim();
+        if (!name) {
+          showToast("Введите название квеста", "error");
+          document.getElementById("qName").focus();
+          return;
+        }
+        
+        btn.disabled = true;
+        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0"/></svg> Публикация...';
+
+        const duration = parseInt(document.getElementById("qDays").value) || 7;
+        const category = document.querySelector(".cat-card.active span")?.textContent || "Спорт";
+        const rewardXp = duration * 15;
+
+        const questData = {
+          name: name,
+          description: document.getElementById("qDesc").value,
+          category: category,
+          difficulty: document.getElementById("qDifficulty")?.value || "Medium",
+          duration: duration,
+          rewardXp: rewardXp,
+          price: parseInt(document.getElementById("qPrice")?.value || 0)
+        };
+
+        const taskTitles = document.querySelectorAll(".q-task-title");
+        const taskDescs = document.querySelectorAll(".q-task-desc");
+        const tasks = [];
+        taskTitles.forEach((el, i) => {
+          tasks.push({
+            day: i + 1,
+            title: el.value || ("Задание дня " + (i+1)),
+            description: taskDescs[i]?.value || "",
+            instructions: "<p>" + (taskDescs[i]?.value || "") + "</p>"
+          });
+        });
+
+        // Эксперт всегда публикует квест в БД
+        try {
+          const response = await authFetch('/api/quests', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ questData, tasks, questType: document.getElementById('qQuestType').value })
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            btn.innerHTML = '? Опубликовано!';
+            btn.style.background = 'linear-gradient(135deg,#6ee7a0,#22c55e)';
+            showToast("Квест опубликован в каталог! ??");
+            setTimeout(() => location.href = "expert-quests.html", 1600);
+          } else {
+            const err = await response.json().catch(() => ({}));
+            showToast(err.error || "Ошибка публикации", "error");
+            btn.disabled = false;
+            btn.textContent = "Опубликовать квест";
+          }
+        } catch (err) {
+          showToast("Ошибка сети. Проверьте подключение.", "error");
+          btn.disabled = false;
+          btn.textContent = "Опубликовать квест";
+        }
+      }
+
+      function onQuestTypeChange() {
+        const type = document.getElementById('qQuestType').value;
+        const priceInput = document.getElementById('qPrice');
+        if (type === 'community') {
+          priceInput.value = 0;
+          priceInput.disabled = true;
+          priceInput.parentElement.style.opacity = '0.5';
+        } else {
+          priceInput.disabled = false;
+          priceInput.parentElement.style.opacity = '1';
+        }
+      }
+
+      // Auth guard — эксперт-only страница
+      (function() {
+        const tok = localStorage.getItem('ludo_token');
+        const u = JSON.parse(localStorage.getItem('ludo_user') || 'null');
+        if (!tok || !u || (u.role !== 'expert' && u.role !== 'admin')) {
+          location.href = 'auth.html';
+          return;
+        }
+        // Эксперт: всегда показываем 4 шага, скрываем элементы не для эксперта
+        document.querySelectorAll('.expert-only').forEach(el => el.style.display = '');
+        document.querySelectorAll('.non-expert-only').forEach(el => el.style.display = 'none');
+      })();
+    </script>
+  <script src="cookie-consent.js"></script>
+  </body>
+</html>

@@ -1,0 +1,559 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>АКТИВ Admin — Последние события</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Unbounded:wght@400;600;700;900&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="admin.css" />
+  <style>
+    .page-hdr {
+      margin-bottom: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .page-hdr h1 {
+      font-family: "Unbounded", sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .page-hdr p {
+      font-size: 13px;
+      color: var(--text2);
+      margin-top: 4px;
+    }
+
+    .filters-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .search-box {
+      position: relative;
+      flex: 1;
+      min-width: 240px;
+    }
+
+    .search-box input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 14px 10px 38px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .search-box svg {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text3);
+      width: 14px;
+      height: 14px;
+    }
+
+    .filter-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0 25px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text2);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-btn:hover,
+    .filter-btn.active {
+      border-color: var(--pink);
+      color: var(--text);
+      background: var(--pink-soft);
+    }
+
+    .events-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .activity-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.2s;
+      cursor: pointer;
+      animation: fadeIn 0.3s ease forwards;
+    }
+
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+
+    .activity-item:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .activity-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .activity-icon.user {
+      background: rgba(232, 168, 216, 0.1);
+      color: var(--pink);
+    }
+
+    .activity-icon.money {
+      background: rgba(110, 231, 160, 0.1);
+      color: var(--green);
+    }
+
+    .activity-icon.alert {
+      background: rgba(248, 113, 113, 0.1);
+      color: var(--red);
+    }
+
+    .activity-icon.quest {
+      background: rgba(176, 136, 208, 0.1);
+      color: var(--purple);
+    }
+
+    .activity-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .activity-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .activity-sub {
+      font-size: 12px;
+      color: var(--text2);
+    }
+
+    .activity-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .activity-time {
+      font-size: 11px;
+      color: var(--text3);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .badge-live {
+      background: rgba(110, 231, 160, 0.1);
+      color: var(--green);
+      font-size: 9px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      border: 1px solid rgba(110, 231, 160, 0.2);
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+  <script src="user-sync.js"></script>
+</head>
+
+<body>
+  <div class="mobile-header">
+  <button class="burger-btn" id="burgerBtn"><span class="burger-line"></span><span class="burger-line"></span><span class="burger-line"></span></button>
+  <a href="admin-dashboard.html" style="display:flex;align-items:center;text-decoration:none;gap:8px;">
+    <svg viewBox="0 0 445 416" fill="none" style="width:28px;height:28px;filter:drop-shadow(0 0 8px rgba(232,168,216,.5));">
+      <path d="M 77 375 L 79 377 L 79 378 L 81 380 L 82 380 L 83 381 L 85 381 L 86 382 L 243 382 L 244 381 L 250 381 L 251 380 L 254 380 L 255 379 L 256 379 L 257 378 L 259 378 L 260 377 L 261 377 L 262 376 L 263 376 L 264 375 L 265 375 L 267 373 L 268 373 L 270 371 L 271 371 L 279 363 L 280 363 L 282 361 L 282 360 L 288 354 L 289 354 L 298 345 L 298 344 L 299 343 L 300 343 L 323 320 L 323 319 L 325 317 L 325 315 L 326 314 L 325 313 L 325 309 L 324 308 L 324 307 L 322 305 L 321 305 L 320 304 L 150 304 L 149 305 L 146 305 L 145 306 L 142 306 L 141 307 L 139 307 L 138 308 L 137 308 L 136 309 L 135 309 L 134 310 L 133 310 L 131 312 L 130 312 L 103 339 L 102 339 L 99 342 L 99 343 L 90 352 L 89 352 L 86 355 L 86 356 L 84 358 L 83 358 L 81 360 L 81 361 L 78 364 L 78 366 L 77 367 Z" fill="#f8ccf3"/>
+      <path d="M 113 108 L 106 108 L 105 109 L 104 109 L 59 154 L 59 155 L 56 158 L 56 159 L 55 160 L 55 161 L 54 162 L 54 163 L 53 164 L 53 165 L 52 166 L 52 167 L 51 168 L 51 170 L 50 171 L 50 172 L 49 173 L 49 176 L 48 177 L 48 181 L 47 182 L 47 193 L 46 194 L 46 335 L 47 336 L 47 341 L 48 342 L 48 343 L 53 348 L 61 348 L 63 346 L 64 346 L 105 305 L 105 304 L 108 301 L 108 300 L 109 299 L 109 298 L 110 297 L 110 296 L 111 295 L 111 294 L 112 293 L 112 292 L 113 291 L 113 290 L 114 289 L 114 287 L 115 286 L 115 283 L 116 282 L 116 277 L 117 276 L 117 113 L 116 112 L 116 111 Z" fill="#f8ccf3"/>
+      <path d="M 107 17 L 104 20 L 103 20 L 57 66 L 56 66 L 52 70 L 52 71 L 49 74 L 49 76 L 48 77 L 48 79 L 49 80 L 49 82 L 53 86 L 315 86 L 316 87 L 321 87 L 322 88 L 324 88 L 325 89 L 326 89 L 327 90 L 328 90 L 330 92 L 331 92 L 340 101 L 340 102 L 341 103 L 341 104 L 342 105 L 342 106 L 343 107 L 343 108 L 344 109 L 344 112 L 345 113 L 345 375 L 346 376 L 346 377 L 347 378 L 347 379 L 348 380 L 349 380 L 350 381 L 352 381 L 353 382 L 354 382 L 355 381 L 357 381 L 358 380 L 359 380 L 398 341 L 399 341 L 403 337 L 403 336 L 409 330 L 409 329 L 411 327 L 411 326 L 412 325 L 412 324 L 414 322 L 414 321 L 415 320 L 415 318 L 416 317 L 416 316 L 417 315 L 417 313 L 418 312 L 418 310 L 419 309 L 419 305 L 420 304 L 420 293 L 421 292 L 421 200 L 420 199 L 420 198 L 421 197 L 421 177 L 420 176 L 421 175 L 421 144 L 420 143 L 420 136 L 421 135 L 421 120 L 420 119 L 420 80 L 421 79 L 421 74 L 420 73 L 420 63 L 419 62 L 419 57 L 418 56 L 418 53 L 417 52 L 417 50 L 416 49 L 416 48 L 415 47 L 415 45 L 414 44 L 414 43 L 413 42 L 413 41 L 412 40 L 412 39 L 410 37 L 410 36 L 409 35 L 409 34 L 403 28 L 403 27 L 399 23 L 398 23 L 395 20 L 394 20 L 392 18 L 391 18 L 389 16 L 388 16 L 387 15 L 386 15 L 385 14 L 384 14 L 383 13 L 381 13 L 380 12 L 378 12 L 377 11 L 375 11 L 374 10 L 371 10 L 370 9 L 363 9 L 362 8 L 134 8 L 133 9 L 126 9 L 125 10 L 122 10 L 121 11 L 119 11 L 118 12 L 117 12 L 116 13 L 114 13 L 113 14 L 112 14 L 111 15 L 110 15 L 108 17 Z" fill="#f8ccf3"/>
+    </svg>
+    
+  </a>
+</div>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <aside class="sidebar">
+    <div class="sidebar-head">
+      <a href="admin-dashboard.html" class="logo"
+        style="display:flex;align-items:center;gap:10px;text-decoration:none;">
+        <div class="logo-gem" style="width:36px;height:36px;flex-shrink:0;"><svg viewBox="0 0 445 416" fill="none">
+            <path
+              d="M 77 375 L 79 377 L 79 378 L 81 380 L 82 380 L 83 381 L 85 381 L 86 382 L 243 382 L 244 381 L 250 381 L 251 380 L 254 380 L 255 379 L 256 379 L 257 378 L 259 378 L 260 377 L 261 377 L 262 376 L 263 376 L 264 375 L 265 375 L 267 373 L 268 373 L 270 371 L 271 371 L 279 363 L 280 363 L 282 361 L 282 360 L 288 354 L 289 354 L 298 345 L 298 344 L 299 343 L 300 343 L 323 320 L 323 319 L 325 317 L 325 315 L 326 314 L 325 313 L 325 309 L 324 308 L 324 307 L 322 305 L 321 305 L 320 304 L 150 304 L 149 305 L 146 305 L 145 306 L 142 306 L 141 307 L 139 307 L 138 308 L 137 308 L 136 309 L 135 309 L 134 310 L 133 310 L 131 312 L 130 312 L 103 339 L 102 339 L 99 342 L 99 343 L 90 352 L 89 352 L 86 355 L 86 356 L 84 358 L 83 358 L 81 360 L 81 361 L 78 364 L 78 366 L 77 367 Z"
+              fill="#f8ccf3" />
+            <path
+              d="M 113 108 L 106 108 L 105 109 L 104 109 L 59 154 L 59 155 L 56 158 L 56 159 L 55 160 L 55 161 L 54 162 L 54 163 L 53 164 L 53 165 L 52 166 L 52 167 L 51 168 L 51 170 L 50 171 L 50 172 L 49 173 L 49 176 L 48 177 L 48 181 L 47 182 L 47 193 L 46 194 L 46 335 L 47 336 L 47 341 L 48 342 L 48 343 L 53 348 L 61 348 L 63 346 L 64 346 L 105 305 L 105 304 L 108 301 L 108 300 L 109 299 L 109 298 L 110 297 L 110 296 L 111 295 L 111 294 L 112 293 L 112 292 L 113 291 L 113 290 L 114 289 L 114 287 L 115 286 L 115 283 L 116 282 L 116 277 L 117 276 L 117 113 L 116 112 L 116 111 Z"
+              fill="#f8ccf3" />
+            <path
+              d="M 107 17 L 104 20 L 103 20 L 57 66 L 56 66 L 52 70 L 52 71 L 49 74 L 49 76 L 48 77 L 48 79 L 49 80 L 49 82 L 53 86 L 315 86 L 316 87 L 321 87 L 322 88 L 324 88 L 325 89 L 326 89 L 327 90 L 328 90 L 330 92 L 331 92 L 340 101 L 340 102 L 341 103 L 341 104 L 342 105 L 342 106 L 343 107 L 343 108 L 344 109 L 344 112 L 345 113 L 345 375 L 346 376 L 346 377 L 347 378 L 347 379 L 348 380 L 349 380 L 350 381 L 352 381 L 353 382 L 354 382 L 355 381 L 357 381 L 358 380 L 359 380 L 398 341 L 399 341 L 403 337 L 403 336 L 409 330 L 409 329 L 411 327 L 411 326 L 412 325 L 412 324 L 414 322 L 414 321 L 415 320 L 415 318 L 416 317 L 416 316 L 417 315 L 417 313 L 418 312 L 418 310 L 419 309 L 419 305 L 420 304 L 420 293 L 421 292 L 421 200 L 420 199 L 420 198 L 421 197 L 421 177 L 420 176 L 421 175 L 421 144 L 420 143 L 420 136 L 421 135 L 421 120 L 420 119 L 420 80 L 421 79 L 421 74 L 420 73 L 420 63 L 419 62 L 419 57 L 418 56 L 418 53 L 417 52 L 417 50 L 416 49 L 416 48 L 415 47 L 415 45 L 414 44 L 414 43 L 413 42 L 413 41 L 412 40 L 412 39 L 410 37 L 410 36 L 409 35 L 409 34 L 403 28 L 403 27 L 399 23 L 398 23 L 395 20 L 394 20 L 392 18 L 391 18 L 389 16 L 388 16 L 387 15 L 386 15 L 385 14 L 384 14 L 383 13 L 381 13 L 380 12 L 378 12 L 377 11 L 375 11 L 374 10 L 371 10 L 370 9 L 363 9 L 362 8 L 134 8 L 133 9 L 126 9 L 125 10 L 122 10 L 121 11 L 119 11 L 118 12 L 117 12 L 116 13 L 114 13 L 113 14 L 112 14 L 111 15 L 110 15 L 108 17 Z"
+              fill="#f8ccf3" />
+          </svg></div>
+        <span class="logo-text">АКТИВ</span>
+      </a>
+      <div class="sidebar-user" style="display: none !important;">
+        <div class="s-avatar">
+          АД
+          <div class="s-avatar-online"></div>
+        </div>
+        <div class="s-user-info">
+          <div class="s-user-name">Alex_Admin</div>
+          <div class="s-user-sub">Администратор</div>
+        </div>
+      </div>
+    </div>
+    <a href="admin-dashboard.html" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="7" height="7" rx="1" />
+        <rect x="14" y="3" width="7" height="7" rx="1" />
+        <rect x="3" y="14" width="7" height="7" rx="1" />
+        <rect x="14" y="14" width="7" height="7" rx="1" />
+      </svg>
+      Обзор системы
+    </a>
+    <a href="admin-events.html" class="nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+      </svg>
+      Последние события
+    </a>
+    <a href="admin-moderation.html" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+      </svg>
+      Очередь модерации
+      <span class="nav-badge">7</span>
+    </a>
+    <a href="admin-finances.html" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="2" y="5" width="20" height="14" rx="2" />
+        <line x1="2" y1="10" x2="22" y2="10" />
+      </svg>
+      Финансы и комиссии
+    </a>
+    <a href="admin-partners.html" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+      </svg>
+      Партнерская сеть
+      <span class="nav-badge green">4</span>
+    </a>
+    <div class="sidebar-footer">
+      <div class="sidebar-footer-links">
+        <a href="about.html">О системе</a>
+        <a href="changelog.html">Changelog</a>
+        <a href="about.html">Документация</a>
+      </div>
+      <div class="sidebar-footer-copy">© 2026 АКТИВ Platform</div>
+    </div>
+  </aside>
+
+  <div class="page-wrap">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="breadcrumb">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+          </svg>
+          <a href="admin-dashboard.html">АКТИВ Admin</a>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+          <span>Последние события</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+       </div>
+      </div>
+          <main>
+      <div class="page-hdr">
+        <div>
+          <h1>Последние события</h1>
+          <p>Системные действия в реальном времени</p>
+        </div>
+        <div style="display: flex; gap: 8px">
+          <button class="filter-btn" id="liveToggle">
+            <span class="badge-dot pulse"></span> Live-режим
+          </button>
+        </div>
+      </div>
+
+      <div class="filters-row">
+     
+        <button class="filter-btn active" data-type="all">Все</button>
+        <button class="filter-btn" data-type="user">Эксперты</button>
+        <button class="filter-btn" data-type="money">Финансы</button>
+        <button class="filter-btn" data-type="alert">Жалобы</button>
+        <button class="filter-btn" data-type="quest">Квесты</button>
+           <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input type="text" id="eventSearch" placeholder="Поиск по событиям (имя, ID, тип)..." />
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="events-list" id="eventsContainer"></div>
+      </div>
+    </main>
+    </div>
+
+
+  </div>
+
+  <div class="modal-overlay" id="eventModal">
+    <div class="modal">
+      <div class="modal-hdr">
+        <h3 id="mTitle">Детали события</h3>
+        <button class="close-modal" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body" id="mBody"></div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal()">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script>
+    const eventsData = [
+      {
+        id: 1,
+        type: "user",
+        title: "Новый эксперт: yoga_maria",
+        sub: "Ожидает верификации профиля",
+        time: "2 мин",
+        live: true,
+        details: "Заявка #EX-442. Опыт: 5 лет. Сертификаты приложены.",
+      },
+      {
+        id: 2,
+        type: "money",
+        title: "Выплата: alex_trainer",
+        sub: "12 400 ₽ — перевод завершён",
+        time: "8 мин",
+        live: false,
+        details: "Транзакция #TX-9921. Комиссия платформы: 1 240 ₽.",
+      },
+      {
+        id: 3,
+        type: "alert",
+        title: "Жалоба на квест #882",
+        sub: "Пользователь: runner_vova",
+        time: "15 мин",
+        live: true,
+        details:
+          "Причина: Оскорбления в чате квеста. Рекомендуется проверка модератором.",
+      },
+      {
+        id: 4,
+        type: "quest",
+        title: "Квест «30 дней бега» опубликован",
+        sub: "Эксперт: pro_runner · 34 участника",
+        time: "31 мин",
+        live: false,
+        details:
+          "Квест прошел автоматическую проверку и доступен в каталоге.",
+      },
+      {
+        id: 5,
+        type: "user",
+        title: "blog_health_24 → партнёр",
+        sub: "Подал заявку на партнёрство",
+        time: "1 ч",
+        live: false,
+        details:
+          "Профиль в Instagram: 24k подписчиков. Ожидает одобрения менеджером.",
+      },
+    ];
+
+    let liveEnabled = true;
+
+    function showToast(msg, type = "info") {
+      const c = document.getElementById("toast-container"),
+        t = document.createElement("div");
+      t.className = `toast ${type}`;
+      t.textContent = msg;
+      c.appendChild(t);
+      setTimeout(() => t.classList.add("show"), 10);
+      setTimeout(() => {
+        t.classList.remove("show");
+        setTimeout(() => t.remove(), 400);
+      }, 3000);
+    }
+
+    function renderEvents(filter = "all", search = "") {
+      const container = document.getElementById("eventsContainer");
+      const filtered = eventsData.filter((e) => {
+        const matchesType = filter === "all" || e.type === filter;
+        const matchesSearch =
+          e.title.toLowerCase().includes(search.toLowerCase()) ||
+          e.sub.toLowerCase().includes(search.toLowerCase());
+        return matchesType && matchesSearch;
+      });
+
+      container.innerHTML = filtered
+        .map(
+          (e) => `
+    <div class="activity-item" onclick="openEvent(${e.id})">
+      <div class="activity-icon ${e.type}">
+        ${getIcon(e.type)}
+      </div>
+      <div class="activity-content">
+        <div class="activity-title">${e.title.replace(search, `<u>${search}</u>`)}</div>
+        <div class="activity-sub">${e.sub}</div>
+        <div class="activity-meta">
+          <span class="activity-time">🕒 ${e.time}</span>
+          ${e.live && liveEnabled ? '<span class="badge-live"><span class="badge-dot pulse"></span> Live</span>' : ""}
+        </div>
+      </div>
+      <button class="filter-btn" style="height:32px; font-size:11px;">Детали</button>
+    </div>
+  `,
+        )
+        .join("");
+    }
+
+    function getIcon(type) {
+      const icons = {
+        user: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+        money:
+          '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+        alert:
+          '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+        quest:
+          '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 7 12 12 2 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>',
+      };
+      return icons[type] || icons.user;
+    }
+
+    function openEvent(id) {
+      const event = eventsData.find((e) => e.id === id);
+      if (!event) return;
+      document.getElementById("mTitle").textContent = event.title;
+      document.getElementById("mBody").innerHTML = `
+    <p style="color:var(--text2); font-size:14px; margin-bottom:12px;">Тип: <b>${event.type.toUpperCase()}</b> · Время: <b>${event.time}</b></p>
+    <p style="font-size:15px; line-height:1.6;">${event.details}</p>
+  `;
+      const links = {
+        user: "admin-moderation.html",
+        money: "admin-finances.html",
+        alert: "admin-moderation.html",
+        quest: "admin-moderation.html",
+      };
+      const mFooter = document.querySelector("#eventModal .modal-footer");
+      const existing = document.getElementById("mActionLink");
+      if (existing) existing.remove();
+      if (links[event.type]) {
+        const btn = document.createElement("a");
+        btn.id = "mActionLink";
+        btn.href = links[event.type];
+        btn.className = "btn-primary";
+        btn.style.cssText =
+          "text-decoration:none;display:inline-flex;align-items:center;gap:6px;";
+        btn.textContent =
+          event.type === "money"
+            ? "Перейти к выплатам"
+            : "Перейти к модерации";
+        mFooter.appendChild(btn);
+      }
+      document.getElementById("eventModal").classList.add("active");
+    }
+
+    function closeModal() {
+      document.getElementById("eventModal").classList.remove("active");
+    }
+
+    document.getElementById("eventSearch").addEventListener("input", (e) => {
+      renderEvents(
+        document.querySelector(".filter-btn.active").dataset.type,
+        e.target.value,
+      );
+    });
+
+    document.querySelectorAll(".filter-btn[data-type]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document
+          .querySelectorAll(".filter-btn")
+          .forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        renderEvents(
+          btn.dataset.type,
+          document.getElementById("eventSearch").value,
+        );
+      });
+    });
+
+    document
+      .getElementById("liveToggle")
+      .addEventListener("click", function () {
+        liveEnabled = !liveEnabled;
+        this.classList.toggle("active", liveEnabled);
+        showToast(liveEnabled ? "Live-режим включен" : "Live-режим выключен");
+        renderEvents();
+      });
+
+    const burger = document.getElementById("burgerBtn"),
+      sidebar = document.querySelector(".sidebar"),
+      overlay = document.getElementById("sidebarOverlay");
+    burger.onclick = () => {
+      sidebar.classList.toggle("open");
+      overlay.classList.toggle("active");
+    };
+    overlay.onclick = () => {
+      sidebar.classList.remove("open");
+      overlay.classList.remove("active");
+    };
+
+    renderEvents();
+  </script>
+<script src="cookie-consent.js"></script>
+  </body>
+
+</html>

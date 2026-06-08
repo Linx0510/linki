@@ -1,0 +1,1230 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=5.0"
+    />
+    <title>АКТИВ Admin — Обзор системы</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Unbounded:wght@400;600;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="admin.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <style>
+      .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+        margin-bottom: 20px;
+      }
+      .stat-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r);
+        padding: 18px 16px;
+        cursor: pointer;
+        transition: all 0.25s;
+        position: relative;
+        overflow: hidden;
+      }
+      .stat-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.018),
+          transparent
+        );
+        pointer-events: none;
+      }
+      .stat-card:hover {
+        border-color: var(--border2);
+        transform: translateY(-2px);
+      }
+      .stat-card.active {
+        border-color: rgba(232, 168, 216, 0.32);
+        box-shadow: 0 0 28px rgba(232, 168, 216, 0.07);
+      }
+      .stat-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 14px;
+      }
+      .stat-value {
+        font-family: "Unbounded", sans-serif;
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 1;
+      }
+      .stat-label {
+        font-size: 11px;
+        color: var(--text2);
+        font-weight: 600;
+        margin-top: 5px;
+      }
+      .stat-trend {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 11px;
+        font-weight: 700;
+        margin-top: 8px;
+      }
+      .stat-trend.up {
+        color: var(--green);
+      }
+      .stat-trend.down {
+        color: var(--red);
+      }
+      .charts-row {
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 16px;
+        margin-bottom: 18px;
+      }
+      .chart-wrap {
+        position: relative;
+        height: 210px;
+      }
+
+      .bottom-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      .activity-item {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .activity-item:last-child {
+        border-bottom: none;
+      }
+      .activity-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .activity-icon.user {
+        background: rgba(232, 168, 216, 0.1);
+      }
+      .activity-icon.money {
+        background: rgba(110, 231, 160, 0.1);
+      }
+      .activity-icon.alert {
+        background: rgba(248, 113, 113, 0.1);
+      }
+      .activity-icon.quest {
+        background: rgba(176, 136, 208, 0.1);
+      }
+      .activity-content {
+        flex: 1;
+        min-width: 0;
+      }
+      .activity-title {
+        font-size: 12.5px;
+        font-weight: 700;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .activity-sub {
+        font-size: 10.5px;
+        color: var(--text2);
+        margin-top: 2px;
+      }
+      .activity-time {
+        font-size: 10px;
+        color: var(--text3);
+        font-weight: 600;
+        flex-shrink: 0;
+      }
+      .expert-avatar {
+        width: 30px;
+        height: 30px;
+        border-radius: 9px;
+        background: linear-gradient(135deg, var(--pink), var(--purple));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 800;
+        color: #000;
+        flex-shrink: 0;
+      }
+      .stars {
+        color: var(--gold);
+        font-size: 11px;
+      }
+      .alert-box {
+        background: rgba(248, 113, 113, 0.06);
+        border: 1px solid rgba(248, 113, 113, 0.16);
+        border-radius: var(--r);
+        padding: 16px 18px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 18px;
+      }
+      .alert-box .alert-icon {
+        background: rgba(248, 113, 113, 0.12);
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        color: var(--red);
+      }
+      .alert-box p {
+        font-size: 12.5px;
+        font-weight: 600;
+        flex: 1;
+      }
+      .alert-box p span {
+        color: var(--red);
+        font-weight: 800;
+      }
+      @media (max-width: 1100px) {
+        .charts-row {
+          grid-template-columns: 1fr;
+        }
+        .bottom-row {
+          grid-template-columns: 1fr;
+        }
+        .stat-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      @media (max-width: 768px) {
+        .stat-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 10px;
+          margin-bottom: 16px;
+        }
+        .stat-card {
+          padding: 16px 14px;
+        }
+        .stat-icon {
+          width: 32px;
+          height: 32px;
+          margin-bottom: 10px;
+        }
+        .stat-value {
+          font-size: 22px;
+        }
+        .stat-label {
+          font-size: 11px;
+        }
+        .stat-trend {
+          font-size: 10.5px;
+          margin-top: 6px;
+        }
+        .charts-row {
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+        .chart-wrap {
+          height: 190px;
+        }
+        .bottom-row {
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+        .activity-item {
+          gap: 12px;
+        }
+        .activity-title {
+          font-size: 13px;
+        }
+        .activity-sub {
+          font-size: 11px;
+        }
+        .activity-time {
+          font-size: 11px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .stat-grid {
+          gap: 8px;
+        }
+        .stat-value {
+          font-size: 20px;
+        }
+        .stat-card {
+          padding: 14px 12px;
+        }
+        .chart-wrap {
+          height: 170px;
+        }
+
+        .expert-avatar {
+          width: 26px;
+          height: 26px;
+          font-size: 9px;
+          border-radius: 7px;
+        }
+      }
+    </style>
+  <script src="user-sync.js"></script>
+  </head>
+  <body>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <div class="mobile-header">
+  <button class="burger-btn" id="burgerBtn"><span class="burger-line"></span><span class="burger-line"></span><span class="burger-line"></span></button>
+  <a href="admin-dashboard.html" style="display:flex;align-items:center;text-decoration:none;gap:8px;">
+    <svg viewBox="0 0 445 416" fill="none" style="width:28px;height:28px;filter:drop-shadow(0 0 8px rgba(232,168,216,.5));">
+      <path d="M 77 375 L 79 377 L 79 378 L 81 380 L 82 380 L 83 381 L 85 381 L 86 382 L 243 382 L 244 381 L 250 381 L 251 380 L 254 380 L 255 379 L 256 379 L 257 378 L 259 378 L 260 377 L 261 377 L 262 376 L 263 376 L 264 375 L 265 375 L 267 373 L 268 373 L 270 371 L 271 371 L 279 363 L 280 363 L 282 361 L 282 360 L 288 354 L 289 354 L 298 345 L 298 344 L 299 343 L 300 343 L 323 320 L 323 319 L 325 317 L 325 315 L 326 314 L 325 313 L 325 309 L 324 308 L 324 307 L 322 305 L 321 305 L 320 304 L 150 304 L 149 305 L 146 305 L 145 306 L 142 306 L 141 307 L 139 307 L 138 308 L 137 308 L 136 309 L 135 309 L 134 310 L 133 310 L 131 312 L 130 312 L 103 339 L 102 339 L 99 342 L 99 343 L 90 352 L 89 352 L 86 355 L 86 356 L 84 358 L 83 358 L 81 360 L 81 361 L 78 364 L 78 366 L 77 367 Z" fill="#f8ccf3"/>
+      <path d="M 113 108 L 106 108 L 105 109 L 104 109 L 59 154 L 59 155 L 56 158 L 56 159 L 55 160 L 55 161 L 54 162 L 54 163 L 53 164 L 53 165 L 52 166 L 52 167 L 51 168 L 51 170 L 50 171 L 50 172 L 49 173 L 49 176 L 48 177 L 48 181 L 47 182 L 47 193 L 46 194 L 46 335 L 47 336 L 47 341 L 48 342 L 48 343 L 53 348 L 61 348 L 63 346 L 64 346 L 105 305 L 105 304 L 108 301 L 108 300 L 109 299 L 109 298 L 110 297 L 110 296 L 111 295 L 111 294 L 112 293 L 112 292 L 113 291 L 113 290 L 114 289 L 114 287 L 115 286 L 115 283 L 116 282 L 116 277 L 117 276 L 117 113 L 116 112 L 116 111 Z" fill="#f8ccf3"/>
+      <path d="M 107 17 L 104 20 L 103 20 L 57 66 L 56 66 L 52 70 L 52 71 L 49 74 L 49 76 L 48 77 L 48 79 L 49 80 L 49 82 L 53 86 L 315 86 L 316 87 L 321 87 L 322 88 L 324 88 L 325 89 L 326 89 L 327 90 L 328 90 L 330 92 L 331 92 L 340 101 L 340 102 L 341 103 L 341 104 L 342 105 L 342 106 L 343 107 L 343 108 L 344 109 L 344 112 L 345 113 L 345 375 L 346 376 L 346 377 L 347 378 L 347 379 L 348 380 L 349 380 L 350 381 L 352 381 L 353 382 L 354 382 L 355 381 L 357 381 L 358 380 L 359 380 L 398 341 L 399 341 L 403 337 L 403 336 L 409 330 L 409 329 L 411 327 L 411 326 L 412 325 L 412 324 L 414 322 L 414 321 L 415 320 L 415 318 L 416 317 L 416 316 L 417 315 L 417 313 L 418 312 L 418 310 L 419 309 L 419 305 L 420 304 L 420 293 L 421 292 L 421 200 L 420 199 L 420 198 L 421 197 L 421 177 L 420 176 L 421 175 L 421 144 L 420 143 L 420 136 L 421 135 L 421 120 L 420 119 L 420 80 L 421 79 L 421 74 L 420 73 L 420 63 L 419 62 L 419 57 L 418 56 L 418 53 L 417 52 L 417 50 L 416 49 L 416 48 L 415 47 L 415 45 L 414 44 L 414 43 L 413 42 L 413 41 L 412 40 L 412 39 L 410 37 L 410 36 L 409 35 L 409 34 L 403 28 L 403 27 L 399 23 L 398 23 L 395 20 L 394 20 L 392 18 L 391 18 L 389 16 L 388 16 L 387 15 L 386 15 L 385 14 L 384 14 L 383 13 L 381 13 L 380 12 L 378 12 L 377 11 L 375 11 L 374 10 L 371 10 L 370 9 L 363 9 L 362 8 L 134 8 L 133 9 L 126 9 L 125 10 L 122 10 L 121 11 L 119 11 L 118 12 L 117 12 L 116 13 L 114 13 L 113 14 L 112 14 L 111 15 L 110 15 L 108 17 Z" fill="#f8ccf3"/>
+    </svg>
+    
+  </a>
+</div>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <aside class="sidebar">
+      <div class="sidebar-head">
+        <a href="admin-dashboard.html" class="logo">
+          <div class="logo-gem">
+            <svg viewBox="0 0 445 416" fill="none">
+              <path
+                d="M 77 375 L 79 377 L 79 378 L 81 380 L 82 380 L 83 381 L 85 381 L 86 382 L 243 382 L 244 381 L 250 381 L 251 380 L 254 380 L 255 379 L 256 379 L 257 378 L 259 378 L 260 377 L 261 377 L 262 376 L 263 376 L 264 375 L 265 375 L 267 373 L 268 373 L 270 371 L 271 371 L 279 363 L 280 363 L 282 361 L 282 360 L 288 354 L 289 354 L 298 345 L 298 344 L 299 343 L 300 343 L 323 320 L 323 319 L 325 317 L 325 315 L 326 314 L 325 313 L 325 309 L 324 308 L 324 307 L 322 305 L 321 305 L 320 304 L 150 304 L 149 305 L 146 305 L 145 306 L 142 306 L 141 307 L 139 307 L 138 308 L 137 308 L 136 309 L 135 309 L 134 310 L 133 310 L 131 312 L 130 312 L 103 339 L 102 339 L 99 342 L 99 343 L 90 352 L 89 352 L 86 355 L 86 356 L 84 358 L 83 358 L 81 360 L 81 361 L 78 364 L 78 366 L 77 367 Z"
+                fill="#f8ccf3"
+              />
+              <path
+                d="M 113 108 L 106 108 L 105 109 L 104 109 L 59 154 L 59 155 L 56 158 L 56 159 L 55 160 L 55 161 L 54 162 L 54 163 L 53 164 L 53 165 L 52 166 L 52 167 L 51 168 L 51 170 L 50 171 L 50 172 L 49 173 L 49 176 L 48 177 L 48 181 L 47 182 L 47 193 L 46 194 L 46 335 L 47 336 L 47 341 L 48 342 L 48 343 L 53 348 L 61 348 L 63 346 L 64 346 L 105 305 L 105 304 L 108 301 L 108 300 L 109 299 L 109 298 L 110 297 L 110 296 L 111 295 L 111 294 L 112 293 L 112 292 L 113 291 L 113 290 L 114 289 L 114 287 L 115 286 L 115 283 L 116 282 L 116 277 L 117 276 L 117 113 L 116 112 L 116 111 Z"
+                fill="#f8ccf3"
+              />
+              <path
+                d="M 107 17 L 104 20 L 103 20 L 57 66 L 56 66 L 52 70 L 52 71 L 49 74 L 49 76 L 48 77 L 48 79 L 49 80 L 49 82 L 53 86 L 315 86 L 316 87 L 321 87 L 322 88 L 324 88 L 325 89 L 326 89 L 327 90 L 328 90 L 330 92 L 331 92 L 340 101 L 340 102 L 341 103 L 341 104 L 342 105 L 342 106 L 343 107 L 343 108 L 344 109 L 344 112 L 345 113 L 345 375 L 346 376 L 346 377 L 347 378 L 347 379 L 348 380 L 349 380 L 350 381 L 352 381 L 353 382 L 354 382 L 355 381 L 357 381 L 358 380 L 359 380 L 398 341 L 399 341 L 403 337 L 403 336 L 409 330 L 409 329 L 411 327 L 411 326 L 412 325 L 412 324 L 414 322 L 414 321 L 415 320 L 415 318 L 416 317 L 416 316 L 417 315 L 417 313 L 418 312 L 418 310 L 419 309 L 419 305 L 420 304 L 420 293 L 421 292 L 421 200 L 420 199 L 420 198 L 421 197 L 421 177 L 420 176 L 421 175 L 421 144 L 420 143 L 420 136 L 421 135 L 421 120 L 420 119 L 420 80 L 421 79 L 421 74 L 420 73 L 420 63 L 419 62 L 419 57 L 418 56 L 418 53 L 417 52 L 417 50 L 416 49 L 416 48 L 415 47 L 415 45 L 414 44 L 414 43 L 413 42 L 413 41 L 412 40 L 412 39 L 410 37 L 410 36 L 409 35 L 409 34 L 403 28 L 403 27 L 399 23 L 398 23 L 395 20 L 394 20 L 392 18 L 391 18 L 389 16 L 388 16 L 387 15 L 386 15 L 385 14 L 384 14 L 383 13 L 381 13 L 380 12 L 378 12 L 377 11 L 375 11 L 374 10 L 371 10 L 370 9 L 363 9 L 362 8 L 134 8 L 133 9 L 126 9 L 125 10 L 122 10 L 121 11 L 119 11 L 118 12 L 117 12 L 116 13 L 114 13 L 113 14 L 112 14 L 111 15 L 110 15 L 108 17 Z"
+                fill="#f8ccf3"
+              />
+            </svg>
+          </div>
+          <span class="logo-text">АКТИВ</span>
+        </a>
+        <div class="sidebar-user" style="display: none !important;">
+          <div class="s-avatar">
+            АД
+            <div class="s-avatar-online"></div>
+          </div>
+          <div class="s-user-info">
+            <div class="s-user-name">Alex_Admin</div>
+            <div class="s-user-sub">Администратор</div>
+          </div>
+        </div>
+      </div>
+      <a href="admin-dashboard.html" class="nav-item active">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <rect x="3" y="3" width="7" height="7" rx="1" />
+          <rect x="14" y="3" width="7" height="7" rx="1" />
+          <rect x="3" y="14" width="7" height="7" rx="1" />
+          <rect x="14" y="14" width="7" height="7" rx="1" />
+        </svg>
+        Обзор системы
+      </a>
+      <a href="admin-events.html" class="nav-item">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+        </svg>
+        Последние события
+      </a>
+      <a href="admin-moderation.html" class="nav-item">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        </svg>
+        Очередь модерации
+        <span class="nav-badge">7</span>
+      </a>
+      <a href="admin-finances.html" class="nav-item">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <rect x="2" y="5" width="20" height="14" rx="2" />
+          <line x1="2" y1="10" x2="22" y2="10" />
+        </svg>
+        Финансы и комиссии
+      </a>
+      <a href="admin-partners.html" class="nav-item">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+        Партнерская сеть
+        <span class="nav-badge green">4</span>
+      </a>
+      <div class="sidebar-footer">
+        <div class="sidebar-footer-links">
+          <a href="about.html">О системе</a>
+          <a href="changelog.html">Changelog</a>
+          <a href="about.html">Документация</a>
+        </div>
+        <div class="sidebar-footer-copy">© 2026 АКТИВ Platform</div>
+      </div>
+    </aside>
+
+    <div class="page-wrap">
+      <div class="topbar">
+        <div class="topbar-left">
+          <div class="breadcrumb">
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <rect x="3" y="3" width="7" height="7" rx="1" />
+              <rect x="14" y="3" width="7" height="7" rx="1" />
+              <rect x="3" y="14" width="7" height="7" rx="1" />
+              <rect x="14" y="14" width="7" height="7" rx="1" />
+            </svg>
+            АКТИВ Admin
+            <svg
+              width="11"
+              height="11"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+            <span>Обзор системы</span>
+          </div>
+        </div>
+        <div class="topbar-right">
+      
+         
+          </div>
+        </div>
+         <main>
+        <div class="page-hdr">
+          <div>
+            <h1>Обзор системы</h1>
+            <p>Сводная аналитика платформы АКТИВ · обновление каждые 5 минут</p>
+          </div>
+      
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-card" data-chart="users" data-metric="users">
+            <div class="stat-icon">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="var(--pink)"
+                stroke-width="2"
+              >
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+            </div>
+            <div class="stat-value">12 480</div>
+            <div class="stat-label">Пользователей</div>
+            <div class="stat-trend up">▲ 8% за неделю</div>
+          </div>
+          <div class="stat-card" data-chart="experts" data-metric="experts">
+            <div class="stat-icon">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="var(--gold)"
+                stroke-width="2"
+              >
+                <polygon
+                  points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+                />
+              </svg>
+            </div>
+            <div class="stat-value">156</div>
+            <div class="stat-label">Активных экспертов</div>
+            <div class="stat-trend up">▲ 12 за неделю</div>
+          </div>
+          <div class="stat-card" data-chart="revenue" data-metric="revenue">
+            <div class="stat-icon">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="var(--green)"
+                stroke-width="2"
+              >
+                <line x1="12" y1="1" x2="12" y2="23" />
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+              </svg>
+            </div>
+            <div class="stat-value">1.2M ₽</div>
+            <div class="stat-label">Выручка (месяц)</div>
+            <div class="stat-trend up">▲ 15% за месяц</div>
+          </div>
+          <div class="stat-card" data-chart="activity" data-metric="activity">
+            <div class="stat-icon">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="var(--cyan)"
+                stroke-width="2"
+              >
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+              </svg>
+            </div>
+            <div class="stat-value">84%</div>
+            <div class="stat-label">Активность DAU/MAU</div>
+            <div class="stat-trend down">▼ 2% vs прошлый мес.</div>
+          </div>
+        </div>
+
+        <div class="charts-row">
+          <div class="card card-p">
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 16px;
+                flex-wrap: wrap;
+                gap: 10px;
+              "
+            >
+              <div>
+                <div style="font-size: 13px; font-weight: 800" id="chart-title">
+                  Рост пользователей
+                </div>
+                <div
+                  style="
+                    font-size: 10.5px;
+                    color: var(--text2);
+                    margin-top: 2px;
+                  "
+                  id="chart-sub"
+                >
+                  Последние 7 недель
+                </div>
+              </div>
+            </div>
+            <div class="chart-wrap"><canvas id="mainChart"></canvas></div>
+          </div>
+
+          <div class="card card-p">
+            <div style="font-size: 13px; font-weight: 800; margin-bottom: 4px">
+              Распределение квестов
+            </div>
+            <div
+              style="
+                font-size: 10.5px;
+                color: var(--text2);
+                margin-bottom: 16px;
+              "
+            >
+              Типы квестов
+            </div>
+            <div style="position: relative; height: 148px; margin-bottom: 16px">
+              <canvas id="doughnutChart"></canvas>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px">
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  justify-content: space-between;
+                  font-size: 12px;
+                "
+              >
+                <div style="display: flex; align-items: center; gap: 8px">
+                  <div
+                    style="
+                      width: 10px;
+                      height: 10px;
+                      border-radius: 3px;
+                      background: #505062;
+                    "
+                  ></div>
+                  <span style="color: var(--text2)">Комьюнити</span>
+                </div>
+                <strong>8 920</strong>
+              </div>
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  justify-content: space-between;
+                  font-size: 12px;
+                "
+              >
+                <div style="display: flex; align-items: center; gap: 8px">
+                  <div
+                    style="
+                      width: 10px;
+                      height: 10px;
+                      border-radius: 3px;
+                      background: #e8a8d8;
+                    "
+                  ></div>
+                  <span style="color: var(--text2)">Экспертные</span>
+                </div>
+                <strong>2 840</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bottom-row">
+          <div class="card">
+            <div class="card-hdr">
+              <div>
+                <h3>Последние события</h3>
+                <p>Системные действия в реальном времени</p>
+              </div>
+          
+            </div>
+            <div class="card-p">
+              <div class="activity-item">
+                <div class="activity-icon user">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="var(--pink)"
+                    stroke-width="2"
+                  >
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-title">Новый эксперт: yoga_maria</div>
+                  <div class="activity-sub">Ожидает верификации профиля</div>
+                </div>
+                <span class="activity-time">2 мин</span>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon money">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="var(--green)"
+                    stroke-width="2"
+                  >
+                    <line x1="12" y1="1" x2="12" y2="23" />
+                    <path
+                      d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"
+                    />
+                  </svg>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-title">Выплата: alex_trainer</div>
+                  <div class="activity-sub">12 400 ₽ — перевод завершён</div>
+                </div>
+                <span class="activity-time">8 мин</span>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon alert">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="var(--red)"
+                    stroke-width="2"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                  </svg>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-title">Жалоба на квест #882</div>
+                  <div class="activity-sub">Пользователь: runner_vova</div>
+                </div>
+                <span class="activity-time">15 мин</span>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon quest">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="var(--purple)"
+                    stroke-width="2"
+                  >
+                    <polygon points="12 2 22 7 12 12 2 7 12 2" />
+                    <polyline points="2 17 12 22 22 17" />
+                    <polyline points="2 12 12 17 22 12" />
+                  </svg>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-title">
+                    Квест «30 дней бега» опубликован
+                  </div>
+                  <div class="activity-sub">
+                    Эксперт: pro_runner · 34 участника
+                  </div>
+                </div>
+                <span class="activity-time">31 мин</span>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon user">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="var(--pink)"
+                    stroke-width="2"
+                  >
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                  </svg>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-title">blog_health_24 → партнёр</div>
+                  <div class="activity-sub">Подал заявку на партнёрство</div>
+                </div>
+                <span class="activity-time">1 ч</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-hdr">
+              <div>
+                <h3>Топ эксперты</h3>
+                <p id="expertsSubtitle">По выручке за месяц</p>
+              </div>
+            </div>
+            <div
+              class="table-wrapper"
+              style="border: none; border-radius: 0"
+              id="expertsTableContainer"
+            >
+              <table id="expertsTable">
+                <thead>
+                  <tr>
+                    <th>Эксперт</th>
+                    <th>Оценка</th>
+                    <th id="revenueHeader">Выручка</th>
+                  </tr>
+                </thead>
+                <tbody id="expertsBody">
+                  <tr>
+                    <td>
+                      <div style="display: flex; align-items: center; gap: 9px">
+                        <div class="expert-avatar">YM</div>
+                        <div>
+                          <div style="font-size: 12.5px; font-weight: 700">
+                            yoga_maria
+                          </div>
+                          <div style="font-size: 10.5px; color: var(--text2)">
+                            Йога
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="stars">★</span> 4.9</td>
+                    <td style="color: var(--green); font-weight: 700">
+                      84 200 ₽
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div style="display: flex; align-items: center; gap: 9px">
+                        <div
+                          class="expert-avatar"
+                          style="
+                            background: linear-gradient(
+                              135deg,
+                              var(--cyan),
+                              var(--purple)
+                            );
+                          "
+                        >
+                          PR
+                        </div>
+                        <div>
+                          <div style="font-size: 12.5px; font-weight: 700">
+                            pro_runner
+                          </div>
+                          <div style="font-size: 10.5px; color: var(--text2)">
+                            Бег
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="stars">★</span> 4.8</td>
+                    <td style="color: var(--green); font-weight: 700">
+                      61 500 ₽
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div style="display: flex; align-items: center; gap: 9px">
+                        <div
+                          class="expert-avatar"
+                          style="
+                            background: linear-gradient(
+                              135deg,
+                              var(--gold),
+                              #e67e22
+                            );
+                          "
+                        >
+                          AT
+                        </div>
+                        <div>
+                          <div style="font-size: 12.5px; font-weight: 700">
+                            alex_trainer
+                          </div>
+                          <div style="font-size: 10.5px; color: var(--text2)">
+                            Фитнес
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="stars">★</span> 4.7</td>
+                    <td style="color: var(--green); font-weight: 700">
+                      48 900 ₽
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div style="display: flex; align-items: center; gap: 9px">
+                        <div
+                          class="expert-avatar"
+                          style="
+                            background: linear-gradient(
+                              135deg,
+                              #5ee0d4,
+                              #3d9a93
+                            );
+                          "
+                        >
+                          MN
+                        </div>
+                        <div>
+                          <div style="font-size: 12.5px; font-weight: 700">
+                            mindful_nik
+                          </div>
+                          <div style="font-size: 10.5px; color: var(--text2)">
+                            Медитации
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="stars">★</span> 4.8</td>
+                    <td style="color: var(--green); font-weight: 700">
+                      38 100 ₽
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+      </div>
+
+     
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script>
+      function initMobileMenu() {
+        const burger = document.getElementById("burgerBtn"),
+          sidebar = document.querySelector(".sidebar"),
+          overlay = document.getElementById("sidebarOverlay");
+        if (burger && sidebar && overlay) {
+          burger.addEventListener("click", () => {
+            sidebar.classList.toggle("open");
+            overlay.classList.toggle("active");
+          });
+          overlay.addEventListener("click", () => {
+            sidebar.classList.remove("open");
+            overlay.classList.remove("active");
+          });
+        }
+      }
+      function showToast(msg, type = "success") {
+        const c = document.getElementById("toast-container"),
+          t = document.createElement("div");
+        t.className = `toast ${type}`;
+        t.textContent = msg;
+        c.appendChild(t);
+        setTimeout(() => t.classList.add("show"), 10);
+        setTimeout(() => {
+          t.classList.remove("show");
+          setTimeout(() => t.remove(), 400);
+        }, 3000);
+      }
+
+      const datasets = {
+        users: {
+          label: "Пользователей",
+          data: [9200, 9800, 10300, 10900, 11400, 11900, 12480],
+          title: "Рост пользователей",
+          sub: "Последние 7 недель",
+          color: "#e8a8d8",
+        },
+        revenue: {
+          label: "Выручка (тыс. ₽)",
+          data: [780, 820, 890, 940, 1020, 1120, 1200],
+          title: "Выручка платформы",
+          sub: "Тыс. ₽ · 7 недель",
+          color: "#6ee7a0",
+        },
+        quests: {
+          label: "Активных квестов",
+          data: [88, 94, 102, 108, 115, 121, 130],
+          title: "Активные квесты",
+          sub: "Последние 7 недель",
+          color: "#b088d0",
+        },
+        experts: {
+          label: "Активных экспертов",
+          data: [112, 118, 125, 133, 142, 149, 156],
+          title: "Рост числа экспертов",
+          sub: "Последние 7 недель",
+          color: "#fbbf24",
+        },
+      };
+      const expertsData = {
+        revenue: {
+          title: "По выручке за месяц",
+          header: "Выручка",
+          experts: [
+            {
+              name: "yoga_maria",
+              category: "Йога",
+              rating: 4.9,
+              value: "84 200 ₽",
+              color: "green",
+            },
+            {
+              name: "pro_runner",
+              category: "Бег",
+              rating: 4.8,
+              value: "61 500 ₽",
+              color: "green",
+            },
+            {
+              name: "alex_trainer",
+              category: "Фитнес",
+              rating: 4.7,
+              value: "48 900 ₽",
+              color: "green",
+            },
+            {
+              name: "mindful_nik",
+              category: "Медитации",
+              rating: 4.8,
+              value: "38 100 ₽",
+              color: "green",
+            },
+          ],
+        },
+        rating: {
+          title: "По рейтингу",
+          header: "Рейтинг",
+          experts: [
+            {
+              name: "yoga_maria",
+              category: "Йога",
+              rating: 4.9,
+              value: "★ 4.9",
+              color: "gold",
+            },
+            {
+              name: "mindful_nik",
+              category: "Медитации",
+              rating: 4.8,
+              value: "★ 4.8",
+              color: "gold",
+            },
+            {
+              name: "pro_runner",
+              category: "Бег",
+              rating: 4.8,
+              value: "★ 4.8",
+              color: "gold",
+            },
+            {
+              name: "alex_trainer",
+              category: "Фитнес",
+              rating: 4.7,
+              value: "★ 4.7",
+              color: "gold",
+            },
+          ],
+        },
+        activity: {
+          title: "По активности",
+          header: "Квесты",
+          experts: [
+            {
+              name: "pro_runner",
+              category: "Бег",
+              rating: 4.8,
+              value: "24 квеста",
+              color: "cyan",
+            },
+            {
+              name: "yoga_maria",
+              category: "Йога",
+              rating: 4.9,
+              value: "18 квестов",
+              color: "cyan",
+            },
+            {
+              name: "alex_trainer",
+              category: "Фитнес",
+              rating: 4.7,
+              value: "15 квестов",
+              color: "cyan",
+            },
+            {
+              name: "mindful_nik",
+              category: "Медитации",
+              rating: 4.8,
+              value: "12 квестов",
+              color: "cyan",
+            },
+          ],
+        },
+      };
+
+      function updateExpertsTable(metric) {
+        const data = expertsData[metric];
+        if (!data) return;
+        document.getElementById("expertsSubtitle").textContent = data.title;
+        document.getElementById("revenueHeader").textContent = data.header;
+        const colors = {
+          green: "var(--green)",
+          gold: "var(--gold)",
+          cyan: "var(--cyan)",
+        };
+        const bgs = {
+          yoga_maria: "linear-gradient(135deg,var(--pink),var(--purple))",
+          pro_runner: "linear-gradient(135deg,var(--cyan),var(--purple))",
+          alex_trainer: "linear-gradient(135deg,var(--gold),#e67e22)",
+          mindful_nik: "linear-gradient(135deg,#5ee0d4,#3d9a93)",
+        };
+        document.getElementById("expertsBody").innerHTML = data.experts
+          .map(
+            (e) =>
+              `<tr><td><div style="display:flex;align-items:center;gap:9px;"><div class="expert-avatar" style="background:${bgs[e.name] || "linear-gradient(135deg,var(--pink),var(--purple))"}">${e.name.slice(0, 2).toUpperCase()}</div><div><div style="font-size:12.5px;font-weight:700;">${e.name}</div><div style="font-size:10.5px;color:var(--text2);">${e.category}</div></div></div></td><td><span class="stars">★</span> ${e.rating}</td><td style="color:${colors[e.color] || "var(--green)"};font-weight:700;">${e.value}</td></tr>`,
+          )
+          .join("");
+      }
+
+      const ctx = document.getElementById("mainChart").getContext("2d");
+      const mainChart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: [
+            "Нед.1",
+            "Нед.2",
+            "Нед.3",
+            "Нед.4",
+            "Нед.5",
+            "Нед.6",
+            "Нед.7",
+          ],
+          datasets: [
+            {
+              label: datasets.users.label,
+              data: datasets.users.data,
+              borderColor: "#e8a8d8",
+              backgroundColor: "rgba(232,168,216,0.06)",
+              fill: true,
+              tension: 0.45,
+              pointRadius: 4,
+              pointBackgroundColor: "#e8a8d8",
+              pointBorderColor: "#0e0e12",
+              pointBorderWidth: 2,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              grid: { color: "rgba(255,255,255,0.04)" },
+              ticks: { color: "#505062", font: { size: 10, weight: "700" } },
+            },
+            y: {
+              grid: { color: "rgba(255,255,255,0.04)" },
+              ticks: { color: "#505062", font: { size: 10, weight: "700" } },
+            },
+          },
+        },
+      });
+
+      function updateChart(key) {
+        const s = datasets[key];
+        if (!s) return;
+        mainChart.data.datasets[0].data = s.data;
+        mainChart.data.datasets[0].label = s.label;
+        mainChart.data.datasets[0].borderColor = s.color;
+        mainChart.data.datasets[0].backgroundColor = s.color + "18";
+        mainChart.data.datasets[0].pointBackgroundColor = s.color;
+        mainChart.update();
+        document.getElementById("chart-title").textContent = s.title;
+        document.getElementById("chart-sub").textContent = s.sub;
+      }
+
+      document.querySelectorAll(".stat-card").forEach((card) => {
+        card.addEventListener("click", function () {
+          document
+            .querySelectorAll(".stat-card")
+            .forEach((c) => c.classList.remove("active"));
+          this.classList.add("active");
+          const m = this.dataset.metric;
+          const map = {
+            users: "users",
+            experts: "experts",
+            revenue: "revenue",
+            activity: "quests",
+          };
+          updateChart(map[m] || "users");
+          const expMap = {
+            users: "revenue",
+            experts: "rating",
+            revenue: "revenue",
+            activity: "activity",
+          };
+          updateExpertsTable(expMap[m] || "revenue");
+        });
+      });
+
+      new Chart(document.getElementById("doughnutChart").getContext("2d"), {
+        type: "doughnut",
+        data: {
+          labels: ["Комьюнити", "Экспертные"],
+          datasets: [
+            {
+              data: [8920, 2840],
+              backgroundColor: ["#505062", "#e8a8d8"],
+              borderColor: "#16161c",
+              borderWidth: 3,
+              hoverOffset: 8,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          cutout: "70%",
+        },
+      });
+
+      document.querySelector('.stat-card[data-metric="users"]').classList.add("active");
+      initMobileMenu();
+
+      // ── Real Admin API Integration ──────────────────────
+      async function loadAdminStats() {
+        try {
+          const response = await authFetch('/api/admin/stats');
+          const stats = await response.json();
+          
+          // Обновляем карточки
+          document.querySelector('.stat-card[data-metric="users"] .stat-value').textContent = (stats.totalUsers || 12480).toLocaleString();
+          document.querySelector('.stat-card[data-metric="revenue"] .stat-value').textContent = 
+            ((stats.totalRevenue || 1200000) / 1000).toFixed(1) + 'k ₽';
+
+          // Обновляем пончик (типы квестов)
+          if (!stats.questTypes) return;
+          const comm = parseInt(stats.questTypes.find(t => t.quest_type === 'community')?.count || 0, 10);
+          const exp = parseInt(stats.questTypes.find(t => t.quest_type === 'expert')?.count || 0, 10);
+
+          const doughnut = Chart.getChart('doughnutChart');
+          if (doughnut) {
+            const total = comm + exp;
+            doughnut.data.datasets[0].data = total > 0 ? [comm, exp] : [8920, 2840];
+            doughnut.update();
+          }
+
+          // Обновляем легенду
+          const labels = document.querySelectorAll('.card-p strong');
+          if (labels.length >= 2) {
+            labels[0].textContent = comm.toLocaleString();
+            labels[1].textContent = exp.toLocaleString();
+          }
+
+        } catch (err) {
+          console.error('Admin Stats Load Error:', err);
+        }
+      }
+
+      loadAdminStats();
+    </script>
+  <script src="cookie-consent.js"></script>
+  </body>
+</html>

@@ -1,0 +1,28 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "server.js",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": [
+          "*.html",
+          "*.css",
+          "admin.css",
+          "user-sync.js",
+          "ai-chat.js",
+          "cookie-consent.js",
+          "expert-sidebar.js",
+          "db/**",
+          "middleware/**",
+          "routes/**",
+          "utils/**",
+          "public/**"
+        ]
+      }
+    }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "/server.js" }
+  ]
+}
